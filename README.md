@@ -1,5 +1,5 @@
 # **AICertify - AI Self-Certification Framework 🚀**  
-[![AICertify CI](https://github.com/mantric/AICertify/actions/workflows/aicertify-ci.yml/badge.svg)](https://github.com/mantric/AICertify/actions/workflows/aicertify-ci.yml)  
+[![AICertify CI](https://github.com/mantric/AICertify/actions/workflows/aicertify-ci.yaml/badge.svg)](https://github.com/mantric/AICertify/actions/workflows/aicertify-ci.yaml)  
 [![GitHub Discussions](https://img.shields.io/github/discussions/mantric/AICertify)](https://github.com/mantric/AICertify/discussions)  
 [![GitHub license](https://img.shields.io/github/license/mantric/AICertify)](https://github.com/mantric/AICertify/blob/main/LICENSE)  
 [![GitHub issues](https://img.shields.io/github/issues/mantric/AICertify)](https://github.com/mantric/AICertify/issues)  
