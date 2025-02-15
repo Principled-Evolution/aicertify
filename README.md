@@ -70,6 +70,32 @@ cd AICertify
 pip install -r requirements.txt
 ```
 
+### **💻 3️⃣ Install Open Policy Agent (OPA) on Windows**
+
+1. Download OPA:
+   ```powershell
+   # Create directory for OPA
+   mkdir C:\opa
+   cd C:\opa
+   
+   # Download OPA
+   Invoke-WebRequest -Uri "https://openpolicyagent.org/downloads/latest/opa_windows_amd64.exe" -OutFile "opa.exe"
+   ```
+
+2. Add to PATH:
+   - Open System Properties > Advanced > Environment Variables
+   - Under "System Variables", find and select "Path"
+   - Click "Edit" > "New"
+   - Add `C:\opa`
+   - Click "OK" on all windows
+
+3. Verify installation:
+   ```powershell
+   opa version
+   ```
+
+Note: Make sure to rename `opa_windows_amd64.exe` to `opa.exe` for the tool to work correctly.
+
 ---
 
 ## **📌 Usage**
@@ -171,3 +197,27 @@ Follow our **[Contribution Guide](CONTRIBUTING.md)**.
 ## **📜 License**
 This project is licensed under the **Apache 2.0 License**.  
 See [LICENSE](LICENSE) for details.
+
+## Prerequisites
+
+### Installing OPA
+This tool requires the Open Policy Agent (OPA) executable to be installed and available in your system PATH.
+
+1. Download OPA:
+   - Linux/macOS: `curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64`
+   - Windows: Download from https://openpolicyagent.org/downloads/latest/opa_windows_amd64.exe
+
+2. Make the OPA executable:
+   - Linux/macOS: `chmod 755 ./opa`
+   - Windows: Rename the downloaded file to `opa.exe`
+
+3. Move the OPA executable to a directory in your PATH:
+   - Linux/macOS: `sudo mv opa /usr/local/bin`
+   - Windows: Move `opa.exe` to a directory in your PATH or add its location to PATH
+
+4. Verify installation:
+   ```bash
+   opa version
+   ```
+
+If you see the OPA version number, the installation was successful.
