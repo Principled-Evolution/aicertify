@@ -10,10 +10,13 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "langfair @ git+https://github.com/mantric/langfair-mantric.git@python-3.12-support",
-    "fastapi (>=0.115.8,<0.116.0)",
-    "uvicorn (>=0.34.0,<0.35.0)",
-    "opa (>=0.1,<0.2)",
-    "requests (>=2.32.3,<3.0.0)"
+    "fastapi>=0.115.8,<0.116.0",
+    "uvicorn>=0.34.0,<0.35.0",
+    "opa-python-client>=0.1.0",
+    "requests>=2.32.3,<3.0.0",
+    "python-dotenv>=1.0.0",
+    "pandas>=2.2.0",
+    "langchain-openai>=0.0.5"
 ]
 
 
@@ -32,3 +35,14 @@ repository = "https://github.com/mantric/aicertify"
 
 # ✅ This ensures Poetry installs the package correctly
 packages = [{ include = "aicertify" }]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+fastapi = ">=0.115.8,<0.116.0"
+uvicorn = ">=0.34.0,<0.35.0"
+requests = ">=2.32.3,<3.0.0"
+opa-python-client = ">=0.1.0"
+langfair = {git = "https://github.com/mantric/langfair-mantric.git", branch = "python-3.12-support"}
+python-dotenv = ">=1.0.0"
+pandas = ">=2.2.0"
+langchain-openai = ">=0.0.5"

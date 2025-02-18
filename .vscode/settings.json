@@ -7,7 +7,8 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         ".gitignore": true,
-        ".vscode": true
+        ".vscode": true,
+        "aicertify/__pycache__": true
     },
     "hide-files.files": []
 }

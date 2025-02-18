@@ -7,6 +7,18 @@ from core.evaluator import OpaEvaluator
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
+from langfair.metrics.toxicity import ToxicityMetrics
+
+class LangFairEvaluator:
+    def __init__(self):
+        self.tm = ToxicityMetrics()
+
+    def evaluate(self, input_data):
+        prompts = input_data.get("prompts", [])
+        responses = input_data.get("responses", [])
+        return self.tm.evaluate(prompts=prompts, responses=responses, return_data=True)
+
+
 def main():
     """CLI entry point for running AI compliance validation."""
     loader = PolicyLoader()

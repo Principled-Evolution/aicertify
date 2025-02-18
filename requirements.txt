@@ -1,5 +1,0 @@
-fastapi
-uvicorn
-opa
-requests
-langfair
