@@ -35,5 +35,11 @@ jobs:
           chmod +x opa
           sudo mv opa /usr/local/bin/
 
+      - name: List workspace contents
+        run: |
+          pwd
+          ls -la
+          find . -name "cli.py"
+
       - name: Run AI Policy Validation
-        run: poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
+        run: poetry run python aicertify/cli/cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
