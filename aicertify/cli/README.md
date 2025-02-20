@@ -9,3 +9,5 @@ python -m aicertify.cli.evaluate evaluate --log-dir ./logs --days 7
 
 # Save results to custom directory
 python -m aicertify.cli.evaluate evaluate --log-dir ./logs --output ./evaluations
+
+poetry run python cli\cli.py eval-folder --app-name "CareerCoachAI Interactive Session" --folder examples\pydanticai\contracts\. --output examples\pydanticai\eval_outputs\

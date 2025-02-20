@@ -124,4 +124,34 @@ def aggregate_contracts(contract_files: List[str]) -> Dict[str, Any]:
             invalid_count += 1
     aggregated["valid"] = valid_count
     aggregated["invalid"] = invalid_count
-    return aggregated 
+    return aggregated
+
+
+# === Added OPA Compliance Models ===
+
+from typing import Optional, Dict, Any
+from pydantic import BaseModel, Field
+from contract_models import AiCertifyContract
+
+
+class AiEvaluationResult(BaseModel):
+    """Captures the final or aggregated results from multiple evaluators,
+    e.g. fairness, toxicity, PII scanning, security checks, etc."""
+    contract_id: str
+    application_name: str
+    fairness_metrics: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Consolidated fairness data (toxicity, stereotype, etc.)"
+    )
+    pii_detected: Optional[bool] = None
+    pii_details: Optional[Dict[str, Any]] = None
+    security_findings: Optional[Dict[str, Any]] = None
+    summary_text: Optional[str] = None
+    aggregated_from_contract_count: Optional[int] = None
+    evaluation_mode: Optional[str] = None
+
+
+class AiComplianceInput(BaseModel):
+    """The final input to OPA, bundling contract and evaluation results."""
+    contract: AiCertifyContract
+    evaluation: AiEvaluationResult 

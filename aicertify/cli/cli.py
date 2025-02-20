@@ -7,8 +7,8 @@ from pathlib import Path
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-from aicertify.core.policy_loader import PolicyLoader
-from aicertify.core.evaluator import OpaEvaluator
+from aicertify.opa_core.policy_loader import PolicyLoader
+from aicertify.opa_core.evaluator import OpaEvaluator
 from langfair.metrics.toxicity import ToxicityMetrics
 
 
@@ -113,9 +113,9 @@ def main():
     elif args.command == "eval-folder":
         # Run consolidated LangFair evaluation on a folder of contract JSON files
         try:
-            from aicertify.evaluators.evaluate_contract_langfair import evaluate_app_folder
+            from aicertify.system_evaluators.evaluate_contract_langfair import evaluate_app_folder
         except ImportError:
-            logging.error("Cannot import evaluate_app_folder from aicertify.evaluators.evaluate_contract_langfair")
+            logging.error("Cannot import evaluate_app_folder from aicertify.system_evaluators.evaluate_contract_langfair")
             return
         result = asyncio.run(evaluate_app_folder(args.app_name, args.folder, args.output))
         logging.info("Consolidated Evaluation Result:")
