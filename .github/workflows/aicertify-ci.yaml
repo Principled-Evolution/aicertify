@@ -35,6 +35,33 @@ jobs:
           chmod +x opa
           sudo mv opa /usr/local/bin/
 
+      - name: Setup OPA Policies
+        run: |
+          mkdir -p opa_policies/compliance/eu_ai_act
+          cat > opa_policies/compliance/eu_ai_act/policy.rego << 'EOF'
+          package compliance.eu_ai_act
+          
+          default allow = true
+          
+          deny[msg] {
+            input.bias_score > 0.1
+            msg := "Bias score exceeds threshold"
+          }
+          EOF
+
+      - name: Setup Example Input
+        run: |
+          mkdir -p examples
+          cat > examples/input_examples.json << 'EOF'
+          {
+            "bias_score": 0.05,
+            "model_info": {
+              "name": "test-model",
+              "version": "1.0"
+            }
+          }
+          EOF
+
       - name: List workspace contents
         run: |
           pwd
