@@ -6,7 +6,7 @@ from typing import Optional
 
 from aicertify.models.contract_models import AiCertifyContract
 from aicertify.models.langfair_eval import AutoEvalInput
-from aicertify.evaluators.langfair_auto_eval import evaluate_ai_responses
+from aicertify.system_evaluators.langfair_auto_eval import evaluate_ai_responses
 
 logger = logging.getLogger(__name__)
 

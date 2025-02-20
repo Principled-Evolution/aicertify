@@ -87,8 +87,14 @@ poetry install --no-root  # Install dependencies without packaging
 
 ### **⚡ 3️⃣ Quick Start**
 ```bash
-# Run validation CLI
-poetry run python cli.py --category compliance/eu_ai_act --input examples/input_examples.json
+# Run validation CLI using Poetry:
+poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
+
+# To perform folder evaluation:
+poetry run python cli.py eval-folder --app-name "CareerCoachAI" --folder examples/pydanticai/contracts --output examples/pydanticai/eval_outputs/
+
+# To run the complete evaluation pipeline (consolidated evaluation + OPA policy validation):
+poetry run python cli.py eval-all --app-name "CareerCoachAI Interactive Session" --folder examples/pydanticai/contracts --output consolidated_eval.json --category compliance/fairness
 
 # Start API service
 poetry run uvicorn service:app --reload
@@ -99,17 +105,23 @@ poetry run uvicorn service:app --reload
 ## **📌 Usage**
 ### **1️⃣ Validate an AI Application via CLI**
 ```bash
-python cli.py --category compliance/eu_ai_act --input examples/input_examples.json
+poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
 ```
 
 ### **2️⃣ Run AICertify as an API Service**
 ```bash
-uvicorn service:app --reload
+poetry run uvicorn service:app --reload
 ```
 
 ### **3️⃣ Test API with a Request**
 ```bash
 curl -X POST "http://localhost:8000/validate" -H "Content-Type: application/json" -d '{"category": "compliance/eu_ai_act", "input_data": {"bias_score": 0.03}}'
+```
+
+### **4️⃣ Combined Evaluation via CLI (eval-all)**
+This subcommand runs the consolidated evaluation on a folder of contracts and then applies OPA policy evaluation on the consolidated output.
+```bash
+poetry run python cli.py eval-all --app-name "CareerCoachAI Interactive Session" --folder examples/pydanticai/contracts --output consolidated_eval.json --category compliance/fairness
 ```
 
 ---
@@ -133,7 +145,7 @@ allow {
 ```
 **Run Test**:
 ```bash
-python cli.py --category compliance/eu_ai_act --input examples/input_examples.json
+poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
 ```
 
 ---
@@ -172,7 +184,7 @@ Follow our **[Contribution Guide](CONTRIBUTING.md)**.
    ```
 3. **Test Changes**
    ```bash
-   python cli.py --category compliance/eu_ai_act --input examples/input_examples.json
+   poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
    ```
 4. **Submit a Pull Request (PR)**.
 

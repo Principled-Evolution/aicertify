@@ -6,7 +6,7 @@ from pathlib import Path
 class PolicyLoader:
     """Loads OPA policies from the policies directory."""
     
-    def __init__(self, policies_dir: str = "policies"):
+    def __init__(self, policies_dir: str = "opa_policies"):
         self.policies_dir = Path(policies_dir)
         self.policies = self._load_policies()
         

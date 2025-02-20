@@ -22,7 +22,13 @@ class OpaEvaluator:
         """
         logging.info("Checking for OPA installation...")
         
-        # First try the standard "opa" or "opa.exe"
+        # Force using the OPA executable at "C:/opa/opa_windows_amd64.exe" if it exists
+        fixed_path = Path("C:/opa/opa_windows_amd64.exe")
+        if fixed_path.is_file():
+            logging.info(f"Found OPA at fixed path: {fixed_path.as_posix()}")
+            return fixed_path.as_posix()
+        
+        # Otherwise, try the standard "opa" or "opa.exe"
         opa_path = shutil.which("opa")
         logging.info(f"Standard OPA path check result: {opa_path}")
         
@@ -83,20 +89,21 @@ class OpaEvaluator:
             
         return opa_path
     
-    def evaluate_policy(self, policy_path: str, input_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def evaluate_policy(self, policy_path: str, input_data: Dict[str, Any], query: str = "data.compliance.fairness.compliance_report") -> Optional[Dict[str, Any]]:
         """
         Evaluate an OPA policy against input data.
         
         Args:
             policy_path: Path to the .rego policy file
             input_data: Dictionary containing the input data
+            query: Optional query parameter for the OPA evaluation
             
         Returns:
             Dictionary containing evaluation results or None if evaluation fails
         """
         try:
-            # Convert relative path to absolute path
-            abs_policy_path = str(Path(policy_path).resolve())
+            # Convert relative path to absolute path in POSIX format (avoiding Windows backslash issues)
+            abs_policy_path = Path(policy_path).resolve().as_posix()
             logging.info(f"Policy file path: {abs_policy_path}")
             
             # Verify policy file exists
@@ -108,28 +115,16 @@ class OpaEvaluator:
             input_json = json.dumps(input_data)
             logging.info(f"Input data: {input_json}")
             
-            # First check if policy compiles
-            check_cmd = [
-                self.opa_path,
-                "check",
-                abs_policy_path
-            ]
-            logging.info(f"Checking policy: {check_cmd}")
-            check_result = subprocess.run(check_cmd, capture_output=True, text=True)
-            if check_result.returncode != 0:
-                logging.error(f"Policy check failed: {check_result.stderr}")
-                return None
-            
-            # Now evaluate the policy
+            # Evaluate the policy using OPA
             cmd = [
-                self.opa_path, 
-                "eval", 
-                "--data", 
+                self.opa_path,
+                "eval",
+                query,  # Positional query argument
+                "-d",
                 abs_policy_path,
-                "--format", 
+                "--format",
                 "json",
-                "--stdin-input",
-                "data.compliance.eu_ai_act.allow"  # Query for the allow rule
+                "--stdin-input"
             ]
             logging.info(f"Executing command: {cmd}")
             
