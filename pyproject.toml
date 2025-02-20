@@ -16,7 +16,8 @@ dependencies = [
     "requests>=2.32.3,<3.0.0",
     "python-dotenv>=1.0.0",
     "pandas>=2.2.0",
-    "langchain-openai>=0.0.5"
+    "langchain-openai>=0.0.5",
+    "pydantic-ai (>=0.0.24,<0.0.25)"
 ]
 
 
