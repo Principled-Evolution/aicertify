@@ -1,0 +1,49 @@
+[project]
+name = "aicertify"
+version = "0.1.0"
+description = "AICertify is a standardized framework for validating and certifying AI applications against regulatory, compliance, and operational (AIOps) requirements. It leverages declarative policies via Open Policy Agent (OPA)—to ensure AI systems meet cost, fairness, validation, and acceptance criteria."
+authors = [
+    {name = "kmadan",email = "kapil.madan@gmail.com"}
+]
+license = {text = "\"Apache-2.0\""}
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "langfair @ git+https://github.com/mantric/langfair-mantric.git@python-3.12-support",
+    "fastapi>=0.115.8,<0.116.0",
+    "uvicorn>=0.34.0,<0.35.0",
+    "opa-python-client>=0.1.0",
+    "requests>=2.32.3,<3.0.0",
+    "python-dotenv>=1.0.0",
+    "pandas>=2.2.0",
+    "langchain-openai>=0.0.5",
+    "pydantic-ai (>=0.0.24,<0.0.25)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "aicertify"
+version = "0.1.0"
+description = "A framework for validating and certifying AI applications"
+authors = ["kmadan <kapil.madan@gmail.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/mantric/aicertify"
+
+# ✅ This ensures Poetry installs the package correctly
+packages = [{ include = "aicertify" }]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+fastapi = ">=0.115.8,<0.116.0"
+uvicorn = ">=0.34.0,<0.35.0"
+requests = ">=2.32.3,<3.0.0"
+opa-python-client = ">=0.1.0"
+langfair = {git = "https://github.com/mantric/langfair-mantric.git", branch = "python-3.12-support"}
+python-dotenv = ">=1.0.0"
+pandas = ">=2.2.0"
+langchain-openai = ">=0.0.5"

@@ -5,7 +5,13 @@
         "**/.hg": true,
         "**/CVS": true,
         "**/.DS_Store": true,
-        "**/Thumbs.db": true
+        "**/Thumbs.db": true,
+        ".vscode": true,
+        "aicertify/__pycache__": true,
+        "aicertify/decorators-phase-2": true,
+        "aicertify/decorators-phase-2/base.py": true,
+        "aicertify/__init__.py": true,
+        ".venv": true
     },
     "hide-files.files": []
 }

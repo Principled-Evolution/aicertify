@@ -53,48 +53,46 @@ graph TD
 
 ## **📌 Installation**
 ### **🔧 1️⃣ Install Open Policy Agent (OPA)**
+**Linux/macOS:**
 ```bash
 curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64
 chmod +x opa
 sudo mv opa /usr/local/bin/
 ```
+
+**Windows:**
+```powershell
+# Create directory for OPA
+mkdir C:\opa
+cd C:\opa
+
+# Download OPA
+Invoke-WebRequest -Uri "https://openpolicyagent.org/downloads/latest/opa_windows_amd64.exe" -OutFile "opa.exe"
+
+# Add to PATH
+[Environment]::SetEnvironmentVariable("Path", "$env:Path;C:\opa", "Machine")
+```
+
 Verify installation:
 ```bash
 opa version
 ```
 
-### **🐍 2️⃣ Install Python Dependencies**
+### **🐍 2️⃣ Install Python Dependencies with Poetry**
 ```bash
 git clone https://github.com/mantric/AICertify.git
 cd AICertify
-pip install -r requirements.txt
+poetry install --no-root  # Install dependencies without packaging
 ```
 
-### **💻 3️⃣ Install Open Policy Agent (OPA) on Windows**
+### **⚡ 3️⃣ Quick Start**
+```bash
+# Run validation CLI
+poetry run python cli.py --category compliance/eu_ai_act --input examples/input_examples.json
 
-1. Download OPA:
-   ```powershell
-   # Create directory for OPA
-   mkdir C:\opa
-   cd C:\opa
-   
-   # Download OPA
-   Invoke-WebRequest -Uri "https://openpolicyagent.org/downloads/latest/opa_windows_amd64.exe" -OutFile "opa.exe"
-   ```
-
-2. Add to PATH:
-   - Open System Properties > Advanced > Environment Variables
-   - Under "System Variables", find and select "Path"
-   - Click "Edit" > "New"
-   - Add `C:\opa`
-   - Click "OK" on all windows
-
-3. Verify installation:
-   ```powershell
-   opa version
-   ```
-
-Note: Make sure to rename `opa_windows_amd64.exe` to `opa.exe` for the tool to work correctly.
+# Start API service
+poetry run uvicorn service:app --reload
+```
 
 ---
 
