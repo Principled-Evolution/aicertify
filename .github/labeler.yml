@@ -1,0 +1,51 @@
+# Issue and PR Labels
+# Format: each label has both regex patterns for content matching (for issues)
+# and path patterns (for PRs)
+
+'🐞 bug':
+  - '(?i).*\b(bug|error|failure|crash|broken|not working|doesn\'t work|isn\'t working|problem|issue|defect|fault)\b.*'
+  - any: ['**/tests/**/*', '**/src/**/*']
+    all: ['!docs/*', '!*.md']
+
+'📝 documentation':
+  - '(?i).*\b(docs?|documentation|readme|wiki|guide|tutorial|example)\b.*'
+  - any: ['docs/**/*', '**/*.md', '**/README.md', '**/CONTRIBUTING.md']
+
+'❌ duplicate':
+  - '(?i).*\b(duplicat(e|ed)|already exists|similar to|same as)\b.*'
+
+'🚀 enhancement':
+  - '(?i).*\b(enhancement|feature request|new feature|improvement|suggest|proposal|idea)\b.*'
+  - any: ['**/feature/**/*', '**/enhancement/**/*']
+
+'🤝 good first issue':
+  - '(?i).*\b(good first issue|beginner friendly|easy|starter|newcomer|first timer)\b.*'
+  - any: ['examples/**/*', 'docs/**/*']
+
+'🏗️ help wanted':
+  - '(?i).*\b(help wanted|need help|assistance needed|looking for help|support needed)\b.*'
+
+'🚧 in progress':
+  - '(?i).*\b(in progress|wip|working on|ongoing|under development|implementing)\b.*'
+  - any: ['**/wip/**/*']
+
+'⚠️ invalid':
+  - '(?i).*\b(invalid|incorrect|wrong|mistake|not right|inappropriate|malformed)\b.*'
+
+'🔄 needs testing':
+  - '(?i).*\b(needs? testing|test required|verification needed|qa|quality assurance|test coverage)\b.*'
+  - any: ['**/tests/**/*', '**/__tests__/**/*', '**/*.test.*', '**/*.spec.*']
+
+'❓ question':
+  - '(?i).*(\?|question|how to|what is|when|where|why|who|how do|can someone|is there|are there).*'
+  - any: ['docs/**/*', '.github/ISSUE_TEMPLATE/question.md']
+
+'🛡️ security':
+  - '(?i).*\b(security|vulnerability|exploit|cve|sensitive|auth|authentication|authorization|permission)\b.*'
+  - any: ['**/security/**/*', '**/auth/**/*', '**/authentication/**/*']
+
+'⏳ waiting for feedback':
+  - '(?i).*\b(waiting for|awaiting|pending|need feedback|need response|need clarification|need more info)\b.*'
+
+'🚫 won't fix':
+  - '(?i).*\b(wont fix|won\'t fix|will not fix|not fixing|declined|rejected|intended behavior)\b.*'
