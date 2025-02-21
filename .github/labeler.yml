@@ -1,51 +1,51 @@
-# Bug label - matches common bug-related terms and descriptions
+# Issue and PR Labels
+# Format: each label has both regex patterns for content matching (for issues)
+# and path patterns (for PRs)
+
 '🐞 bug':
-  - '(bug|error|failure|crash|broken|not working|doesn\'t work|isn\'t working|problem|issue|defect|fault)'
+  - '(?i).*\b(bug|error|failure|crash|broken|not working|doesn\'t work|isn\'t working|problem|issue|defect|fault)\b.*'
+  - any: ['**/tests/**/*', '**/src/**/*']
+    all: ['!docs/*', '!*.md']
 
-# Documentation label - matches documentation-related terms
 '📝 documentation':
-  - '(docs?|documentation|readme|wiki|guide|tutorial|example)'
+  - '(?i).*\b(docs?|documentation|readme|wiki|guide|tutorial|example)\b.*'
+  - any: ['docs/**/*', '**/*.md', '**/README.md', '**/CONTRIBUTING.md']
 
-# Duplicate label - matches duplicate-related terms
 '❌ duplicate':
-  - '(duplicat(e|ed)|already exists|similar to|same as)'
+  - '(?i).*\b(duplicat(e|ed)|already exists|similar to|same as)\b.*'
 
-# Enhancement label - matches feature request terms
 '🚀 enhancement':
-  - '(enhancement|feature request|new feature|improvement|suggest|proposal|idea)'
+  - '(?i).*\b(enhancement|feature request|new feature|improvement|suggest|proposal|idea)\b.*'
+  - any: ['**/feature/**/*', '**/enhancement/**/*']
 
-# Good first issue label - matches beginner-friendly terms
 '🤝 good first issue':
-  - '(good first issue|beginner friendly|easy|starter|newcomer|first timer)'
+  - '(?i).*\b(good first issue|beginner friendly|easy|starter|newcomer|first timer)\b.*'
+  - any: ['examples/**/*', 'docs/**/*']
 
-# Help wanted label - matches assistance-seeking terms
 '🏗️ help wanted':
-  - '(help wanted|need help|assistance needed|looking for help|support needed)'
+  - '(?i).*\b(help wanted|need help|assistance needed|looking for help|support needed)\b.*'
 
-# In progress label - matches work-in-progress terms
 '🚧 in progress':
-  - '(in progress|wip|working on|ongoing|under development|implementing)'
+  - '(?i).*\b(in progress|wip|working on|ongoing|under development|implementing)\b.*'
+  - any: ['**/wip/**/*']
 
-# Invalid label - matches invalid-related terms
 '⚠️ invalid':
-  - '(invalid|incorrect|wrong|mistake|not right|inappropriate|malformed)'
+  - '(?i).*\b(invalid|incorrect|wrong|mistake|not right|inappropriate|malformed)\b.*'
 
-# Needs testing label - matches testing-related terms
 '🔄 needs testing':
-  - '(needs? testing|test required|verification needed|qa|quality assurance|test coverage)'
+  - '(?i).*\b(needs? testing|test required|verification needed|qa|quality assurance|test coverage)\b.*'
+  - any: ['**/tests/**/*', '**/__tests__/**/*', '**/*.test.*', '**/*.spec.*']
 
-# Question label - matches question-related patterns
 '❓ question':
-  - '(\?|question|how to|what is|when|where|why|who|how do|can someone|is there|are there)'
+  - '(?i).*(\?|question|how to|what is|when|where|why|who|how do|can someone|is there|are there).*'
+  - any: ['docs/**/*', '.github/ISSUE_TEMPLATE/question.md']
 
-# Security label - matches security-related terms
 '🛡️ security':
-  - '(security|vulnerability|exploit|cve|sensitive|auth|authentication|authorization|permission)'
+  - '(?i).*\b(security|vulnerability|exploit|cve|sensitive|auth|authentication|authorization|permission)\b.*'
+  - any: ['**/security/**/*', '**/auth/**/*', '**/authentication/**/*']
 
-# Waiting for feedback label - matches feedback-related terms
 '⏳ waiting for feedback':
-  - '(waiting for|awaiting|pending|need feedback|need response|need clarification|need more info)'
+  - '(?i).*\b(waiting for|awaiting|pending|need feedback|need response|need clarification|need more info)\b.*'
 
-# Won't fix label - matches won't-fix-related terms
 '🚫 won't fix':
-  - '(wont fix|won\'t fix|will not fix|not fixing|declined|rejected|intended behavior)'
+  - '(?i).*\b(wont fix|won\'t fix|will not fix|not fixing|declined|rejected|intended behavior)\b.*'
