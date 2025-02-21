@@ -24,7 +24,7 @@ DISCLAIMER_FULL = (
 )
 
 # Short disclaimer text for footers.
-DISCLAIMER_SHORT = "Disclaimer: Informational only; no warranty or liability. See full disclaimer on page 2."
+DISCLAIMER_SHORT = "Disclaimer: Informational only; no warranty or liability. See full disclaimer in the report."
 
 def convert_bold(text: str) -> str:
     """
