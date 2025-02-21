@@ -1,0 +1,51 @@
+# Bug label - matches common bug-related terms and descriptions
+'🐞 bug':
+  - '(bug|error|failure|crash|broken|not working|doesn\'t work|isn\'t working|problem|issue|defect|fault)'
+
+# Documentation label - matches documentation-related terms
+'📝 documentation':
+  - '(docs?|documentation|readme|wiki|guide|tutorial|example)'
+
+# Duplicate label - matches duplicate-related terms
+'❌ duplicate':
+  - '(duplicat(e|ed)|already exists|similar to|same as)'
+
+# Enhancement label - matches feature request terms
+'🚀 enhancement':
+  - '(enhancement|feature request|new feature|improvement|suggest|proposal|idea)'
+
+# Good first issue label - matches beginner-friendly terms
+'🤝 good first issue':
+  - '(good first issue|beginner friendly|easy|starter|newcomer|first timer)'
+
+# Help wanted label - matches assistance-seeking terms
+'🏗️ help wanted':
+  - '(help wanted|need help|assistance needed|looking for help|support needed)'
+
+# In progress label - matches work-in-progress terms
+'🚧 in progress':
+  - '(in progress|wip|working on|ongoing|under development|implementing)'
+
+# Invalid label - matches invalid-related terms
+'⚠️ invalid':
+  - '(invalid|incorrect|wrong|mistake|not right|inappropriate|malformed)'
+
+# Needs testing label - matches testing-related terms
+'🔄 needs testing':
+  - '(needs? testing|test required|verification needed|qa|quality assurance|test coverage)'
+
+# Question label - matches question-related patterns
+'❓ question':
+  - '(\?|question|how to|what is|when|where|why|who|how do|can someone|is there|are there)'
+
+# Security label - matches security-related terms
+'🛡️ security':
+  - '(security|vulnerability|exploit|cve|sensitive|auth|authentication|authorization|permission)'
+
+# Waiting for feedback label - matches feedback-related terms
+'⏳ waiting for feedback':
+  - '(waiting for|awaiting|pending|need feedback|need response|need clarification|need more info)'
+
+# Won't fix label - matches won't-fix-related terms
+'🚫 won't fix':
+  - '(wont fix|won\'t fix|will not fix|not fixing|declined|rejected|intended behavior)'
