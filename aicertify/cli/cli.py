@@ -3,6 +3,7 @@ import asyncio
 import json
 import logging
 from pathlib import Path
+import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -10,6 +11,11 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator
 from langfair.metrics.toxicity import ToxicityMetrics
+from aicertify.report_generation.report_generator import ReportGenerator
+from aicertify.report_generation.report_models import (
+    EvaluationReport, ApplicationDetails,
+    MetricGroup, MetricValue, PolicyResult
+)
 
 
 class LangFairEvaluator:
@@ -26,6 +32,9 @@ def main():
     """
     AICertify CLI Entry Point.
     
+    Disclaimer: This software and its generated reports are provided "AS IS", without any warranty or guarantee 
+    of legal compliance. The generated reports include explicit disclaimer sections as per industry best practices.
+    
     Subcommand 'eval-policy':
       Evaluate an input JSON file against OPA policies.
     
@@ -37,7 +46,8 @@ def main():
       Run consolidated evaluation on a folder and then evaluate OPA policies on the result.
     """
     parser = argparse.ArgumentParser(
-        description="AICertify CLI: Validate AI applications and run evaluations."
+        description="AICertify CLI: Validate AI applications and run evaluations. "
+                    "Disclaimer: This software is provided 'AS IS' with no warranty. Consult legal counsel for compliance."
     )
     subparsers = parser.add_subparsers(dest="command", required=True, help="Sub-commands")
 
@@ -112,6 +122,16 @@ def main():
         choices=available_categories,
         required=True,
         help=f"Policy category to evaluate. Available: {available_categories}"
+    )
+    all_parser.add_argument(
+        "--report-md",
+        type=str,
+        help="Optional path to output Markdown report file."
+    )
+    all_parser.add_argument(
+        "--report-pdf",
+        type=str,
+        help="Optional path to output PDF report file. Requires markdown and WeasyPrint libraries."
     )
 
     args = parser.parse_args()
@@ -202,6 +222,137 @@ def main():
         }
         print("Combined Evaluation Result:")
         print(json.dumps(combined, indent=4))
+
+        # Convert evaluation results to report model
+        def create_evaluation_report(consolidated_result: dict, opa_results: dict) -> EvaluationReport:
+            """Convert evaluation results to the report model structure."""
+            metrics = consolidated_result.get("metrics", {})
+            
+            # Create fairness metrics group
+            fairness_metrics = [
+                MetricValue(
+                    name="ftu_satisfied",
+                    display_name="FTU Satisfied",
+                    value=metrics.get("ftu_satisfied", "N/A")
+                ),
+                MetricValue(
+                    name="race_words_count",
+                    display_name="Race Words Count",
+                    value=metrics.get("race_words_count", "N/A")
+                ),
+                MetricValue(
+                    name="gender_words_count",
+                    display_name="Gender Words Count",
+                    value=metrics.get("gender_words_count", "N/A")
+                )
+            ]
+            
+            # Create toxicity metrics group
+            toxicity_data = metrics.get("toxicity", {})
+            toxicity_metrics = [
+                MetricValue(
+                    name="toxic_fraction",
+                    display_name="Toxic Fraction",
+                    value=toxicity_data.get("toxic_fraction", "N/A")
+                ),
+                MetricValue(
+                    name="max_toxicity",
+                    display_name="Max Toxicity",
+                    value=toxicity_data.get("max_toxicity", "N/A")
+                ),
+                MetricValue(
+                    name="toxicity_probability",
+                    display_name="Toxicity Probability",
+                    value=toxicity_data.get("toxicity_probability", "N/A")
+                )
+            ]
+            
+            # Create stereotype metrics group
+            stereotype_data = metrics.get("stereotype", {})
+            stereotype_metrics = [
+                MetricValue(
+                    name="gender_bias",
+                    display_name="Gender Bias Detected",
+                    value=stereotype_data.get("gender_bias_detected", "N/A")
+                ),
+                MetricValue(
+                    name="racial_bias",
+                    display_name="Racial Bias Detected",
+                    value=stereotype_data.get("racial_bias_detected", "N/A")
+                )
+            ]
+            
+            # Create policy results
+            policy_results = []
+            for policy_name, result in opa_results.items():
+                try:
+                    allow_value = result["result"][0]["expressions"][0]["value"]["allow"]
+                    policy_results.append(
+                        PolicyResult(
+                            name=policy_name,
+                            result=allow_value,
+                            details={"raw_result": result}
+                        )
+                    )
+                except Exception:
+                    policy_results.append(
+                        PolicyResult(
+                            name=policy_name,
+                            result=False,
+                            details={"error": "Failed to parse result"}
+                        )
+                    )
+            
+            return EvaluationReport(
+                app_details=ApplicationDetails(
+                    name=consolidated_result.get("app_name", "N/A"),
+                    evaluation_mode=consolidated_result.get("evaluation_mode", "N/A"),
+                    contract_count=consolidated_result.get("combined_contract_count", 0),
+                    evaluation_date=datetime.datetime.now()
+                ),
+                metric_groups=[
+                    MetricGroup(
+                        name="fairness",
+                        display_name="Fairness Metrics",
+                        metrics=fairness_metrics
+                    ),
+                    MetricGroup(
+                        name="toxicity",
+                        display_name="Toxicity Metrics",
+                        metrics=toxicity_metrics
+                    ),
+                    MetricGroup(
+                        name="stereotype",
+                        display_name="Stereotype Metrics",
+                        metrics=stereotype_metrics
+                    )
+                ],
+                policy_results=policy_results,
+                summary=consolidated_result.get("summary", "")
+            )
+
+        # Generate reports if requested
+        if args.report_md or args.report_pdf:
+            report_gen = ReportGenerator()
+            evaluation_report = create_evaluation_report(consolidated_result, opa_results)
+            
+            if args.report_md:
+                markdown_report = report_gen.generate_markdown_report(evaluation_report)
+                try:
+                    if report_gen.save_markdown_report(markdown_report, args.report_md):
+                        logging.info(f"Markdown report generated at: {args.report_md}")
+                    else:
+                        logging.error("Failed to generate Markdown report")
+                except Exception as e:
+                    logging.error(f"Failed to write Markdown report: {e}")
+
+            if args.report_pdf:
+                if 'markdown_report' not in locals():
+                    markdown_report = report_gen.generate_markdown_report(evaluation_report)
+                if report_gen.generate_pdf_report(markdown_report, args.report_pdf):
+                    logging.info(f"PDF report generated at: {args.report_pdf}")
+                else:
+                    logging.error("Failed to generate PDF report")
 
 
 if __name__ == "__main__":
