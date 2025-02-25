@@ -12,10 +12,8 @@
         "aicertify/decorators-phase-2/base.py": true,
         "aicertify/__init__.py": true,
         ".venv": true,
-        ".cursorrules": true,
-        "aicertify/opa_core/__pycache__": true,
-        "aicertify/system_evaluators/__pycache__": true,
-        "aicertify/models/__pycache__": true
+        "aicertify/models/__pycache__": true,
+        "aicertify/opa_core/__init__.py": true
     },
     "hide-files.files": []
 }
