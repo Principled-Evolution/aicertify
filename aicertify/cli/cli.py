@@ -4,6 +4,8 @@ import json
 import logging
 from pathlib import Path
 import datetime
+from decimal import Decimal
+from typing import Any, Dict, Union
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -18,6 +20,22 @@ from aicertify.report_generation.report_models import (
 )
 
 
+class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder to handle Decimal and float values with full precision"""
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return str(obj)
+        return super().default(obj)
+
+
+def format_metric_value(value: Any) -> Union[str, bool, int]:
+    """Format metric values maintaining precision for floats"""
+    if isinstance(value, (float, Decimal)):
+        # Convert to string with full precision
+        return str(value)
+    return value
+
+
 class LangFairEvaluator:
     def __init__(self):
         self.tm = ToxicityMetrics()
@@ -26,6 +44,11 @@ class LangFairEvaluator:
         prompts = input_data.get("prompts", [])
         responses = input_data.get("responses", [])
         return self.tm.evaluate(prompts=prompts, responses=responses, return_data=True)
+
+
+def print_json_result(data: Dict[str, Any]) -> None:
+    """Print JSON data with custom encoder for full precision"""
+    print(json.dumps(data, indent=4, cls=CustomJSONEncoder))
 
 
 def main():
@@ -44,6 +67,9 @@ def main():
     
     Subcommand 'eval-all':
       Run consolidated evaluation on a folder and then evaluate OPA policies on the result.
+    
+    Subcommand 'eval-evil-twins':
+      Run and evaluate biased AI examples to verify non-zero metrics in Langfair.
     """
     parser = argparse.ArgumentParser(
         description="AICertify CLI: Validate AI applications and run evaluations. "
@@ -133,6 +159,13 @@ def main():
         type=str,
         help="Optional path to output PDF report file. Requires markdown and WeasyPrint libraries."
     )
+    
+    # Register the eval-evil-twins command
+    try:
+        from aicertify.cli.evil_twins_command import register_evil_twins_command
+        register_evil_twins_command(subparsers)
+    except ImportError as e:
+        logging.debug(f"Evil twins command not registered: {e}")
 
     args = parser.parse_args()
 
@@ -233,17 +266,17 @@ def main():
                 MetricValue(
                     name="ftu_satisfied",
                     display_name="FTU Satisfied",
-                    value=metrics.get("ftu_satisfied", "N/A")
+                    value=format_metric_value(metrics.get("ftu_satisfied", "N/A"))
                 ),
                 MetricValue(
                     name="race_words_count",
                     display_name="Race Words Count",
-                    value=metrics.get("race_words_count", "N/A")
+                    value=format_metric_value(metrics.get("race_words_count", "N/A"))
                 ),
                 MetricValue(
                     name="gender_words_count",
                     display_name="Gender Words Count",
-                    value=metrics.get("gender_words_count", "N/A")
+                    value=format_metric_value(metrics.get("gender_words_count", "N/A"))
                 )
             ]
             
@@ -253,17 +286,17 @@ def main():
                 MetricValue(
                     name="toxic_fraction",
                     display_name="Toxic Fraction",
-                    value=toxicity_data.get("toxic_fraction", "N/A")
+                    value=format_metric_value(toxicity_data.get("toxic_fraction", "N/A"))
                 ),
                 MetricValue(
                     name="max_toxicity",
                     display_name="Max Toxicity",
-                    value=toxicity_data.get("max_toxicity", "N/A")
+                    value=format_metric_value(toxicity_data.get("max_toxicity", "N/A"))
                 ),
                 MetricValue(
                     name="toxicity_probability",
                     display_name="Toxicity Probability",
-                    value=toxicity_data.get("toxicity_probability", "N/A")
+                    value=format_metric_value(toxicity_data.get("toxicity_probability", "N/A"))
                 )
             ]
             
@@ -273,12 +306,12 @@ def main():
                 MetricValue(
                     name="gender_bias",
                     display_name="Gender Bias Detected",
-                    value=stereotype_data.get("gender_bias_detected", "N/A")
+                    value=format_metric_value(stereotype_data.get("gender_bias_detected", "N/A"))
                 ),
                 MetricValue(
                     name="racial_bias",
                     display_name="Racial Bias Detected",
-                    value=stereotype_data.get("racial_bias_detected", "N/A")
+                    value=format_metric_value(stereotype_data.get("racial_bias_detected", "N/A"))
                 )
             ]
             
@@ -353,6 +386,30 @@ def main():
                     logging.info(f"PDF report generated at: {args.report_pdf}")
                 else:
                     logging.error("Failed to generate PDF report")
+
+        # Print raw evaluation results with full precision
+        print("\nRaw Evaluation Results:")
+        print_json_result(consolidated_result)
+        print("\nOPA Evaluation Results:")
+        print_json_result(opa_results)
+        
+    elif args.command == "eval-evil-twins":
+        # Run and evaluate evil twin examples
+        try:
+            from aicertify.cli.evil_twins_command import handle_evil_twins_command
+            result = asyncio.run(handle_evil_twins_command(args))
+            logging.info("Evil Twins Evaluation Result:")
+            print_json_result(result)
+        except ImportError as e:
+            logging.error(f"Cannot run evil twins evaluation: {e}")
+            print("\nThe eval-evil-twins command requires additional dependencies:")
+            print("  - pydantic_ai: For running AI examples")
+            print("  - langfair: For evaluation metrics")
+            print("\nYou can install them with:")
+            print("  pip install pydantic_ai langfair")
+            print("\nOr run with the --install-deps flag to install them automatically:")
+            print("  python -m aicertify.cli.cli eval-evil-twins --install-deps")
+            return
 
 
 if __name__ == "__main__":

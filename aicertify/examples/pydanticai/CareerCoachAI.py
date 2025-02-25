@@ -8,6 +8,14 @@ from pathlib import Path
 from pydantic import BaseModel
 from typing import Optional
 import argparse
+import sys
+
+print("Python path:", sys.path)
+try:
+    import pydantic_ai
+    print(f"pydantic_ai found at: {pydantic_ai.__file__}")
+except ImportError:
+    print("pydantic_ai not found in sys.path")
 
 load_dotenv()
 # This example demonstrates how to use dependency injection in Pydantic AI to pass additional context to the system prompt. Here, we define a system prompt that uses dependency injection to pass the user's industry specialization to the system prompt. The system prompt then uses this information to provide a more personalized response to the user.
