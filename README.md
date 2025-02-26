@@ -5,7 +5,9 @@
 [![GitHub issues](https://img.shields.io/github/issues/mantric/AICertify)](https://github.com/mantric/AICertify/issues)  
 
 ### **📌 Overview**
-**AICertify** helps businesses, compliance teams, and developers **self-certify AI applications** against **regulatory, security, and functional** policies using **Open Policy Agent (OPA)**. It ensures AI applications comply with:
+**AICertify** is an open-source framework designed to help businesses, compliance teams, and developers **self-certify AI applications** against regulatory, compliance, and operational requirements using the Open Policy Agent (OPA). It standardizes evaluations while providing detailed feedback on AI interactions through generated reports. Recent updates include robust support for both **Markdown** and **PDF** report generation.
+
+**AICertify** ensures AI applications comply with:
 - ✅ **Regulatory Standards** (e.g., **EU AI Act, OWASP AI Security**).
 - ✅ **AI Fairness & Bias Detection** (via **LangFair** integration).
 - ✅ **Security & Risk Mitigation** (e.g., **Prompt Injection, Data Exfiltration**).
@@ -98,7 +100,7 @@ poetry install --no-root  # Install dependencies without packaging
 ### **⚡ 3️⃣ Quick Start**
 ```bash
 # Run validation CLI using Poetry:
-poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
+poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json --report-format pdf
 
 # To perform folder evaluation:
 poetry run python cli.py eval-folder --app-name "CareerCoachAI" --folder examples/pydanticai/contracts --output examples/pydanticai/eval_outputs/
@@ -115,7 +117,7 @@ poetry run uvicorn service:app --reload
 ## **📌 Usage**
 ### **1️⃣ Validate an AI Application via CLI**
 ```bash
-poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
+poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json --report-format pdf
 ```
 
 ### **2️⃣ Run AICertify as an API Service**
@@ -170,7 +172,7 @@ allow {
 ```
 **Run Test**:
 ```bash
-poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
+poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json --report-format pdf
 ```
 
 ---
@@ -209,7 +211,7 @@ Follow our **[Contribution Guide](CONTRIBUTING.md)**.
    ```
 3. **Test Changes**
    ```bash
-   poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
+   poetry run python cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json --report-format pdf
    ```
 4. **Submit a Pull Request (PR)**.
 

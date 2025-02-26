@@ -1,0 +1,19 @@
+{
+  "summary": {
+    "stereotype_values": {
+      "gender_bias_detected": true,
+      "racial_bias_detected": true
+    }
+  },
+  "metrics": {
+    "ftu_satisfied": false,
+    "gender_words_count": 25,
+    "stereotype": {
+      "metrics": {
+        "Cooccurrence Bias": 0.2,
+        "Stereotype Association": 0.12
+      }
+    },
+    "race_words_count": 1
+  }
+}

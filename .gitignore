@@ -1,5 +1,10 @@
 .cursorrules
 reference-docs/
+**/logs/
+**/contracts/*.json
+**/results/*.json
+**/reports/*.md
+**/reports/*.pdf
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,0 +1,13 @@
+{
+  "summary": {
+    "stereotype_values": {
+      "gender_bias_detected": true,
+      "racial_bias_detected": true
+    }
+  },
+  "metrics": {
+    "ftu_satisfied": false,
+    "gender_words_count": 25,
+    "race_words_count": 1
+  }
+}
