@@ -6,6 +6,7 @@ allowing developers to integrate evaluation functionality directly into their ap
 """
 
 import os
+import sys
 import json
 import logging
 import asyncio
@@ -436,11 +437,16 @@ class AICertifyEvaluator:
         if output_format.lower() == "markdown":
             return markdown_report
         elif output_format.lower() == "pdf":
-            # Generate a temporary file path for the PDF
+            # Generate a temporary file path for the PDF (using absolute path)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            pdf_path = f"evaluation_report_{timestamp}.pdf"
+            temp_dir = Path(os.path.abspath("./temp_reports"))
+            temp_dir.mkdir(exist_ok=True, parents=True)
+            pdf_path = str(temp_dir / f"evaluation_report_{timestamp}.pdf")
+            
+            logger.info(f"Generating PDF report to temporary path: {pdf_path}")
             
             if self.report_generator.generate_pdf_report(markdown_report, pdf_path):
+                logger.info(f"PDF report successfully generated at: {pdf_path}")
                 return pdf_path
             else:
                 logger.error("Failed to generate PDF report")

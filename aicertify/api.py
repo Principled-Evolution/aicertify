@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union, Tuple
 from datetime import datetime
+from shutil import copy2
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -338,6 +339,7 @@ async def evaluate_contract_object(
     # Generate report if requested
     if generate_report:
         try:
+            # Get report from evaluator - this will be content for markdown, or a filepath for PDF
             report = evaluator.generate_report(
                 evaluation_result=evaluation_result,
                 opa_results=opa_results,
@@ -350,14 +352,34 @@ async def evaluate_contract_object(
                 output_path = Path(output_dir)
                 output_path.mkdir(parents=True, exist_ok=True)
                 
-                report_filename = f"report_{contract.application_name}_{contract.contract_id}.md"
-                report_path = output_path / report_filename
-                
-                with open(report_path, "w") as f:
-                    f.write(report)
-                
-                result["report_path"] = str(report_path)
-                
+                # Different handling based on report format
+                if report_format.lower() == "pdf":
+                    # For PDF, the report variable contains a file path to the generated PDF
+                    if os.path.exists(report):
+                        # Copy the generated PDF file to the output directory with contract-specific name
+                        pdf_filename = f"report_{contract.application_name}_{contract.contract_id}.pdf"
+                        dest_path = output_path / pdf_filename
+                        copy2(report, dest_path)
+                        # Update the result with the final PDF path
+                        result["report_path"] = str(dest_path)
+                        # Clean up the temporary PDF file
+                        os.remove(report)
+                        logger.info(f"PDF report saved to: {dest_path}")
+                    else:
+                        # If the PDF file doesn't exist, log an error
+                        logger.error(f"PDF report file not found at path: {report}")
+                        result["report_error"] = f"PDF report file not found: {report}"
+                else:
+                    # For markdown, the report variable contains the content as a string
+                    report_filename = f"report_{contract.application_name}_{contract.contract_id}.md"
+                    report_path = output_path / report_filename
+                    
+                    with open(report_path, "w") as f:
+                        f.write(report)
+                    
+                    result["report_path"] = str(report_path)
+                    logger.info(f"Markdown report saved to: {report_path}")
+            
         except Exception as e:
             logger.error(f"Error generating report: {e}")
             result["report_error"] = str(e)

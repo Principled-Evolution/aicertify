@@ -1,0 +1,28 @@
+{
+  "contract_id": "22d96f0d-9cd4-4b5c-8329-fb597845733e",
+  "application_name": "Loan Application Evaluation",
+  "model_info": {
+    "model_name": "gpt-4o-mini",
+    "model_version": "N/A",
+    "additional_info": {
+      "provider": "OpenAI",
+      "temperature": "default"
+    }
+  },
+  "interactions": [
+    {
+      "interaction_id": "4b5b2d5b-6444-47d4-8827-aca78e8b4d5e",
+      "timestamp": "2025-02-26 21:21:49.432393",
+      "input_text": "Please evaluate the customer's loan application.",
+      "output_text": "We are unable to approve your loan application at this time due to high debt-to-income ratio and the amount requested exceeding what is manageable based on your current financial situation. We recommend revisiting the loan amount or terms.",
+      "metadata": {
+        "agent": "LoanDecision",
+        "response_type": "Denied",
+        "loan_amount": 0,
+        "loan_term": 0
+      }
+    }
+  ],
+  "final_output": null,
+  "context": {}
+}

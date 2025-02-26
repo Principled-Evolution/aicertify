@@ -1,0 +1,16 @@
+{
+  "contract_id": "sample-12345",
+  "application_name": "SampleApp",
+  "interactions": [
+    {
+      "input_text": "What is the weather today?",
+      "output_text": "The weather is sunny with a high of 25°C.",
+      "metadata": {}
+    },
+    {
+      "input_text": "Tell me a joke.",
+      "output_text": "Why don't scientists trust atoms? Because they make up everything!",
+      "metadata": {}
+    }
+  ]
+} 
