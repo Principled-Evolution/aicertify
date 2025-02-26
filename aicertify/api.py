@@ -142,7 +142,7 @@ async def generate_report(
         # Create a report generator instance directly
         from aicertify.report_generation.report_generator import ReportGenerator
         
-        # Check if data extraction is available
+        # Try to use data extraction if available
         data_extraction_available = False
         try:
             from aicertify.report_generation.data_extraction import create_evaluation_report
@@ -150,7 +150,6 @@ async def generate_report(
         except ImportError:
             logger.warning("Report data extraction module not available, using fallback")
         
-        # Create evaluation report model
         if data_extraction_available:
             report_model = create_evaluation_report(evaluation_result, opa_results)
         else:
@@ -160,14 +159,7 @@ async def generate_report(
                 MetricGroup, MetricValue, PolicyResult
             )
             
-            # Extract app name
-            app_name = "Unknown Application"
-            if "app_name" in evaluation_result:
-                app_name = evaluation_result["app_name"]
-            elif "application_name" in evaluation_result:
-                app_name = evaluation_result["application_name"]
-            
-            # Create a minimal report model
+            app_name = evaluation_result.get("app_name", "Unknown")
             report_model = EvaluationReport(
                 app_details=ApplicationDetails(
                     name=app_name,
@@ -198,27 +190,24 @@ async def generate_report(
         # Get a timestamp for uniqueness
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Markdown report
+        # *** Always generate the markdown content for PDF conversion ***
+        md_content = report_gen.generate_markdown_report(report_model)
+        
+        # Markdown report generation if requested
         if "markdown" in output_formats:
-            md_content = report_gen.generate_markdown_report(report_model)
             md_path = output_dir / f"report_{app_name}_{timestamp}.md"
-            
             with open(md_path, "w") as f:
                 f.write(md_content)
-            
             report_paths["markdown"] = str(md_path)
             logger.info(f"Markdown report saved to: {md_path}")
         
-        # PDF report
+        # PDF report generation
         if "pdf" in output_formats:
-            # Use the markdown content if available
-            if "markdown" in report_paths:
-                pdf_path = output_dir / f"report_{app_name}_{timestamp}.pdf"
-                
-                pdf_result = report_gen.generate_pdf_report(md_content, str(pdf_path))
-                if pdf_result:
-                    report_paths["pdf"] = pdf_result
-                    logger.info(f"PDF report saved to: {pdf_result}")
+            pdf_path = output_dir / f"report_{app_name}_{timestamp}.pdf"
+            pdf_result = report_gen.generate_pdf_report(md_content, str(pdf_path))
+            if pdf_result:
+                report_paths["pdf"] = pdf_result
+                logger.info(f"PDF report saved to: {pdf_result}")
         
         return report_paths
     except ImportError as e:

@@ -336,43 +336,40 @@ class ToxicCareerCoachWithCertification:
                 return {"error": str(e)}
 
 
-async def main_async():
-    """Async main function to run the example"""
-    parser = argparse.ArgumentParser(description="Run the Toxic Career Coach AI with AICertify integration")
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Run the Toxic Career Coach AI with AICertify integration"
+    )
     parser.add_argument("--industries", nargs="+", default=["Technology"], 
                         help="List of industries to generate advice for")
     parser.add_argument("--response-type", choices=["toxic", "gender_biased", "racial_biased"],
                         help="Force a specific response type (toxic, gender_biased, racial_biased)")
     parser.add_argument("--dataset-name", default="aicertify/toxic-responses",
                         help="HuggingFace dataset name to use (default: aicertify/toxic-responses)")
-    parser.add_argument("--policy", default="eu_ai_act", 
+    parser.add_argument("--policy-category", type=str, default="eu_ai_act", 
                         choices=["eu_ai_act", "us_nist"],
                         help="Policy to evaluate against (default: eu_ai_act)")
     parser.add_argument("--use-simple-evaluator", action="store_true",
                         help="Use the simplified evaluator instead of the full one")
     parser.add_argument("--use-full-evaluator", action="store_true",
                         help="Use the full evaluator explicitly (overrides --use-simple-evaluator)")
-    parser.add_argument("--report-format", choices=["markdown", "pdf", "both"], default="markdown",
-                        help="Format of the evaluation report (default: markdown)")
+    parser.add_argument("--report-format", type=str, default="markdown",
+                        help="Comma separated report formats to generate (e.g. 'pdf' or 'markdown,pdf')")
     parser.add_argument("--output-dir", 
                         help="Output directory for reports (default: ./reports)")
     parser.add_argument("--skip-reports", action="store_true",
                         help="Skip report generation completely")
     
-    args = parser.parse_args()
+    return parser.parse_args()
+
+async def main_async():
+    args = parse_args()
     
-    # Determine evaluator type
-    use_simple_evaluator = args.use_simple_evaluator and not args.use_full_evaluator
+    # Convert the report format argument into a list;
+    # e.g., "pdf" becomes ["pdf"] and "markdown,pdf" becomes ["markdown", "pdf"].
+    report_formats = [fmt.strip() for fmt in args.report_format.split(",")]
     
-    # Determine report generation options
-    generate_report = not args.skip_reports
-    report_formats = []
-    if args.report_format == "markdown" or args.report_format == "both":
-        report_formats.append("markdown")
-    if args.report_format == "pdf" or args.report_format == "both":
-        report_formats.append("pdf")
-    
-    # Determine output directory
+    # Define output directory if needed (or leave as None to use default)
     output_dir = args.output_dir
     
     # Ensure we have enough industries for proper evaluation (minimum 25)
@@ -410,9 +407,8 @@ async def main_async():
             # Step 3: Evaluate the contract against policies
             print("\nEvaluating contract against policies...")
             evaluation_results = await toxic_coach.evaluate(
-                policy_category=args.policy,
-                use_simple_evaluator=use_simple_evaluator,
-                generate_report=generate_report,
+                policy_category=args.policy_category,
+                generate_report=True,
                 report_formats=report_formats,
                 output_dir=output_dir
             )
@@ -505,7 +501,7 @@ async def main_async():
                         print(f"{format_type.capitalize()} report saved to: {path}")
                 
                 # Step 4: Generate additional reports if not already generated
-                elif generate_report and not evaluation_results.get("report_error"):
+                elif True and not evaluation_results.get("report_error"):
                     print("\n----------------------------------------")
                     print("Generating Additional Reports")
                     print("----------------------------------------")

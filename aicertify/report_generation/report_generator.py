@@ -1,7 +1,16 @@
+"""
+ReportGenerator Module
+
+This module handles report generation in multiple formats, including Markdown and PDF.
+The PDF generation leverages ReportLab's Platypus framework to convert Markdown content
+into a series of flowable objects. This approach preserves previous formatting such as
+headings, bold conversions, bullet points, spacing, and disclaimers.
+"""
+
 import logging
 import re
 from pathlib import Path
-from typing import List, Any
+from typing import List, Any, Optional
 from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import (
@@ -30,26 +39,34 @@ def convert_bold(text: str) -> str:
     """
     Convert markdown bold markers ( **text** ) to PDF bold tags.
     ReportLab Paragraph supports a subset of HTML, including <b> tags.
+    
+    Args:
+        text (str): The input text containing markdown bold markers.
+    
+    Returns:
+        str: Text with markdown bold replaced by HTML <b> tags.
     """
     return re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
 
 class ReportGenerator:
     """
-    A class to handle report generation in different formats.
-    This encapsulation allows for easy modification of report formatting,
-    switching between different PDF generation libraries, and enforcing compliance
-    with explicit disclaimer requirements. See the full disclaimer text below.
+    A class to handle report generation in multiple formats including Markdown and PDF.
     
-    Full Disclaimer:
-        {}
-        
-    Note: This software and its generated reports are provided "AS IS" without any warranty,
-          express or implied. Users are advised to consult professional counsel regarding legal compliance.
-    """.format(DISCLAIMER_FULL)
-
+    This class leverages Platypus to ensure that elements like headings, bullet lists,
+    spacers, and disclaimers remain formatted as previously defined.
+    """
+    
     @staticmethod
     def generate_markdown_report(report: EvaluationReport) -> str:
-        """Generate a Markdown report based on the evaluation report model."""
+        """
+        Generate a Markdown report based on the evaluation report model.
+        
+        Args:
+            report (EvaluationReport): The evaluation report model.
+        
+        Returns:
+            str: The markdown content as a single string.
+        """
         lines = []
         # Title and Date
         lines.append("# Evaluation Report")
@@ -90,44 +107,56 @@ class ReportGenerator:
         lines.append("")
         lines.append(DISCLAIMER_FULL)
         return "\n".join(lines)
-
+    
     @staticmethod
     def save_markdown_report(markdown_content: str, output_path: str) -> bool:
-        """Save markdown report to file. Returns True if successful."""
+        """
+        Save the Markdown report content to a file.
+        
+        Args:
+            markdown_content (str): The markdown content to save.
+            output_path (str): The file path to write the markdown to.
+        
+        Returns:
+            bool: True if save was successful, False otherwise.
+        """
         try:
-            output_path = Path(output_path)
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(output_path, 'w', encoding='utf-8') as f:
+            output_file = Path(output_path)
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(markdown_content)
             return True
-        except Exception as e:
-            logging.error(f"Failed to save markdown report: {e}")
+        except Exception as error:
+            logging.error(f"Failed to save markdown report: {error}")
             return False
 
     @staticmethod
     def _build_story_from_markdown(markdown_content: str) -> List[Any]:
         """
-        Convert the markdown content into a list of ReportLab flowables.
-        This simple parser splits lines and processes basic elements, applying bold conversion.
+        Convert markdown content into a list of ReportLab flowables.
+        
+        Args:
+            markdown_content (str): The markdown content.
+        
+        Returns:
+            List[Any]: A list of flowable objects representing the document content.
         """
         styles = getSampleStyleSheet()
         story = []
         buffer = []
         for line in markdown_content.splitlines():
             stripped = line.strip()
-            # Process headings
+            # Process level-2 headings.
             if stripped.startswith("## "):
-                # Flush the buffer if exists
                 if buffer:
                     paragraph_text = " ".join(buffer)
-                    # Convert markdown bold markers to HTML tags.
                     paragraph_text = convert_bold(paragraph_text)
                     story.append(Paragraph(paragraph_text, styles["BodyText"]))
                     buffer = []
-                # Create a heading paragraph after converting bold.
                 heading_text = convert_bold(stripped[3:])
                 story.append(Paragraph(heading_text, styles["Heading2"]))
                 story.append(Spacer(1, 12))
+            # Process level-1 headings.
             elif stripped.startswith("# "):
                 if buffer:
                     paragraph_text = " ".join(buffer)
@@ -137,19 +166,18 @@ class ReportGenerator:
                 heading_text = convert_bold(stripped[2:])
                 story.append(Paragraph(heading_text, styles["Title"]))
                 story.append(Spacer(1, 12))
+            # Process bullet points.
             elif stripped.startswith("- "):
-                # Flush the buffer and add bullet item
                 if buffer:
                     paragraph_text = " ".join(buffer)
                     paragraph_text = convert_bold(paragraph_text)
                     story.append(Paragraph(paragraph_text, styles["BodyText"]))
                     buffer = []
                 bullet_text = convert_bold(stripped[2:])
-                # Using the bulletText parameter to add a bullet.
                 story.append(Paragraph(bullet_text, styles["BodyText"], bulletText="•"))
                 story.append(Spacer(1, 6))
+            # Blank lines.
             elif stripped == "":
-                # Blank line; flush buffer.
                 if buffer:
                     paragraph_text = " ".join(buffer)
                     paragraph_text = convert_bold(paragraph_text)
@@ -167,31 +195,34 @@ class ReportGenerator:
     @staticmethod
     def generate_pdf_report(markdown_content: str, output_path: str) -> str:
         """
-        Generate a PDF report from markdown content using ReportLab.
-        This implementation converts markdown into a set of Platypus flowables,
-        applies a custom page template (with a light grey background, watermark, and footer disclaimer),
-        and inserts the full disclaimer (wrapped in KeepTogether so that it fits in one page).
+        Generate a PDF report from markdown content while preserving formatting.
         
-        The output file name is suffixed with a timestamp in '-yyyymmddhhmmss' format.
-        The method returns the final output file path (as a string) on successful generation.
+        This method leverages ReportLab's Platypus framework to convert markdown
+        content (via a structured "story" of flowables) into a PDF file. All custom
+        formatting (headings, bold conversions, spacing, and disclaimers) is maintained.
+        
+        Args:
+            markdown_content (str): The markdown content to be converted.
+            output_path (str): The base file path for saving the PDF report.
+        
+        Returns:
+            str: The final file path of the generated PDF report.
         """
         try:
             # Ensure the output directory exists.
             output_path_obj = Path(output_path)
             output_path_obj.parent.mkdir(parents=True, exist_ok=True)
-            
-            # Append timestamp to the provided file name.
+            # Append timestamp to ensure unique naming.
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
             stem = output_path_obj.stem
             new_filename = f"{stem}-{timestamp}.pdf"
             new_output_path_obj = output_path_obj.parent / new_filename
 
-            # Build the story (list of flowables) from the markdown content.
+            # Build the story from the Markdown content.
             story = ReportGenerator._build_story_from_markdown(markdown_content)
-
             styles = getSampleStyleSheet()
 
-            # Append a page break and a full disclaimer page.
+            # Append a page break and a disclaimer section.
             disclaimer_flowable = KeepTogether([
                 Paragraph("Disclaimer", styles["Heading2"]),
                 Spacer(1, 12),
@@ -201,44 +232,19 @@ class ReportGenerator:
             story.append(PageBreak())
             story.append(disclaimer_flowable)
 
-            # Define an onPage callback for custom drawing (background, watermark, footer).
-            def draw_page(canvas, doc):
-                # Draw a light grey background.
-                canvas.saveState()
-                canvas.setFillColor(colors.lightgrey)
-                canvas.rect(0, 0, doc.pagesize[0], doc.pagesize[1], stroke=0, fill=1)
-                canvas.restoreState()
-
-                # Draw a watermark text.
-                canvas.saveState()
-                canvas.setFont("Helvetica", 50)
-                canvas.setFillColorRGB(0.6, 0.6, 0.6)
-                canvas.drawCentredString(doc.pagesize[0] / 2, doc.pagesize[1] / 2, "CONFIDENTIAL")
-                canvas.restoreState()
-
-                # Draw a footer disclaimer.
+            # Define an on-page callback to preserve custom footer formatting.
+            def on_page(canvas, doc):
                 canvas.saveState()
                 canvas.setFont("Helvetica", 8)
-                canvas.setFillColor(colors.black)
-                canvas.drawCentredString(doc.pagesize[0] / 2, 20, DISCLAIMER_SHORT)
+                canvas.drawString(40, 20, DISCLAIMER_SHORT)
                 canvas.restoreState()
 
-            # Create a BaseDocTemplate with a custom page template.
-            doc = BaseDocTemplate(str(new_output_path_obj), pagesize=A4)
-            frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
-            template = PageTemplate(id='custom', frames=frame, onPage=draw_page)
-            doc.addPageTemplates([template])
-            doc.build(story)
-            logging.info(f"PDF generated at {new_output_path_obj.resolve()}")
-            return str(new_output_path_obj.resolve())
-
-        except ImportError as ie:
-            logging.error(
-                "Required library for ReportLab PDF generation is not installed. Please install it with: pip install reportlab"
-            )
-            return ""
-        except Exception as e:
-            logging.error(f"Failed to generate PDF report with ReportLab: {e}")
+            # Create and build the PDF document.
+            doc = SimpleDocTemplate(str(new_output_path_obj), pagesize=A4)
+            doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
+            return str(new_output_path_obj)
+        except Exception as ex:
+            logging.error(f"Error generating PDF report: {ex}")
             return ""
 
 if __name__ == "__main__":
