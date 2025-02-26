@@ -1,7 +1,12 @@
 ---
+description: all work for first milestone release
+globs: *.py
+---
+---
 description: File location, file creation, code execution
 globs: 
 ---
+[MILESTONE_FIRST_RELEASE.md](mdc:AICertify/docs/MILESTONE_FIRST_RELEASE.md) 
 
 # Your rule content
 # AICertify Project Overview

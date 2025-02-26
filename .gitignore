@@ -1,10 +1,14 @@
 .cursorrules
+**/.cursor/
+.cursor/rules/
 reference-docs/
 **/logs/
 **/contracts/*.json
 **/results/*.json
 **/reports/*.md
 **/reports/*.pdf
+**/temp_reports/*
+**/temp_reports
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
