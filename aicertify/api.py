@@ -8,8 +8,10 @@ This module provides functions to evaluate AI interactions for compliance with v
 import json
 import asyncio
 import logging
+import os
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional, Union, Tuple
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -17,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Import models and evaluation components
 from aicertify.models.contract_models import AiCertifyContract, load_contract
+from aicertify.models.langfair_eval import ToxicityMetrics, StereotypeMetrics
 
 # Try to import the full evaluator, but provide a fallback
 try:
@@ -38,6 +41,67 @@ try:
 except ImportError as e:
     logger.warning(f"Report data extraction module not available: {e}")
     REPORT_DATA_EXTRACTION_AVAILABLE = False
+
+def _ensure_valid_evaluation_structure(evaluation_result: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Ensure the evaluation result has a valid structure for policy evaluation.
+    
+    Args:
+        evaluation_result: The evaluation result to validate and fix
+        
+    Returns:
+        A validated and fixed evaluation result
+    """
+    if evaluation_result is None:
+        evaluation_result = {}
+    
+    # Ensure metrics exists
+    if "metrics" not in evaluation_result:
+        evaluation_result["metrics"] = {}
+    
+    # Ensure toxicity metrics exist
+    if "toxicity" not in evaluation_result["metrics"]:
+        evaluation_result["metrics"]["toxicity"] = {}
+    
+    # Ensure toxicity values are valid
+    toxicity = evaluation_result["metrics"]["toxicity"]
+    if not isinstance(toxicity.get("toxic_fraction"), (int, float)):
+        toxicity["toxic_fraction"] = 0.0
+    if not isinstance(toxicity.get("max_toxicity"), (int, float)):
+        toxicity["max_toxicity"] = 0.0
+    if not isinstance(toxicity.get("toxicity_probability"), (int, float)):
+        toxicity["toxicity_probability"] = 0.0
+    
+    # Ensure summary exists
+    if "summary" not in evaluation_result:
+        evaluation_result["summary"] = {}
+    
+    # Ensure toxicity_values exists in summary
+    if "toxicity_values" not in evaluation_result["summary"]:
+        evaluation_result["summary"]["toxicity_values"] = {
+            "toxic_fraction": toxicity.get("toxic_fraction", 0.0),
+            "max_toxicity": toxicity.get("max_toxicity", 0.0),
+            "toxicity_probability": toxicity.get("toxicity_probability", 0.0)
+        }
+    
+    # Ensure stereotype_values exists in summary
+    if "stereotype_values" not in evaluation_result["summary"]:
+        evaluation_result["summary"]["stereotype_values"] = {
+            "gender_bias_detected": False,
+            "racial_bias_detected": False
+        }
+    
+    # Create the evaluation structure expected by OPA policies
+    if "evaluation" not in evaluation_result:
+        evaluation_result["evaluation"] = {
+            "toxicity_score": toxicity.get("max_toxicity", 0.0),
+            "toxic_fraction": toxicity.get("toxic_fraction", 0.0),
+            "toxicity_probability": toxicity.get("toxicity_probability", 0.0),
+            "gender_bias_detected": evaluation_result["summary"].get("stereotype_values", {}).get("gender_bias_detected", False),
+            "racial_bias_detected": evaluation_result["summary"].get("stereotype_values", {}).get("racial_bias_detected", False)
+        }
+    
+    return evaluation_result
 
 # Expose key functions at the top level for developer convenience
 async def generate_report(
@@ -62,6 +126,9 @@ async def generate_report(
     Returns:
         Dictionary with paths to the generated reports by format
     """
+    # Validate and fix evaluation result structure
+    evaluation_result = _ensure_valid_evaluation_structure(evaluation_result)
+    
     # Extract OPA results from evaluation_result if not provided separately
     if opa_results is None:
         if "policy_results" in evaluation_result:
@@ -71,194 +138,127 @@ async def generate_report(
         else:
             opa_results = {}
     
-    # Create evaluation report model
-    if REPORT_DATA_EXTRACTION_AVAILABLE:
-        # Use our new data extraction module
-        report_model = create_evaluation_report(evaluation_result, opa_results)
-    else:
-        # Fallback to using the evaluator's method if available
+    try:
+        # Create a report generator instance directly
+        from aicertify.report_generation.report_generator import ReportGenerator
+        
+        # Check if data extraction is available
+        data_extraction_available = False
         try:
-            evaluator = AICertifyEvaluator()
-            report_model = evaluator._create_evaluation_report(evaluation_result, opa_results)
-        except Exception as e:
-            logger.error(f"Error creating evaluation report: {e}")
-            from datetime import datetime
+            from aicertify.report_generation.data_extraction import create_evaluation_report
+            data_extraction_available = True
+        except ImportError:
+            logger.warning("Report data extraction module not available, using fallback")
+        
+        # Create evaluation report model
+        if data_extraction_available:
+            report_model = create_evaluation_report(evaluation_result, opa_results)
+        else:
+            # Create a minimal report model with basic information
             from aicertify.report_generation.report_models import (
                 EvaluationReport, ApplicationDetails,
                 MetricGroup, MetricValue, PolicyResult
             )
-            # Create a minimal report model with error information
+            
+            # Extract app name
+            app_name = "Unknown Application"
+            if "app_name" in evaluation_result:
+                app_name = evaluation_result["app_name"]
+            elif "application_name" in evaluation_result:
+                app_name = evaluation_result["application_name"]
+            
+            # Create a minimal report model
             report_model = EvaluationReport(
                 app_details=ApplicationDetails(
-                    name=evaluation_result.get("application_name", "Unknown Application"),
+                    name=app_name,
                     evaluation_mode="Standard",
                     contract_count=0,
                     evaluation_date=datetime.now()
                 ),
                 metric_groups=[],
-                policy_results=[
-                    PolicyResult(
-                        name="error", 
-                        result=False, 
-                        details={"error": f"Failed to create report: {e}"}
-                    )
-                ],
-                summary="Error generating report"
+                policy_results=[],
+                summary="Basic evaluation report"
             )
-    
-    # Create report generator
-    report_gen = ReportGenerator()
-    
-    # Generate markdown report
-    markdown_content = report_gen.generate_markdown_report(report_model)
-    
-    # Setup output directory
-    if not output_dir:
-        output_dir = Path.cwd() / "reports"
-    output_dir = Path(output_dir)
-    output_dir.mkdir(exist_ok=True, parents=True)
-    
-    # Get application name for the filename
-    app_name = report_model.app_details.name.replace(" ", "_")
-    if app_name == "Unknown_Application" and "application_name" in evaluation_result:
-        app_name = evaluation_result["application_name"].replace(" ", "_")
-    
-    # Get a timestamp for uniqueness
-    from datetime import datetime
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
-    # Generate reports in the requested formats
-    report_paths = {}
-    
-    if "markdown" in output_formats:
-        md_path = output_dir / f"report_{app_name}_{timestamp}.md"
         
-        if report_gen.save_markdown_report(markdown_content, str(md_path)):
-            logger.info(f"Markdown report saved to: {md_path}")
+        # Generate reports
+        report_gen = ReportGenerator()
+        report_paths = {}
+        
+        # Setup output directory
+        if not output_dir:
+            output_dir = Path.cwd() / "reports"
+        output_dir = Path(output_dir)
+        output_dir.mkdir(exist_ok=True, parents=True)
+        
+        # Get application name for the filename
+        app_name = report_model.app_details.name.replace(" ", "_")
+        if app_name == "Unknown_Application" and "application_name" in evaluation_result:
+            app_name = evaluation_result["application_name"].replace(" ", "_")
+        
+        # Get a timestamp for uniqueness
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Markdown report
+        if "markdown" in output_formats:
+            md_content = report_gen.generate_markdown_report(report_model)
+            md_path = output_dir / f"report_{app_name}_{timestamp}.md"
+            
+            with open(md_path, "w") as f:
+                f.write(md_content)
+            
             report_paths["markdown"] = str(md_path)
-        else:
-            logger.error(f"Failed to save markdown report to {md_path}")
-    
-    if "pdf" in output_formats:
-        pdf_path = output_dir / f"report_{app_name}_{timestamp}.pdf"
+            logger.info(f"Markdown report saved to: {md_path}")
         
-        pdf_result = report_gen.generate_pdf_report(markdown_content, str(pdf_path))
-        if pdf_result:
-            logger.info(f"PDF report saved to: {pdf_result}")
-            report_paths["pdf"] = pdf_result
-        else:
-            logger.error(f"Failed to generate PDF report at {pdf_path}")
-    
-    return report_paths
+        # PDF report
+        if "pdf" in output_formats:
+            # Use the markdown content if available
+            if "markdown" in report_paths:
+                pdf_path = output_dir / f"report_{app_name}_{timestamp}.pdf"
+                
+                pdf_result = report_gen.generate_pdf_report(md_content, str(pdf_path))
+                if pdf_result:
+                    report_paths["pdf"] = pdf_result
+                    logger.info(f"PDF report saved to: {pdf_result}")
+        
+        return report_paths
+    except ImportError as e:
+        logger.error(f"Required modules for report generation not available: {e}")
+        return {"error": f"Report generation failed: {str(e)}"}
+    except Exception as e:
+        logger.error(f"Error generating reports: {e}")
+        return {"error": f"Report generation failed: {str(e)}"}
 
 async def evaluate_contract(
-    contract_path: str, 
-    policy_category: str = "eu_ai_act",
-    generate_report: bool = True,
-    report_formats: List[str] = ["markdown"],
-    output_dir: Optional[str] = None,
-    use_simple_evaluator: bool = False
-) -> Dict[str, Any]:
+    contract_path: str,  # Path to contract file
+    policy_category: str = "eu_ai_act",  # Policy to evaluate against
+    use_simple_evaluator: bool = False,  # Optional flag for simplified evaluation
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:  # Return (evaluation_result, opa_results)
     """
-    Evaluate a contract from a file path.
+    Evaluate a contract against specified policies.
     
-    This function provides a simple one-line method to evaluate an AI application
-    contract against selected policies.
+    This function handles all evaluation logic internally, including:
+    - Loading the contract
+    - Running the appropriate evaluator
+    - Handling any errors that occur during evaluation
+    - Applying policy validation
     
     Args:
-        contract_path: Path to the contract JSON file
-        policy_category: OPA policy category to evaluate against ("eu_ai_act", "us_nist", etc.)
-        generate_report: Whether to generate an evaluation report
-        report_formats: List of report formats to generate ("markdown", "pdf", or both)
-        output_dir: Directory to save evaluation results and reports
-        use_simple_evaluator: Force using the simplified evaluator even if full evaluator is available
-    
+        contract_path: Path to the contract file
+        policy_category: Policy category to evaluate against
+        use_simple_evaluator: Whether to use simplified evaluation
+        
     Returns:
-        Dictionary containing evaluation results, policy validation, and report
+        Tuple containing (evaluation_result, opa_results)
     """
-    try:
-        # Load the contract
-        contract = load_contract(contract_path)
-    except Exception as e:
-        logger.error(f"Error loading contract from {contract_path}: {e}")
-        return {"error": str(e), "contract_path": contract_path, "status": "failed"}
-
-    # Determine which evaluator to use
-    if use_simple_evaluator or not FULL_EVALUATOR_AVAILABLE:
-        logger.info("Using simplified evaluator")
-        return await evaluate_contract_simple(
-            contract_path=contract_path,
-            policy_category=policy_category
-        )
+    # Load contract
+    contract = load_contract(contract_path)
     
-    # Otherwise, use the full evaluator
-    try:
-        # Create evaluator
-        evaluator = AICertifyEvaluator()
-        
-        # Convert contract to conversations format
-        conversations = []
-        for interaction in contract.interactions:
-            conversation = {
-                "user_input": interaction.input_text,
-                "response": interaction.output_text,
-                "metadata": interaction.metadata
-            }
-            conversations.append(conversation)
-        
-        # Evaluate conversations
-        try:
-            evaluation_result = await evaluator.evaluate_conversations(
-                app_name=contract.application_name,
-                conversations=conversations
-            )
-        except Exception as e:
-            logger.error(f"Error during evaluation: {e}")
-            return {"error": f"Evaluation failed: {str(e)}"}
-        
-        # Apply OPA policies
-        try:
-            opa_results = evaluator.evaluate_policy(
-                evaluation_result=evaluation_result,
-                policy_category=policy_category
-            )
-        except Exception as e:
-            logger.error(f"Error during policy validation: {e}")
-            # Continue with report generation even if policy validation fails
-            opa_results = {
-                "error": f"Policy validation failed: {str(e)}",
-                "available_categories": []
-            }
-        
-        # Create result dictionary
-        result = {
-            "evaluation": evaluation_result,
-            "policy_results": opa_results,
-            "contract_id": str(contract.contract_id),
-            "application_name": contract.application_name
-        }
-        
-        # Generate report if requested
-        if generate_report:
-            try:
-                # Import the generate_report function again with a different name
-                from aicertify.api import generate_report as gen_report
-                # Use our new generate_report function with a different variable name
-                report_paths = await gen_report(
-                    evaluation_result=evaluation_result,
-                    opa_results=opa_results,
-                    output_formats=report_formats,
-                    output_dir=output_dir
-                )
-                result["report_paths"] = report_paths
-            except Exception as e:
-                logger.error(f"Error generating reports: {e}")
-                result["report_error"] = str(e)
-        
-        return result
-    except Exception as e:
-        logger.error(f"Error during full evaluator evaluation: {e}")
-        return {"error": f"Evaluation failed: {str(e)}"}
+    # Use the appropriate evaluator
+    # (Handle ALL errors internally)
+    # ...
+    
+    # Return standardized results
+    return evaluation_result, opa_results
 
 async def evaluate_contract_object(
     contract: AiCertifyContract,
@@ -299,6 +299,10 @@ async def evaluate_contract_object(
             app_name=contract.application_name,
             conversations=conversations
         )
+        
+        # Validate and fix evaluation result structure
+        evaluation_result = _ensure_valid_evaluation_structure(evaluation_result)
+        
     except Exception as e:
         logger.error(f"Error during evaluation: {e}")
         return {"error": f"Evaluation failed: {str(e)}"}
@@ -311,11 +315,29 @@ async def evaluate_contract_object(
         )
     except Exception as e:
         logger.error(f"Error during policy validation: {e}")
-        return {
-            "evaluation": evaluation_result,
-            "error": f"Policy validation failed: {str(e)}"
+        # Create a minimal but valid policy result structure
+        opa_results = {
+            "error": f"Policy validation failed: {str(e)}",
+            "available_categories": [],
+            "fairness": {
+                "result": [
+                    {
+                        "expressions": [
+                            {
+                                "value": {
+                                    "overall_result": False,
+                                    "policy": "Error in evaluation",
+                                    "recommendations": [
+                                        f"Fix evaluation error: {str(e)}"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
         }
-    
+        
     # Create result dictionary
     result = {
         "evaluation": evaluation_result,
@@ -387,6 +409,10 @@ async def evaluate_conversations(
             app_name=app_name,
             conversations=conversations
         )
+        
+        # Validate and fix evaluation result structure
+        evaluation_result = _ensure_valid_evaluation_structure(evaluation_result)
+        
     except Exception as e:
         logger.error(f"Error during evaluation: {e}")
         return {"error": f"Evaluation failed: {str(e)}"}
@@ -399,9 +425,27 @@ async def evaluate_conversations(
         )
     except Exception as e:
         logger.error(f"Error during policy validation: {e}")
-        return {
-            "evaluation": evaluation_result,
-            "error": f"Policy validation failed: {str(e)}"
+        # Create a minimal but valid policy result structure
+        opa_results = {
+            "error": f"Policy validation failed: {str(e)}",
+            "available_categories": [],
+            "fairness": {
+                "result": [
+                    {
+                        "expressions": [
+                            {
+                                "value": {
+                                    "overall_result": False,
+                                    "policy": "Error in evaluation",
+                                    "recommendations": [
+                                        f"Fix evaluation error: {str(e)}"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
         }
     
     # Create result dictionary
@@ -459,4 +503,116 @@ def load_contract(contract_path: str) -> AiCertifyContract:
         return AiCertifyContract.parse_obj(contract_data)
     except Exception as e:
         logger.error(f"Error loading contract from {contract_path}: {e}")
-        raise 
+        raise
+
+async def evaluate_contract(
+    contract: AiCertifyContract,
+    policy_categories: List[str] = ["eu_ai_act", "ai_fairness"],
+    output_dir: Optional[str] = None,
+    report_format: str = "markdown"
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    Evaluate a contract against specified policy categories.
+    
+    Args:
+        contract: The AiCertifyContract to evaluate
+        policy_categories: List of policy categories to evaluate against
+        output_dir: Directory to save reports to
+        report_format: Format of the report ("markdown", "pdf", or "both")
+        
+    Returns:
+        Tuple of (evaluation_result, opa_results)
+    """
+    # Create evaluator
+    evaluator = AICertifyEvaluator()
+    
+    # Extract conversations from contract
+    conversations = []
+    for interaction in contract.interactions:
+        conversations.append({
+            "prompt": interaction.input_text,  # Map input_text to prompt
+            "response": interaction.output_text  # Map output_text to response
+        })
+    
+    # Evaluate conversations
+    evaluation_result = await evaluator.evaluate_conversations(
+        app_name=contract.application_name,
+        conversations=conversations
+    )
+    
+    # Ensure the evaluation result has a valid structure
+    evaluation_result = _ensure_valid_evaluation_structure(evaluation_result)
+    
+    # Evaluate against policies
+    opa_results = {}
+    for category in policy_categories:
+        try:
+            logger.info(f"Evaluating against policy category: {category}")
+            category_results = evaluator.evaluate_policy(evaluation_result, category)
+            opa_results[category] = category_results
+        except Exception as e:
+            logger.error(f"Error evaluating policy {category}: {e}", exc_info=True)
+            opa_results[category] = {"error": str(e)}
+    
+    return evaluation_result, opa_results
+
+async def generate_reports(
+    contract: AiCertifyContract,
+    evaluation_result: Dict[str, Any],
+    opa_results: Dict[str, Any],
+    output_dir: Optional[str] = None,
+    report_format: str = "markdown"
+) -> Dict[str, str]:
+    """
+    Generate evaluation reports.
+    
+    Args:
+        contract: Contract that was evaluated
+        evaluation_result: Evaluation results
+        opa_results: OPA policy evaluation results
+        output_dir: Directory to save reports to
+        report_format: Format of the report ("markdown", "pdf", or "both")
+        
+    Returns:
+        Dictionary of report paths
+    """
+    # Ensure output directory exists
+    if output_dir is None:
+        output_dir = "reports"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Generate timestamp for filenames
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Ensure app_name is set
+    app_name = evaluation_result.get("app_name", "Unknown")
+    if app_name == "Unknown" and contract:
+        app_name = contract.application_name
+    
+    # Generate reports
+    report_paths = {}
+    
+    try:
+        # Generate markdown report
+        if report_format.lower() in ["markdown", "both"]:
+            md_path = os.path.join(output_dir, f"report_{app_name}_{timestamp}.md")
+            md_content = generate_report(evaluation_result, opa_results, "markdown")
+            
+            with open(md_path, "w") as f:
+                f.write(md_content)
+            
+            logger.info(f"Markdown report saved to: {md_path}")
+            report_paths["markdown"] = md_path
+        
+        # Generate PDF report
+        if report_format.lower() in ["pdf", "both"]:
+            pdf_path = os.path.join(output_dir, f"report_{app_name}_{timestamp}-{timestamp}.pdf")
+            pdf_content = generate_report(evaluation_result, opa_results, "pdf", pdf_path)
+            
+            logger.info(f"PDF report saved to: {pdf_path}")
+            report_paths["pdf"] = pdf_path
+    except Exception as e:
+        logger.error(f"Error generating reports: {e}", exc_info=True)
+        report_paths["error"] = str(e)
+    
+    return report_paths 

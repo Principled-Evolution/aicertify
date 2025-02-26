@@ -15,7 +15,8 @@
         "aicertify/models/__pycache__": true,
         "aicertify/opa_core/__init__.py": true,
         "aicertify/cli/__pycache__": true,
-        "aicertify/examples/pydanticai/__pycache__": true
+        "aicertify/examples/pydanticai/__pycache__": true,
+        "aicertify/examples/__pycache__": true
     },
     "hide-files.files": []
 }

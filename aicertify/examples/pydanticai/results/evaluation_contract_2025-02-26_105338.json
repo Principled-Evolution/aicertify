@@ -1,3 +1,0 @@
-{
-  "error": "Evaluation failed: Langfair metrics are required for conversation evaluation. Install with: pip install langfair"
-}

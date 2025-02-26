@@ -38,6 +38,12 @@ from ToxicCareerCoachAI import ToxicCareerCoachAI, HUGGINGFACE_AVAILABLE
 try:
     from aicertify.models.contract_models import create_contract, save_contract, load_contract
     from aicertify.api import evaluate_contract
+    
+    # Add this for debugging
+    import inspect
+    logger.info(f"evaluate_contract imported from: {inspect.getmodule(evaluate_contract).__file__}")
+    logger.info(f"evaluate_contract signature: {inspect.signature(evaluate_contract)}")
+    
     from aicertify.evaluators.api import AICertifyEvaluator
     AICERTIFY_AVAILABLE = True
 except ImportError as e:
@@ -170,83 +176,43 @@ class ToxicCareerCoachWithCertification:
         """Evaluate the contract against policies and optionally generate reports"""
         if not AICERTIFY_AVAILABLE:
             logger.error("AICertify not available. Install with: pip install aicertify")
-            return None
+            return {"error": "AICertify not available"}
         
         if not self.contract_path:
             logger.error("No contract available for evaluation. Call create_contract() first.")
-            return None
+            return {"error": "No contract available"}
         
         try:
-            # First try using the standard evaluate_contract function
-            try:
-                self.evaluation_results = await evaluate_contract(
-                    contract_path=self.contract_path,
-                    policy_category=policy_category,
-                    use_simple_evaluator=use_simple_evaluator,
-                    generate_report=generate_report,
-                    report_formats=report_formats,
+            # Import only the public API functions
+            from aicertify.api import evaluate_contract, generate_report
+            
+            # Step 1: Evaluate the contract using the public API
+            # This function should handle all the internal details for us
+            contract = load_contract(self.contract_path)
+            evaluation_result, opa_results = await evaluate_contract(
+                contract=contract,  # Pass the contract object
+                policy_categories=[policy_category],  # Pass list of policy categories
+                output_dir=output_dir
+            )
+            
+            # Store results
+            self.evaluation_results = {
+                "evaluation": evaluation_result,
+                "policy_results": opa_results
+            }
+            
+            # Step 2: Generate reports if requested
+            if generate_report:
+                report_paths = await generate_report(
+                    evaluation_result=evaluation_result,
+                    opa_results=opa_results,
+                    output_formats=report_formats,
                     output_dir=output_dir
                 )
-                return self.evaluation_results
-            except Exception as primary_error:
-                # If we encounter the specific toxic_fraction error, try direct evaluation
-                if "toxic_fraction" in str(primary_error):
-                    logger.warning(f"Encountered toxic_fraction error, trying direct evaluation: {primary_error}")
-                    # Load the contract
-                    contract = load_contract(self.contract_path)
-                    
-                    # Create direct evaluator
-                    evaluator = AICertifyEvaluator()
-                    
-                    # Convert contract to conversations format
-                    conversations = []
-                    for interaction in contract.interactions:
-                        conversation = {
-                            "user_input": interaction.input_text,
-                            "response": interaction.output_text,
-                            "metadata": interaction.metadata
-                        }
-                        conversations.append(conversation)
-                    
-                    # Set min_samples to a lower value since we're testing
-                    evaluation_result = await evaluator.evaluate_conversations(
-                        app_name=contract.application_name,
-                        conversations=conversations,
-                        min_samples=5,  # Use fewer samples for testing
-                    )
-                    
-                    # Generate report if requested - use our new API
-                    if generate_report:
-                        try:
-                            # Import the generate_report function
-                            from aicertify.api import generate_report as gen_report
-                            report_paths = await gen_report(
-                                evaluation_result=evaluation_result,
-                                opa_results=None,  # Add missing parameter to avoid boolean error
-                                output_formats=report_formats,
-                                output_dir=output_dir
-                            )
-                            
-                            return {
-                                "evaluation": evaluation_result,
-                                "message": "Used direct evaluation due to toxic_fraction error",
-                                "report_paths": report_paths
-                            }
-                        except Exception as report_error:
-                            logger.error(f"Error generating reports: {report_error}")
-                            return {
-                                "evaluation": evaluation_result,
-                                "message": "Used direct evaluation due to toxic_fraction error",
-                                "report_error": str(report_error)
-                            }
-                    else:
-                        return {
-                            "evaluation": evaluation_result,
-                            "message": "Used direct evaluation due to toxic_fraction error"
-                        }
-                else:
-                    # For other errors, re-raise
-                    raise
+                self.evaluation_results["report_paths"] = report_paths
+            
+            return self.evaluation_results
+            
         except Exception as e:
             logger.error(f"Error during evaluation: {e}")
             return {"error": str(e)}

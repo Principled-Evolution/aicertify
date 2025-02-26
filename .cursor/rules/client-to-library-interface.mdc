@@ -1,0 +1,19 @@
+---
+description: interfacing between example apps and aicertify library api
+globs: 
+---
+
+# Your rule content
+
+- You can @ files here
+
+- You can use markdown but dont have to
+Document Clear Boundaries:
+LIBRARY: aicertify/ package → implements all logic
+CLIENT: examples/ folder → only calls the API
+Create a Consistent API Pattern:
+The API should always handle errors internally
+Functions should return standardized, well-documented data structures
+Simplify Example Apps:
+Example apps should demonstrate the API's simplicity
+They should not contain complex error handling or alternative evaluation paths
