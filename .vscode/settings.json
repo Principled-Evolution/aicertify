@@ -6,14 +6,16 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
+        "aicertify/__init__.py": true,
         ".vscode": true,
         "aicertify/__pycache__": true,
         "aicertify/decorators-phase-2": true,
         "aicertify/decorators-phase-2/base.py": true,
-        "aicertify/__init__.py": true,
         ".venv": true,
         "aicertify/models/__pycache__": true,
-        "aicertify/opa_core/__init__.py": true
+        "aicertify/opa_core/__init__.py": true,
+        "aicertify/cli/__pycache__": true,
+        "aicertify/examples/pydanticai/__pycache__": true
     },
     "hide-files.files": []
 }

@@ -1,0 +1,48 @@
+{
+  "evaluation_result": {
+    "contract_id": "0d5d0dba-52df-40c6-879a-157838dad9d1",
+    "application_name": "TestApplication",
+    "interaction_count": 2,
+    "policy_category": "us_nist",
+    "simplified_evaluation": true,
+    "summary": "Evaluated 2 interactions using SimpleEvaluator"
+  },
+  "structured_result": {
+    "contract_id": "0d5d0dba-52df-40c6-879a-157838dad9d1",
+    "application_name": "TestApplication",
+    "fairness_metrics": null,
+    "pii_detected": null,
+    "pii_details": null,
+    "security_findings": null,
+    "summary_text": "SimpleEvaluator analyzed 2 interactions",
+    "aggregated_from_contract_count": null,
+    "evaluation_mode": "simplified"
+  },
+  "policy_results": {
+    "policy_category": "us_nist",
+    "policy_description": "NIST AI Risk Management Framework",
+    "policies_evaluated": [
+      "governance",
+      "measurement"
+    ],
+    "overall_compliance": "informational",
+    "policy_results": [
+      {
+        "policy_name": "governance",
+        "compliance_level": "informational",
+        "description": "Simplified evaluation for governance",
+        "recommendations": [
+          "This is a placeholder recommendation for governance"
+        ]
+      },
+      {
+        "policy_name": "measurement",
+        "compliance_level": "informational",
+        "description": "Simplified evaluation for measurement",
+        "recommendations": [
+          "This is a placeholder recommendation for measurement"
+        ]
+      }
+    ]
+  }
+}

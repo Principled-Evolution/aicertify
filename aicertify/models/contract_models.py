@@ -152,4 +152,28 @@ def save_contract(contract: AiCertifyContract, storage_dir: str = 'contracts') -
     with open(file_path, 'w') as f:
         json.dump(contract.model_dump(), f, default=str, indent=2)
 
-    return str(file_path) 
+    return str(file_path)
+
+
+def load_contract(contract_path: str) -> AiCertifyContract:
+    """
+    Load an AiCertifyContract from a JSON file.
+    
+    Parameters:
+        contract_path (str): Path to the contract JSON file
+        
+    Returns:
+        AiCertifyContract: The loaded contract object
+    """
+    try:
+        with open(contract_path, "r") as f:
+            contract_data = json.load(f)
+        # Use model_validate for newer Pydantic versions
+        try:
+            return AiCertifyContract.model_validate(contract_data)
+        except AttributeError:
+            # Fallback for older Pydantic versions
+            return AiCertifyContract.parse_obj(contract_data)
+    except Exception as e:
+        logging.error(f"Error loading contract from {contract_path}: {e}")
+        raise 

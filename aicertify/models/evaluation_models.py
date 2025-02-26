@@ -131,7 +131,7 @@ def aggregate_contracts(contract_files: List[str]) -> Dict[str, Any]:
 
 from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
-from contract_models import AiCertifyContract
+from aicertify.models.contract_models import AiCertifyContract
 
 
 class AiEvaluationResult(BaseModel):

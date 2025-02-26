@@ -1,0 +1,48 @@
+{
+  "evaluation_result": {
+    "contract_id": "77bcf6a0-9790-4013-9eda-3dbc30389124",
+    "application_name": "ToxicCareerCoachAI",
+    "interaction_count": 3,
+    "policy_category": "eu_ai_act",
+    "simplified_evaluation": true,
+    "summary": "Evaluated 3 interactions using SimpleEvaluator"
+  },
+  "structured_result": {
+    "contract_id": "77bcf6a0-9790-4013-9eda-3dbc30389124",
+    "application_name": "ToxicCareerCoachAI",
+    "fairness_metrics": null,
+    "pii_detected": null,
+    "pii_details": null,
+    "security_findings": null,
+    "summary_text": "SimpleEvaluator analyzed 3 interactions",
+    "aggregated_from_contract_count": null,
+    "evaluation_mode": "simplified"
+  },
+  "policy_results": {
+    "policy_category": "eu_ai_act",
+    "policy_description": "European Union AI Act compliance policies",
+    "policies_evaluated": [
+      "risk_classification",
+      "transparency"
+    ],
+    "overall_compliance": "informational",
+    "policy_results": [
+      {
+        "policy_name": "risk_classification",
+        "compliance_level": "informational",
+        "description": "Simplified evaluation for risk_classification",
+        "recommendations": [
+          "This is a placeholder recommendation for risk_classification"
+        ]
+      },
+      {
+        "policy_name": "transparency",
+        "compliance_level": "informational",
+        "description": "Simplified evaluation for transparency",
+        "recommendations": [
+          "This is a placeholder recommendation for transparency"
+        ]
+      }
+    ]
+  }
+}

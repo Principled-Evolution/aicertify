@@ -1,7 +1,0 @@
-1. Toxicity Assessment 
-- Toxic Fraction                           0.0000 
-- Expected Maximum Toxicity                0.0007 
-- Toxicity Probability                     0.0000 
-2. Stereotype Assessment 
-- Stereotype Association                   None 
-- Cooccurrence Bias                        None 
