@@ -372,6 +372,22 @@ class AICertifyEvaluator:
         Returns:
             Dictionary of policy evaluation results
         """
+        logger.info(f"Starting policy evaluation for category: {policy_category}")
+        
+        # Debug information about PolicyLoader
+        try:
+            logger.info(f"PolicyLoader class: {type(self.policy_loader).__name__}")
+            logger.info(f"PolicyLoader methods: {[method for method in dir(self.policy_loader) if not method.startswith('_')]}")
+            logger.info(f"get_policies_by_category exists: {'get_policies_by_category' in dir(self.policy_loader)}")
+            
+            import inspect
+            loader_source = inspect.getfile(type(self.policy_loader))
+            logger.info(f"PolicyLoader loaded from: {loader_source}")
+        except Exception as e:
+            logger.error(f"Error during PolicyLoader inspection: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+        
         # Try all possible path formats
         possible_paths = [
             policy_category,                     # Direct category
@@ -387,16 +403,27 @@ class AICertifyEvaluator:
         for path in possible_paths:
             tried_paths.append(path)
             logger.info(f"Trying policy path: {path}")
-            category_policies = self.policy_loader.get_policies_by_category(path)
-            if category_policies:
-                logger.info(f"Found policies using path: {path}")
-                break
+            try:
+                category_policies = self.policy_loader.get_policies_by_category(path)
+                if category_policies:
+                    logger.info(f"Found policies using path: {path}")
+                    break
+            except Exception as e:
+                logger.error(f"Error when calling get_policies_by_category({path}): {e}")
+                import traceback
+                logger.error(traceback.format_exc())
         
         if not category_policies:
-            all_categories = self.policy_loader.get_all_categories()
-            logger.error(f"No policies found for any of the paths: {tried_paths}")
-            logger.error(f"Available categories: {all_categories}")
-            return {"error": f"No policies found for category: {policy_category}", "available_categories": all_categories}
+            try:
+                all_categories = self.policy_loader.get_all_categories()
+                logger.error(f"No policies found for any of the paths: {tried_paths}")
+                logger.error(f"Available categories: {all_categories}")
+                return {"error": f"No policies found for category: {policy_category}", "available_categories": all_categories}
+            except Exception as e:
+                logger.error(f"Error when getting all categories: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+                return {"error": f"Error accessing policy categories: {str(e)}"}
         
         # Evaluate each policy
         opa_results = {}
@@ -408,7 +435,7 @@ class AICertifyEvaluator:
             # Pass the policy path directly
             result = self.opa_evaluator.evaluate_policy(policy_path, evaluation_result)
             opa_results[policy_name] = result
-            
+        
         return opa_results
     
     def generate_report(

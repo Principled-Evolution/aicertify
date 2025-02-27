@@ -332,6 +332,24 @@ def run_session(capture_contract: bool, contract_storage: str) -> None:
                 from aicertify.api import evaluate_contract_object
                 import asyncio
                 
+                # Add debug info to understand the issue
+                logger.info('Debugging imports and paths:')
+                try:
+                    from aicertify.opa_core.policy_loader import PolicyLoader
+                    loader = PolicyLoader()
+                    logger.info(f'PolicyLoader successfully imported from aicertify.opa_core.policy_loader')
+                    logger.info(f'PolicyLoader methods: {[method for method in dir(loader) if not method.startswith("_")]}')
+                    logger.info(f'get_policies_by_category exists: {"get_policies_by_category" in dir(loader)}')
+                    
+                    # Check if the file exists and the right version is loaded
+                    import inspect
+                    loader_source = inspect.getfile(PolicyLoader)
+                    logger.info(f'PolicyLoader source file: {loader_source}')
+                except Exception as e:
+                    logger.error(f'Error checking PolicyLoader: {str(e)}')
+                    import traceback
+                    logger.error(traceback.format_exc())
+                
                 # Run the async evaluation function using asyncio
                 eval_result = asyncio.run(evaluate_contract_object(
                     contract=contract,
@@ -347,9 +365,10 @@ def run_session(capture_contract: bool, contract_storage: str) -> None:
                     logger.info(f'Evaluation report saved to: {eval_result.get("report_path")}')
                 else:
                     logger.info('Report generated but path not returned')
-                
-            except Exception as ex:
-                logger.exception(f'Error during contract evaluation: {ex}')
+            except Exception as e:
+                logger.error(f'Error during contract evaluation: {str(e)}')
+                import traceback
+                logger.error(traceback.format_exc())
                 
         except Exception as ex:
             logger.exception(f'Error creating contract: {ex}')

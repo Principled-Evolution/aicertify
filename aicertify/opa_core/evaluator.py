@@ -4,14 +4,19 @@ import shutil
 import sys
 import os
 import json
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Union, Literal
 from pathlib import Path
+from .policy_loader import PolicyLoader
+
+# Define execution modes as a Literal type for better type checking
+ExecutionMode = Literal["production", "development", "debug"]
 
 class OpaEvaluator:
     """Evaluates OPA policies using the OPA executable."""
     
-    def __init__(self):
+    def __init__(self, policies_dir: str = None):
         self.opa_path = self._verify_opa_installation()
+        self.policy_loader = PolicyLoader(policies_dir)
         
     def _verify_opa_installation(self) -> str:
         """
@@ -89,27 +94,48 @@ class OpaEvaluator:
             
         return opa_path
     
-    def evaluate_policy(self, policy_path: str, input_data: Dict[str, Any], query: str = "data.compliance.eu_ai_act.compliance_report") -> Optional[Dict[str, Any]]:
+    def evaluate_policy(
+        self, 
+        policy_path: Union[str, List[str]], 
+        input_data: Dict[str, Any], 
+        query: str = None,
+        mode: ExecutionMode = "production",
+        entrypoint: str = None,
+        optimize_level: int = 2
+    ) -> Optional[Dict[str, Any]]:
         """
-        Evaluate an OPA policy against input data.
+        Evaluate an OPA policy against input data with enhanced execution modes.
         
         Args:
-            policy_path: Path to the .rego policy file
+            policy_path: Path to the .rego policy file or list of policy files
             input_data: Dictionary containing the input data
             query: Optional query parameter for the OPA evaluation
+            mode: Execution mode determining the level of feedback and debugging
+                - "production": Optimized for performance with minimal output
+                - "development": Includes explanations for failures and coverage
+                - "debug": Maximum verbosity with full explanations and metrics
+            entrypoint: Optional entrypoint for optimization (required for production)
+            optimize_level: Optimization level (0-2, default is 2 for production)
             
         Returns:
             Dictionary containing evaluation results or None if evaluation fails
         """
         try:
-            # Convert relative path to absolute path in POSIX format (avoiding Windows backslash issues)
-            abs_policy_path = Path(policy_path).resolve().as_posix()
-            logging.info(f"Policy file path: {abs_policy_path}")
+            # Handle single policy path or list of policy paths
+            policy_files = [policy_path] if isinstance(policy_path, str) else policy_path
             
-            # Verify policy file exists
-            if not Path(abs_policy_path).is_file():
-                logging.error(f"Policy file not found: {abs_policy_path}")
-                return {"error": f"Policy file not found: {abs_policy_path}"}
+            # Convert all paths to absolute paths in POSIX format
+            abs_policy_paths = [Path(p).resolve().as_posix() for p in policy_files]
+            logging.info(f"Policy file paths: {abs_policy_paths}")
+            
+            # Verify all policy files exist
+            for path in abs_policy_paths:
+                if not Path(path).is_file():
+                    logging.error(f"Policy file not found: {path}")
+                    return {"error": f"Policy file not found: {path}"}
+            
+            # Use the first policy file for query building if needed
+            primary_policy_path = abs_policy_paths[0]
             
             # Convert input_data to proper JSON string
             try:
@@ -119,26 +145,71 @@ class OpaEvaluator:
                 logging.error(f"Error converting input data to JSON: {e}")
                 return {"error": f"Failed to serialize input data: {str(e)}"}
             
-            # Extract package name and rule from policy path for query
-            policy_dir = Path(abs_policy_path).parent
-            policy_category = policy_dir.name
-            # Dynamically build query based on the policy location
-            # Format: data.{package}.{rule}
-            package_prefix = f"compliance.{policy_category}"
-            query = f"data.{package_prefix}.compliance_report"
-            logging.info(f"Using dynamically built query: {query}")
+            # If query is not provided, build it from policy file
+            if not query:
+                query = self.policy_loader.build_query_for_policy(primary_policy_path)
+                logging.info(f"Using query built from policy: {query}")
             
-            # Evaluate the policy using OPA
+            # Resolve policy dependencies if not already provided
+            if len(abs_policy_paths) == 1:
+                policy_files = self.policy_loader.resolve_policy_dependencies(abs_policy_paths)
+                logging.info(f"Using policy files with dependencies: {policy_files}")
+            else:
+                policy_files = abs_policy_paths
+            
+            # Create a list of policy file arguments for OPA
+            policy_args = []
+            for policy_file in policy_files:
+                policy_args.extend(["-d", Path(policy_file).resolve().as_posix()])
+            
+            # Base command with query and policy files
             cmd = [
                 self.opa_path,
                 "eval",
                 query,  # Positional query argument
-                "-d",
-                abs_policy_path,
-                "--format",
-                "json",
-                "--stdin-input"
             ]
+            
+            # Add all policy files
+            cmd.extend(policy_args)
+            
+            # Add mode-specific options
+            if mode == "development":
+                cmd.extend([
+                    "--explain", "fails",  # Explain policy failures
+                    "--coverage",          # Report coverage
+                    "--format", "pretty",  # More readable output
+                ])
+                logging.info("Using development mode with failure explanations and coverage reporting")
+            elif mode == "debug":
+                cmd.extend([
+                    "--explain", "full",   # Full explanations
+                    "--coverage",          # Report coverage
+                    "--metrics",           # Performance metrics
+                    "--instrument",        # Instrumentation
+                    "--format", "pretty",  # More readable output
+                ])
+                logging.info("Using debug mode with full explanations, coverage, and metrics")
+            else:  # production mode
+                cmd.extend([
+                    "--format", "json",    # JSON output for parsing
+                    "--fail",              # Exit with non-zero code on undefined/empty result
+                ])
+                
+                # Only add optimization if we have an entrypoint
+                if optimize_level > 0 and entrypoint:
+                    cmd.extend(["--optimize", str(optimize_level)])
+                    logging.info(f"Using production mode with optimization level {optimize_level}")
+                else:
+                    logging.info("Using production mode without optimizations")
+            
+            # Always add stdin-input for consistent input handling
+            cmd.append("--stdin-input")
+            
+            # If using optimization with an entrypoint, include it
+            if optimize_level > 0 and entrypoint and mode == "production":
+                cmd.extend(["-e", entrypoint])
+                logging.info(f"Using entrypoint: {entrypoint}")
+            
             logging.info(f"Executing command: {cmd}")
             
             # Pass input via stdin
@@ -154,47 +225,113 @@ class OpaEvaluator:
                 logging.error(f"Error running OPA subprocess: {e}")
                 return {"error": f"OPA execution failed: {str(e)}"}
             
+            # Handle non-zero exit code with enhanced error recovery
             if result.returncode != 0:
                 logging.error(f"OPA command failed with return code {result.returncode}")
                 if result.stderr:
                     logging.error(f"OPA stderr output: {result.stderr}")
-                return {"error": f"OPA execution returned non-zero exit code: {result.returncode}", "stderr": result.stderr}
+                
+                # Check for specific error about bundle optimizations requiring entrypoint
+                if "bundle optimizations require at least one entrypoint" in result.stderr:
+                    logging.warning("OPA optimization requires an entrypoint, retrying without optimization")
+                    # Retry without optimization
+                    return self.evaluate_policy(
+                        policy_path=policy_path, 
+                        input_data=input_data, 
+                        query=query, 
+                        mode=mode,
+                        entrypoint=None,  # Clear entrypoint
+                        optimize_level=0  # Disable optimization
+                    )
+                
+                # If not already in debug mode, retry with debug options for better diagnostics
+                if mode != "debug":
+                    logging.info("Retrying with debug mode to get more detailed error information")
+                    return self.evaluate_policy(
+                        policy_path=policy_path, 
+                        input_data=input_data, 
+                        query=query, 
+                        mode="debug",
+                        entrypoint=None,  # Clear entrypoint in debug mode
+                        optimize_level=0  # Disable optimization in debug mode
+                    )
+                
+                # Structured error response with detailed information
+                return {
+                    "error": f"OPA execution returned non-zero exit code: {result.returncode}",
+                    "stderr": result.stderr,
+                    "command": " ".join(cmd),
+                    "policy_files": policy_files
+                }
             
             if result.stderr:
-                logging.error(f"OPA stderr output: {result.stderr}")
+                logging.warning(f"OPA stderr output (non-fatal): {result.stderr}")
             
             if not result.stdout or result.stdout.strip() == "":
                 logging.warning("OPA returned empty output")
+                
+                # If not in debug mode, retry with debug mode
+                if mode != "debug":
+                    logging.info("Retrying with debug mode to diagnose empty output")
+                    return self.evaluate_policy(
+                        policy_path=policy_path, 
+                        input_data=input_data, 
+                        query=query, 
+                        mode="debug",
+                        entrypoint=None,  # Clear entrypoint in debug mode
+                        optimize_level=0  # Disable optimization in debug mode
+                    )
+                
                 # Return a structured result indicating empty output
                 return {
-                    "policy_name": Path(policy_path).stem,
+                    "policy_name": Path(primary_policy_path).stem,
                     "result": False,
                     "error": "Empty result from OPA",
                     "details": "The policy evaluation returned no output. Check if the compliance_report rule exists in the policy."
                 }
             
-            logging.info(f"OPA stdout output: {result.stdout}")
+            logging.info(f"OPA stdout output: {result.stdout[:200]}..." if len(result.stdout) > 200 else f"OPA stdout output: {result.stdout}")
             
+            # Parse the output based on the format
+            if mode in ["development", "debug"]:
+                # For pretty format, just return the raw output
+                if "--format" in cmd and cmd[cmd.index("--format") + 1] == "pretty":
+                    return {
+                        "result": result.stdout,
+                        "format": "pretty",
+                        "coverage": "--coverage" in cmd,
+                        "metrics": "--metrics" in cmd
+                    }
+            
+            # For JSON format (production mode or if pretty parsing failed)
             try:
                 parsed_result = json.loads(result.stdout)
                 
                 # If parsed_result is empty object, create a meaningful response
                 if not parsed_result or parsed_result == {}:
                     logging.warning("OPA returned empty JSON object")
+                    
                     # Try running with 'allow' query to at least get basic compliance result
+                    # Extract package prefix from the query
+                    package_prefix = query.split("data.")[1].split(".")[0] if "data." in query else ""
                     allow_query = f"data.{package_prefix}.allow"
                     logging.info(f"Trying alternative query for allow rule: {allow_query}")
                     
+                    # Create a new command for the allow query
                     allow_cmd = [
                         self.opa_path,
                         "eval",
                         allow_query,
-                        "-d",
-                        abs_policy_path,
-                        "--format",
-                        "json",
-                        "--stdin-input"
                     ]
+                    
+                    # Add policy files
+                    allow_cmd.extend(policy_args)
+                    
+                    # Add format and input options
+                    allow_cmd.extend([
+                        "--format", "json",
+                        "--stdin-input"
+                    ])
                     
                     allow_result = subprocess.run(
                         allow_cmd,
@@ -221,7 +358,7 @@ class OpaEvaluator:
                         "result": [{
                             "expressions": [{
                                 "value": {
-                                    "policy": Path(policy_path).stem,
+                                    "policy": Path(primary_policy_path).stem,
                                     "overall_result": allow_value,
                                     "detailed_results": {
                                         "compliance": {
@@ -237,28 +374,48 @@ class OpaEvaluator:
                         }]
                     }
                 
-                # Try to handle different result formats by normalizing the structure
-                if "result" in parsed_result and parsed_result["result"]:
-                    # Standard format
-                    return parsed_result
-                elif "compliance_report" in parsed_result:
-                    # Wrap the compliance_report in the standard format
-                    return {
-                        "result": [{
-                            "expressions": [{
-                                "value": parsed_result["compliance_report"]
-                            }]
-                        }]
-                    }
-                else:
-                    # Return as is but log a warning
-                    logging.warning(f"Unknown OPA result format: {parsed_result}")
-                    return parsed_result
+                return parsed_result
                 
             except json.JSONDecodeError as e:
-                logging.error(f"Failed to parse OPA output as JSON: {result.stdout}")
+                logging.error(f"Error parsing OPA output as JSON: {e}")
+                
+                # If output is not JSON but we have output, it might be from pretty format
+                if result.stdout:
+                    return {
+                        "result": result.stdout,
+                        "format": "raw",
+                        "parse_error": str(e)
+                    }
+                
                 return {"error": f"Failed to parse OPA output: {str(e)}", "raw_output": result.stdout}
-            
+                
         except Exception as e:
-            logging.error(f"Unexpected error during policy evaluation: {str(e)}")
-            return {"error": f"Unexpected error: {str(e)}"}
+            logging.error(f"Unexpected error in evaluate_policy: {e}")
+            import traceback
+            logging.error(traceback.format_exc())
+            return {"error": f"Policy evaluation failed: {str(e)}"}
+
+    def evaluate_policies_by_category(self, category: str, input_data: Dict[str, Any], subcategory: str = "", version: str = None) -> List[Dict[str, Any]]:
+        """
+        Evaluate all policies for a specific category against input data.
+        
+        Args:
+            category: Policy category (global, international, etc.)
+            input_data: Dictionary containing the input data
+            subcategory: Policy subcategory (empty for global, eu_ai_act for international, etc.)
+            version: Optional policy version (e.g., "v1")
+            
+        Returns:
+            List of dictionaries containing evaluation results
+        """
+        policies = self.policy_loader.get_policies(category, subcategory, version)
+        if not policies:
+            logging.error(f"No policies found for category '{category}', subcategory '{subcategory}', version '{version}'")
+            return [{"error": f"No policies found for category '{category}', subcategory '{subcategory}', version '{version}'"}]
+        
+        results = []
+        for policy in policies:
+            result = self.evaluate_policy(policy, input_data)
+            results.append(result)
+        
+        return results
