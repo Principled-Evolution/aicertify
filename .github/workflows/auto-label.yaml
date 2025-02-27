@@ -41,7 +41,7 @@ jobs:
       # Label issues using actions-ecosystem/action-add-labels
       - name: Label issues based on content
         if: github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'edited')
-        uses: github/issue-labeler@v3
+        uses: github/issue-labeler@v3.3
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           configuration-path: .github/labeler.yml
