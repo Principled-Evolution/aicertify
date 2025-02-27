@@ -183,3 +183,4 @@ reference-docs/
 **/reports/*.pdf
 **/temp_reports/*
 **/temp_reports
+**/examples/outputs/*

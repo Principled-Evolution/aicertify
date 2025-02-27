@@ -1,0 +1,21 @@
+2025-02-27 13:36:44,605 [WARNING] \u26a0\ufe0f Ollama server not available at http://localhost:11434 - will use OpenAI fallback
+2025-02-27 13:36:44,605 [INFO] Current working directory: C:\Projects\AICertify\examples
+2025-02-27 13:36:44,605 [INFO] Script directory: C:\Projects\AICertify\examples
+2025-02-27 13:36:44,605 [INFO] Contract storage directory: C:\Projects\AICertify\examples\outputs\medical_diagnosis
+2025-02-27 13:36:44,605 [INFO] Starting multi-agent diagnosis session.
+2025-02-27 13:36:44,605 [INFO] Session started at 2025-02-27T13:36:44.605491
+2025-02-27 13:36:44,605 [INFO] Running Neurology Agent...
+2025-02-27 13:36:46,693 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-27 13:36:46,709 [INFO] Neurology Agent result: Stable angina pectoris due to coronary artery disease, secondary to hypertension, hyperlipidemia, and strong family history of cardiovascular disease; with associated mild prediabetes.
+2025-02-27 13:36:46,709 [INFO] Running Gastroenterology Agent...
+2025-02-27 13:36:47,544 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-27 13:36:47,544 [INFO] Gastroenterology Agent result: Unstable Angina secondary to coronary artery disease.
+2025-02-27 13:36:47,544 [INFO] Running Cardiology Agent...
+2025-02-27 13:36:48,826 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-27 13:36:48,843 [INFO] Cardiology Agent result: Stable Angina due to Coronary Artery Disease
+2025-02-27 13:36:48,843 [INFO] Running Primary Care Agent...
+2025-02-27 13:36:50,471 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-27 13:36:50,471 [INFO] Primary Care Agent result: Stable angina due to coronary artery disease (CAD) as indicated by chest pain, risk factors including hypertension, hyperlipidemia, family history of CAD, positive stress test for inducible ischemia, and lifestyle factors. Presence of mild ST depression on ECG supports the diagnosis.
+2025-02-27 13:36:50,471 [INFO] Running Reasoning Agent for final integration...
+2025-02-27 13:36:51,467 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-27 13:36:51,477 [INFO] Reasoning Agent final report: The diagnosis is stable angina pectoris due to coronary artery disease (CAD). This is indicated by the presence of chest pain upon exertion or stress, along with risk factors such as hypertension, hyperlipidemia, and a strong family history of cardiovascular disease.

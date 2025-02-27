@@ -271,7 +271,31 @@ async def evaluate_contract_object(
         Dictionary containing evaluation results, policy validation, and report
     """
     # Create evaluator
-    evaluator = AICertifyEvaluator()
+    try:
+        evaluator = AICertifyEvaluator()
+        
+        # Debug information about PolicyLoader
+        logger.info("Debugging PolicyLoader in evaluate_contract_object")
+        from aicertify.opa_core.policy_loader import PolicyLoader
+        loader = PolicyLoader()
+        logger.info(f"PolicyLoader methods: {[method for method in dir(loader) if not method.startswith('_')]}")
+        logger.info(f"get_policies_by_category exists: {'get_policies_by_category' in dir(loader)}")
+        
+        import inspect
+        loader_source = inspect.getfile(PolicyLoader)
+        logger.info(f"PolicyLoader loaded from: {loader_source}")
+        
+        # Check AICertifyEvaluator's policy_loader
+        logger.info(f"Evaluator's policy_loader methods: {[method for method in dir(evaluator.policy_loader) if not method.startswith('_')]}")
+        logger.info(f"get_policies_by_category exists in evaluator's loader: {'get_policies_by_category' in dir(evaluator.policy_loader)}")
+        
+        evaluator_loader_source = inspect.getfile(type(evaluator.policy_loader))
+        logger.info(f"Evaluator's PolicyLoader loaded from: {evaluator_loader_source}")
+    except Exception as e:
+        logger.error(f"Error during PolicyLoader debugging: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        evaluator = AICertifyEvaluator()
     
     # Convert contract to conversations format
     conversations = []
@@ -295,6 +319,8 @@ async def evaluate_contract_object(
         
     except Exception as e:
         logger.error(f"Error during evaluation: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return {"error": f"Evaluation failed: {str(e)}"}
     
     # Apply OPA policies
@@ -305,6 +331,8 @@ async def evaluate_contract_object(
         )
     except Exception as e:
         logger.error(f"Error during policy validation: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         # Create a minimal but valid policy result structure
         opa_results = {
             "error": f"Policy validation failed: {str(e)}",
@@ -327,7 +355,7 @@ async def evaluate_contract_object(
                 ]
             }
         }
-        
+    
     # Create result dictionary
     result = {
         "evaluation": evaluation_result,
