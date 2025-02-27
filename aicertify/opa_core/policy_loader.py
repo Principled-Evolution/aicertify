@@ -26,6 +26,8 @@ class PolicyLoader:
             
             # If path doesn't exist, try additional search paths
             if not self.policies_dir.exists():
+                logging.warning(f"Primary policies directory not found at: {self.policies_dir}")
+                
                 # Try the current working directory first
                 cwd_path = Path.cwd() / "opa_policies"
                 if cwd_path.exists():
@@ -66,6 +68,26 @@ class PolicyLoader:
         # Log the final chosen path
         logging.info(f"Using policies directory: {self.policies_dir}")
         
+        # Check if the directory actually exists and has .rego files
+        if not self.policies_dir.exists():
+            logging.error(f"Policies directory does not exist: {self.policies_dir}")
+        else:
+            rego_files = list(self.policies_dir.rglob("*.rego"))
+            if not rego_files:
+                logging.warning(f"No .rego files found in policies directory: {self.policies_dir}")
+                # Try to help diagnose the issue by listing the contents
+                try:
+                    top_level_items = list(self.policies_dir.iterdir())
+                    logging.info(f"Contents of policies directory ({len(top_level_items)} items):")
+                    for item in top_level_items:
+                        if item.is_dir():
+                            subdir_items = list(item.iterdir())
+                            logging.info(f"  - {item.name}/ ({len(subdir_items)} items)")
+                        else:
+                            logging.info(f"  - {item.name}")
+                except Exception as e:
+                    logging.error(f"Error listing policies directory contents: {e}")
+        
         # Load policies categorized by their structure
         self.policies_by_category = self._load_policies()
         
@@ -76,23 +98,23 @@ class PolicyLoader:
         """
         Load all .rego policies from the policies directory using the modular structure.
         
-        The new structure follows:
-        - global/v1/policy.rego
-        - international/eu_ai_act/v1/policy.rego
-        - industry_specific/healthcare/v1/policy.rego
-        - operational/aiops/v1/policy.rego
+        The structure follows:
+        - global/v1/accountability/accountability.rego
+        - international/eu_ai_act/v1/fairness/fairness.rego
+        - industry_specific/healthcare/v1/patient_safety/patient_safety.rego
+        - operational/aiops/v1/scalability/scalability.rego
         
         Returns:
             Dictionary mapping categories to subcategories to versions to lists of policy file paths
             {
                 "global": {
                     "": {  # Empty string for direct policies
-                        "v1": ["/path/to/global/v1/transparency.rego", ...]
+                        "v1": ["/path/to/global/v1/accountability/accountability.rego", ...]
                     }
                 },
                 "international": {
                     "eu_ai_act": {
-                        "v1": ["/path/to/international/eu_ai_act/v1/transparency.rego", ...]
+                        "v1": ["/path/to/international/eu_ai_act/v1/fairness/fairness.rego", ...]
                     }
                 }
             }
@@ -131,20 +153,27 @@ class PolicyLoader:
                 subcategory = ""
                 version = ""
                 
-                if len(parts) >= 3 and parts[-2].startswith('v'):  # Check if the parent dir is a version directory
-                    # For global: global/v1/policy.rego
-                    if category == "global" and len(parts) == 3:
-                        subcategory = ""
-                        version = parts[1]  # v1, v2, etc.
-                    # For international, industry_specific, operational: category/subcategory/v1/policy.rego
-                    elif len(parts) == 4:
-                        subcategory = parts[1]  # eu_ai_act, healthcare, etc.
-                        version = parts[2]  # v1, v2, etc.
-                    else:
-                        logging.warning(f"Unexpected path structure for policy file: {policy_file}")
-                        continue
+                # Find the version directory by looking for a part that starts with 'v' and has digits after it
+                version_index = -1
+                for i, part in enumerate(parts):
+                    if part.startswith('v') and part[1:].isdigit():
+                        version_index = i
+                        version = part
+                        break
+                
+                if version_index == -1:
+                    logging.warning(f"No version directory found for policy file: {policy_file}")
+                    continue
+                
+                # Determine subcategory based on position of version directory
+                if category == "global" and version_index == 1:
+                    # For global: global/v1/*/policy.rego
+                    subcategory = ""
+                elif version_index == 2:
+                    # For others: category/subcategory/v1/*/policy.rego
+                    subcategory = parts[1]  # eu_ai_act, healthcare, etc.
                 else:
-                    logging.warning(f"Policy file not in versioned directory: {policy_file}")
+                    logging.warning(f"Unexpected path structure for policy file: {policy_file}")
                     continue
                 
                 # Initialize nested dictionaries if they don't exist
@@ -246,6 +275,18 @@ class PolicyLoader:
             subcats = list(self.policies_by_category[category].keys())
             subcats_str = ", ".join([f"'{sc}'" for sc in subcats]) if subcats else "none"
             logging.error(f"Subcategory '{subcategory}' not found in category '{category}'. Available subcategories: {subcats_str}")
+            
+            # If there are no subcategories but we're looking for a common one like eu_ai_act,
+            # this could indicate a loading issue. Log more details for debugging.
+            if not subcats and subcategory in ["eu_ai_act", "nist", "india"]:
+                logging.error(f"Common subcategory '{subcategory}' not found. This may indicate a policy loading issue.")
+                all_rego_files = list(self.policies_dir.rglob("*.rego"))
+                matching_files = [f for f in all_rego_files if subcategory in str(f)]
+                if matching_files:
+                    logging.info(f"Found {len(matching_files)} .rego files containing '{subcategory}' in path:")
+                    for file in matching_files[:5]:  # Limit to first 5 to avoid log spam
+                        logging.info(f"  - {file}")
+            
             return None
         
         # Use the specified version or get the latest
@@ -263,7 +304,13 @@ class PolicyLoader:
             logging.error(f"Version '{version}' not found for category '{category}', subcategory '{subcategory}'. Available versions: {versions_str}")
             return None
             
-        return self.policies_by_category[category][subcategory][version]
+        policies = self.policies_by_category[category][subcategory][version]
+        if policies:
+            logging.info(f"Found {len(policies)} policies for {category}/{subcategory}/{version}")
+        else:
+            logging.warning(f"No policies found for {category}/{subcategory}/{version}")
+            
+        return policies
     
     def resolve_policy_dependencies(self, policy_files: List[str]) -> List[str]:
         """
@@ -391,6 +438,8 @@ class PolicyLoader:
         # Normalize path separators
         policy_category = policy_category.replace('\\', '/').lower()
         
+        logging.info(f"Trying policy path: {policy_category}")
+        
         # Try to match as a direct category/subcategory combination
         if '/' in policy_category:
             parts = policy_category.split('/')
@@ -403,6 +452,7 @@ class PolicyLoader:
                 # Try to get policies using direct category/subcategory match
                 policies = self.get_policies(category, subcategory)
                 if policies:
+                    logging.info(f"Found policies using direct path {category}/{subcategory}")
                     return policies
         
         # Try to match as a standalone category
@@ -415,6 +465,7 @@ class PolicyLoader:
                     if subcategory_policies:
                         all_policies.extend(subcategory_policies)
                 if all_policies:
+                    logging.info(f"Found policies using category match {category}")
                     return all_policies
         
         # Try to match as a standalone subcategory
@@ -423,18 +474,31 @@ class PolicyLoader:
                 if policy_category == subcategory:
                     policies = self.get_policies(category, subcategory)
                     if policies:
+                        logging.info(f"Found policies using subcategory match {category}/{subcategory}")
                         return policies
-        
-        # Try EU AI Act specifically as it's commonly used
-        if policy_category in ['eu_ai_act', 'eu-ai-act', 'euaiact']:
+                    
+        # Special handling for EU AI Act since it's commonly used
+        if policy_category.lower() in ['eu_ai_act', 'eu-ai-act', 'euaiact']:
             policies = self.get_policies('international', 'eu_ai_act')
             if policies:
+                logging.info(f"Found policies using special case for EU AI Act")
                 return policies
+        
+        # Log all available categories and subcategories for debugging
+        available_categories = []
+        for category, subcategories in self.policies_by_category.items():
+            for subcategory in subcategories.keys():
+                if subcategory:
+                    available_categories.append(f"{category}/{subcategory}")
+                else:
+                    available_categories.append(category)
+        logging.error(f"Available categories: {available_categories}")
                 
         # Try global policies as fallback if the category contains "global"
         if 'global' in policy_category:
             policies = self.get_policies('global', '')
             if policies:
+                logging.info(f"Found policies using global fallback")
                 return policies
         
         # No matches found
