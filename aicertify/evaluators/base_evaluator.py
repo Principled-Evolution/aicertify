@@ -43,6 +43,43 @@ class Report(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
     generated_at: datetime = Field(default_factory=datetime.utcnow)
 
+class EvaluatorConfig:
+    """Configuration class for evaluators."""
+    
+    def __init__(self, config_dict: Optional[Dict] = None):
+        """
+        Initialize the configuration with a dictionary.
+        
+        Args:
+            config_dict: Dictionary containing configuration parameters
+        """
+        self._config = config_dict or {}
+        
+    def get(self, key, default=None):
+        """
+        Get a configuration value by key.
+        
+        Args:
+            key: The configuration key to retrieve
+            default: Default value to return if key is not found
+            
+        Returns:
+            The configuration value or default if not found
+        """
+        return self._config.get(key, default)
+    
+    def __getattr__(self, name):
+        """
+        Allow attribute-style access to configuration values.
+        
+        Args:
+            name: The attribute name to access
+            
+        Returns:
+            The configuration value or None if not found
+        """
+        return self._config.get(name)
+
 class BaseEvaluator(ABC):
     """Base abstract class for all compliance evaluators in AICertify."""
     
@@ -53,7 +90,7 @@ class BaseEvaluator(ABC):
         Args:
             config: Configuration dictionary controlling evaluator behavior
         """
-        self.config = config or {}
+        self.config = EvaluatorConfig(config or {})
         self.threshold = self.config.get("threshold", 0.7)
         self._initialize()
     

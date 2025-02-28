@@ -38,6 +38,9 @@ class ContentSafetyEvaluator(BaseEvaluator):
     
     def _initialize(self) -> None:
         """Initialize the content safety evaluator with DeepEval components."""
+        # Set the name for this evaluator
+        self.config._config["name"] = "content_safety"
+        
         if not DEEPEVAL_AVAILABLE:
             logger.warning("DeepEval is not available. Content safety evaluation will be limited.")
             return

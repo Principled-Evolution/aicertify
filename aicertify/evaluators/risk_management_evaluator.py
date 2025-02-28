@@ -28,6 +28,9 @@ class RiskManagementEvaluator(BaseEvaluator):
     
     def _initialize(self) -> None:
         """Initialize the risk management evaluator."""
+        # Set the name for this evaluator
+        self.config._config["name"] = "risk_management"
+        
         # Risk documentation requirements
         self.risk_assessment_keywords = [
             "risk assessment", "risk analysis", "identified risks", "risk factors",

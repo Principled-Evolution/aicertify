@@ -4,21 +4,21 @@ This module contains the contract input models intended for developers and exter
 It includes the core models: ModelInfo, Interaction, and AiCertifyContract, as well as helper methods for creating, validating, and aggregating contracts.
 '''
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, ClassVar
 from uuid import UUID, uuid4
 from datetime import datetime
 import json
 import logging
 from pathlib import Path
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class ModelInfo(BaseModel):
     """Model information for the AI system."""
     model_name: str
     model_version: Optional[str] = None
-    additional_info: Dict[str, Any] = Field(default_factory=dict)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class Interaction(BaseModel):
@@ -37,7 +37,54 @@ class AiCertifyContract(BaseModel):
     model_info: ModelInfo
     interactions: List[Interaction]
     final_output: Optional[str] = None
+    
+    # Enhanced context fields for Phase 1
     context: Dict[str, Any] = Field(default_factory=dict)
+    compliance_context: Dict[str, Any] = Field(default_factory=dict)
+    
+    def get(self, key, default=None):
+        """
+        Get a value from the contract by key, similar to dictionary access.
+        
+        Args:
+            key: The key to retrieve
+            default: Default value to return if key is not found
+            
+        Returns:
+            The value associated with the key or default if not found
+        """
+        if hasattr(self, key):
+            return getattr(self, key)
+        
+        # Check in context and compliance_context
+        if key in self.context:
+            return self.context[key]
+        if key in self.compliance_context:
+            return self.compliance_context[key]
+            
+        return default
+    
+    @model_validator(mode='after')
+    def validate_domain_specific(self):
+        """Validate domain-specific requirements if domain is provided."""
+        context = self.context
+        domain = context.get("domain")
+        
+        if domain == "healthcare":
+            # Validate healthcare-specific requirements
+            if "risk_documentation" not in context:
+                raise ValueError("Healthcare contracts must include risk documentation")
+            if "patient_data" not in context:
+                raise ValueError("Healthcare contracts must include patient data")
+        
+        elif domain == "finance":
+            # Validate finance-specific requirements
+            if "risk_documentation" not in context:
+                raise ValueError("Financial contracts must include risk documentation")
+            if "customer_data" not in context:
+                raise ValueError("Financial contracts must include customer data")
+        
+        return self
 
 
 def create_contract(
@@ -45,7 +92,8 @@ def create_contract(
     model_info: Dict[str, Any],
     interactions: List[Dict[str, Any]],
     final_output: Optional[str] = None,
-    context: Optional[Dict[str, Any]] = None
+    context: Optional[Dict[str, Any]] = None,
+    compliance_context: Optional[Dict[str, Any]] = None
 ) -> AiCertifyContract:
     """
     Create and return an AiCertifyContract instance.
@@ -55,7 +103,19 @@ def create_contract(
         model_info (Dict[str, Any]): A dictionary containing model information.
         interactions (List[Dict[str, Any]]): A list of dictionaries with keys 'input_text' and 'output_text'.
         final_output (Optional[str], optional): Final output or summary of the evaluation.
-        context (Optional[Dict[str, Any]], optional): Additional context or metadata.
+        context (Optional[Dict[str, Any]], optional): Domain-specific context or metadata.
+            For healthcare domain, should include:
+                - domain: "healthcare"
+                - patient_data: Dictionary with demographics and medical history
+                - risk_documentation: String with risk assessment and mitigation measures
+            For finance domain, should include:
+                - domain: "finance"
+                - customer_data: Dictionary with demographics and financial profile
+                - risk_documentation: String with risk assessment and mitigation measures
+        compliance_context (Optional[Dict[str, Any]], optional): Compliance-related context.
+            Should include:
+                - jurisdictions: List of applicable jurisdictions (e.g., ["us", "eu"])
+                - frameworks: List of applicable regulatory frameworks (e.g., ["hipaa", "eu_ai_act"])
 
     Returns:
         AiCertifyContract: The constructed contract.
@@ -66,7 +126,8 @@ def create_contract(
         model_info=ModelInfo(**model_info),
         interactions=interactions_objs,
         final_output=final_output,
-        context=context or {}
+        context=context or {},
+        compliance_context=compliance_context or {}
     )
     logging.info("Contract created successfully.")
     return contract
@@ -88,6 +149,25 @@ def validate_contract(contract: AiCertifyContract) -> bool:
     if not contract.interactions:
         logging.error("Validation failed: No interactions provided.")
         return False
+    
+    # Check for domain-specific requirements
+    if "domain" in contract.context:
+        domain = contract.context["domain"]
+        if domain == "healthcare":
+            if "risk_documentation" not in contract.context:
+                logging.error("Validation failed: Healthcare contract missing risk documentation.")
+                return False
+            if "patient_data" not in contract.context:
+                logging.error("Validation failed: Healthcare contract missing patient data.")
+                return False
+        elif domain == "finance":
+            if "risk_documentation" not in contract.context:
+                logging.error("Validation failed: Financial contract missing risk documentation.")
+                return False
+            if "customer_data" not in contract.context:
+                logging.error("Validation failed: Financial contract missing customer data.")
+                return False
+    
     logging.info("Contract validated successfully.")
     return True
 

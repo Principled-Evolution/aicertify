@@ -7,6 +7,7 @@ import json
 from typing import Dict, Any, Optional, List, Union, Literal
 from pathlib import Path
 from .policy_loader import PolicyLoader
+from uuid import UUID
 
 # Define execution modes as a Literal type for better type checking
 ExecutionMode = Literal["production", "development", "debug"]
@@ -139,7 +140,14 @@ class OpaEvaluator:
             
             # Convert input_data to proper JSON string
             try:
-                input_json = json.dumps(input_data)
+                # Custom JSON encoder to handle UUID objects
+                class UUIDEncoder(json.JSONEncoder):
+                    def default(self, obj):
+                        if isinstance(obj, UUID):
+                            return str(obj)
+                        return super().default(obj)
+                
+                input_json = json.dumps(input_data, cls=UUIDEncoder)
                 logging.info(f"Input data: {input_json}")
             except Exception as e:
                 logging.error(f"Error converting input data to JSON: {e}")

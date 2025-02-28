@@ -1,27 +1,4 @@
-<think>You're right, the implementation plan should include validation steps to ensure that the Phase 1 evaluators themselves are working correctly before incorporating them into the examples. Let me think through what validation steps would be necessary:
-
-1. Validating Base Evaluator Functionality:
-   - Ensure BaseEvaluator interface works as expected
-   - Verify EvaluationResult and Report models can be properly instantiated
-   - Check that async methods correctly wrap synchronous ones
-
-2. Validating Individual Evaluators:
-   - Test FairnessEvaluator with sample data
-   - Test ContentSafetyEvaluator with sample data
-   - Test RiskManagementEvaluator with sample data
-   - Ensure they all follow the standardized interface
-
-3. Validating the ComplianceEvaluator:
-   - Test that it correctly orchestrates multiple evaluators
-   - Verify it can handle evaluator errors gracefully
-   - Check that its report generation works
-
-4. Validating OPA Policy Integration:
-   - Ensure PolicyLoader can find and load policies
-   - Verify that policies correctly interpret evaluation results
-   - Check that policy recommendations are included in reports
-
-Let me create a validation guide that addresses these concerns and can be added to the implementation plan.</think># Phase 1 Evaluators Validation Guide
+# Phase 1 Evaluators Validation Guide
 
 Before proceeding with the implementation plan, the engineering team should validate the core functionality of the Phase 1 evaluators. This guide outlines the necessary validation steps to ensure the evaluators are working correctly before, during, and after implementation.
 

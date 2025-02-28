@@ -40,6 +40,9 @@ class FairnessEvaluator(BaseEvaluator):
     
     def _initialize(self) -> None:
         """Initialize the fairness evaluator with LangFair components."""
+        # Set the name for this evaluator
+        self.config._config["name"] = "fairness"
+        
         if not LANGFAIR_AVAILABLE:
             logger.warning("LangFair is not available. Fairness evaluation will be limited.")
             return

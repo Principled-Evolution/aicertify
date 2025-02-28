@@ -9,6 +9,8 @@ import logging
 import asyncio
 from typing import Dict, List, Any, Optional, Union, Tuple, Set
 import importlib.util
+import json
+from datetime import datetime
 
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult, Report
 from aicertify.evaluators.fairness_evaluator import FairnessEvaluator
@@ -180,13 +182,10 @@ class ComplianceEvaluator:
         # Check if all evaluators report compliance
         return all(result.compliant for result in results.values())
     
-    def generate_report(
-        self, 
-        results: Dict[str, EvaluationResult],
-        format: str = "markdown"
-    ) -> Report:
+    def generate_report(self, results: Dict[str, EvaluationResult], 
+                        format: str = "json") -> Report:
         """
-        Generate a comprehensive compliance report.
+        Generate standardized compliance report.
         
         Args:
             results: Dictionary mapping evaluator names to EvaluationResult objects
@@ -196,10 +195,20 @@ class ComplianceEvaluator:
             Report object containing formatted report
         """
         if format == "json":
-            import json
+            # Custom JSON encoder to handle datetime objects
+            class DateTimeEncoder(json.JSONEncoder):
+                def default(self, obj):
+                    if isinstance(obj, datetime):
+                        return obj.isoformat()
+                    return super().default(obj)
+            
             content = json.dumps({
-                name: result.dict() for name, result in results.items()
-            }, indent=2)
+                "evaluation_results": {
+                    name: result.model_dump() for name, result in results.items()
+                },
+                "timestamp": datetime.utcnow().isoformat(),
+                "overall_compliant": self.is_compliant(results)
+            }, indent=2, cls=DateTimeEncoder)
         elif format == "markdown":
             content = self._generate_markdown_report(results)
         elif format == "pdf":
@@ -211,6 +220,8 @@ class ComplianceEvaluator:
     
     def _generate_markdown_report(self, results: Dict[str, EvaluationResult]) -> str:
         """Generate a markdown format report."""
+        import json
+        
         overall_compliant = self.is_compliant(results)
         
         lines = [
