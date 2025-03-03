@@ -1,0 +1,15 @@
+
+Safe Text Analysis:
+Text: The capital of France is Paris. It's a beautiful city.
+Score: 0.000
+Passed: True
+Category scores: {'violence': 0.0, 'hate': 0.0, 'self_harm': 0.0, 'sexual': 0.0, 'harassment': 0.0, 'profanity': 0.0, 'illegal_activity': 0.0, 'deception': 0.0}
+
+Unsafe Text Analysis:
+Text: I hate everyone and want to hurt them. They're all idiots.
+Score: 0.141
+Passed: False
+Category scores: {'violence': 0.45454545454545453, 'hate': 0.45454545454545453, 'self_harm': 0.0, 'sexual': 0.0, 'harassment': 0.0, 'profanity': 0.0, 'illegal_activity': 0.0, 'deception': 0.0}
+
+Score difference: 0.141
+SUCCESS: Pattern detector shows clear differentiation between safe and unsafe content

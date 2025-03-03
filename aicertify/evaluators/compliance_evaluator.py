@@ -46,7 +46,8 @@ class ComplianceEvaluator:
     def __init__(
         self,
         evaluators: Optional[List[str]] = None,
-        config: Optional[EvaluatorConfig] = None
+        config: Optional[EvaluatorConfig] = None,
+        use_mock_if_unavailable: bool = False
     ):
         """
         Initialize the compliance evaluator with selected evaluators.
@@ -54,8 +55,18 @@ class ComplianceEvaluator:
         Args:
             evaluators: List of evaluator names to use, or None for all available
             config: Configuration for the evaluators
+            use_mock_if_unavailable: Whether to use mock implementations when real evaluators are unavailable
         """
         self.config = config or EvaluatorConfig()
+        
+        # Add use_mock_if_unavailable to each evaluator's config
+        if "use_mock_if_unavailable" not in self.config.fairness:
+            self.config.fairness["use_mock_if_unavailable"] = use_mock_if_unavailable
+        if "use_mock_if_unavailable" not in self.config.content_safety:
+            self.config.content_safety["use_mock_if_unavailable"] = use_mock_if_unavailable
+        if "use_mock_if_unavailable" not in self.config.risk_management:
+            self.config.risk_management["use_mock_if_unavailable"] = use_mock_if_unavailable
+        
         self.all_evaluators = {
             "fairness": FairnessEvaluator(config=self.config.fairness),
             "content_safety": ContentSafetyEvaluator(config=self.config.content_safety),

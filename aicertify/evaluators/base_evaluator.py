@@ -23,10 +23,22 @@ class EvaluationResult(BaseModel):
     evaluator_name: str
     compliant: bool
     score: float
-    threshold: float
+    threshold: Optional[float] = None
     reason: str
     details: Dict[str, Any]
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+    
+    def to_json(self) -> Dict[str, Any]:
+        """Convert the result to a JSON-serializable dictionary."""
+        return {
+            "evaluator_name": self.evaluator_name,
+            "compliant": self.compliant,
+            "score": self.score,
+            "threshold": self.threshold,
+            "reason": self.reason,
+            "details": self.details,
+            "timestamp": self.timestamp.isoformat()
+        }
     
     class Config:
         """Pydantic configuration."""

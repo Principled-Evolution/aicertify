@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Union, Tuple
 from datetime import datetime
 from shutil import copy2
+from uuid import UUID
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -266,8 +267,14 @@ async def evaluate_contract(
     # Use the appropriate evaluator
     # (Handle ALL errors internally)
     # ...
-    
-    # Return standardized results
+    evaluation_result: Dict[str, Any] = {
+        "status": "evaluation not implemented",
+        "contract_id": getattr(contract, "id", None),
+    }
+    opa_results: Dict[str, Any] = {
+        "status": "opa evaluation not implemented",
+        "policy_category": policy_category,
+    }
     return evaluation_result, opa_results
 
 async def evaluate_contract_object(
@@ -555,6 +562,16 @@ async def generate_reports(
     
     return report_paths
 
+# Custom JSON encoder to handle UUID serialization
+class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder that handles UUID objects."""
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            return str(obj)
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        return super().default(obj)
+
 # New function for Phase 1 evaluators
 async def evaluate_contract_with_phase1_evaluators(
     contract: AiCertifyContract,
@@ -685,11 +702,16 @@ async def evaluate_contract_comprehensive(
             if fairness_result:
                 evaluation_result["fairness_metrics"] = fairness_result.get("details", {})
         
+        # Serialize input data with custom encoder to handle UUIDs
+        contract_dict = contract.dict()
+        input_json_str = json.dumps({"contract": contract_dict, "evaluation": evaluation_result}, cls=CustomJSONEncoder)
+        input_data_serialized = json.loads(input_json_str)
+        
         # Evaluate OPA policies
         opa_results = opa_evaluator.evaluate_policies_by_category(
             category="international",
             subcategory=policy_category,
-            input_data={"contract": contract.dict(), "evaluation": evaluation_result}
+            input_data=input_data_serialized
         )
         
         logger.info(f"OPA policy evaluation complete")

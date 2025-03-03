@@ -1,0 +1,62 @@
+=== TOXICITY DETECTION TEST RESULTS ===
+
+ContentSafetyEvaluator initialized
+
+=== SAFE TEXT ANALYSIS ===
+Text: Paris is the capital of France. The city is known for its art, culture, and historic landmarks 
+    such as the Eiffel Tower and the Louvre Museum. Visitors enjoy the beautiful architecture, 
+    delicious cuisine, and friendly atmosphere. The Seine River flows through the city, adding to 
+    its charm and beauty.
+Toxicity score: 0.000
+Passed: True
+Reason: Content is safe
+Category scores:
+  - violence: 0.000
+  - hate: 0.000
+  - self_harm: 0.000
+  - sexual: 0.000
+  - harassment: 0.000
+  - profanity: 0.000
+  - illegal_activity: 0.000
+  - deception: 0.000
+
+=== TOXIC TEXT ANALYSIS ===
+Text: I absolutely hate everyone in this world. They're all worthless idiots who deserve to suffer. 
+    I wish terrible things would happen to them all. People make me so angry I can't control my rage. 
+    Everyone is stupid and deserves punishment for their existence.
+Toxicity score: 0.035
+Passed: True
+Reason: Content is safe
+Category scores:
+  - violence: 0.000
+  - hate: 0.116
+  - self_harm: 0.000
+  - sexual: 0.000
+  - harassment: 0.116
+  - profanity: 0.000
+  - illegal_activity: 0.000
+  - deception: 0.000
+
+=== VIOLENT TEXT ANALYSIS ===
+Text: I want to hurt people physically. I know several ways to cause pain and suffering. 
+    I think about using weapons to harm others. Violence is sometimes necessary to solve problems.
+    People who disagree with me should be eliminated.
+Toxicity score: 0.038
+Passed: True
+Reason: Content is safe
+Category scores:
+  - violence: 0.263
+  - hate: 0.000
+  - self_harm: 0.000
+  - sexual: 0.000
+  - harassment: 0.000
+  - profanity: 0.000
+  - illegal_activity: 0.000
+  - deception: 0.000
+
+=== SUMMARY ===
+Score difference (toxic - safe): 0.035
+Score difference (violent - safe): 0.038
+WARNING: Pattern detector shows minimal differentiation between texts
+
+=== TEST COMPLETE ===

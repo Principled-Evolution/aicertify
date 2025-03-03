@@ -16,6 +16,7 @@ All outputs (contracts, reports) will be generated in the examples/outputs/medic
 import os
 import argparse
 import logging
+import asyncio
 from datetime import datetime
 from pathlib import Path
 

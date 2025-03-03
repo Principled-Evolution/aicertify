@@ -6,95 +6,263 @@ import os
 import json
 from typing import Dict, Any, Optional, List, Union, Literal
 from pathlib import Path
-from .policy_loader import PolicyLoader
+from .policy_loader import PolicyLoader, Policy
 from uuid import UUID
+from datetime import datetime
+import tempfile
+import requests
+
+from ..models.contract_models import AiCertifyContract as Contract
 
 # Define execution modes as a Literal type for better type checking
 ExecutionMode = Literal["production", "development", "debug"]
 
+# Custom JSON encoder to handle UUID serialization
+class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder that handles UUID objects."""
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            return str(obj)
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        return super().default(obj)
+
 class OpaEvaluator:
-    """Evaluates OPA policies using the OPA executable."""
-    
-    def __init__(self, policies_dir: str = None):
-        self.opa_path = self._verify_opa_installation()
-        self.policy_loader = PolicyLoader(policies_dir)
+    """Evaluator class for OPA policy evaluation."""
+
+    def __init__(self, use_external_server: bool = False, server_url: str = "http://localhost:8181"):
+        """Initialize the OPA evaluator.
+        
+        Args:
+            use_external_server: Whether to use an external OPA server instead of the local binary
+            server_url: URL of the external OPA server if use_external_server is True
+        """
+        self.policy_loader = PolicyLoader()
+        self.opa_path = None if use_external_server else self._verify_opa_installation()
+        self.use_external_server = use_external_server
+        self.server_url = server_url
+        self.policies_loaded = False
         
     def _verify_opa_installation(self) -> str:
-        """
-        Verify OPA is installed and accessible.
+        """Verify OPA is installed and return the path to the executable.
         
         Returns:
             str: Path to the OPA executable
+            
+        Raises:
+            RuntimeError: If OPA is not found
         """
-        logging.info("Checking for OPA installation...")
-        
-        # Force using the OPA executable at "C:/opa/opa_windows_amd64.exe" if it exists
-        fixed_path = Path("C:/opa/opa_windows_amd64.exe")
-        if fixed_path.is_file():
-            logging.info(f"Found OPA at fixed path: {fixed_path.as_posix()}")
-            return fixed_path.as_posix()
-        
-        # Otherwise, try the standard "opa" or "opa.exe"
+        # First check if OPA_PATH environment variable is set
+        opa_path = os.environ.get("OPA_PATH")
+        if opa_path and os.path.exists(opa_path) and os.access(opa_path, os.X_OK):
+            logging.info(f"Found OPA at environment variable OPA_PATH: {opa_path}")
+            return opa_path
+            
+        # Check for fixed path on Windows
+        if os.name == "nt":
+            # Try several possible Windows paths
+            windows_paths = [
+                "C:/opa/opa_windows_amd64.exe",
+                "C:/opa/opa.exe",
+                str(Path.cwd() / "opa_windows_amd64.exe")
+            ]
+            for path in windows_paths:
+                if os.path.exists(path) and os.access(path, os.X_OK):
+                    logging.info(f"Found OPA at fixed Windows path: {path}")
+                    return path
+                    
+            # Check PATH for opa.exe and opa_windows_amd64.exe
+            for path_dir in os.environ.get("PATH", "").split(os.pathsep):
+                for filename in ["opa.exe", "opa_windows_amd64.exe"]:
+                    exe_path = os.path.join(path_dir, filename)
+                    if os.path.exists(exe_path) and os.access(exe_path, os.X_OK):
+                        logging.info(f"Found OPA in PATH: {exe_path}")
+                        return exe_path
+                        
+        # Check if it's in the PATH (works on Linux/macOS and potentially Windows)
         opa_path = shutil.which("opa")
-        logging.info(f"Standard OPA path check result: {opa_path}")
+        if opa_path:
+            logging.info(f"Found OPA in PATH: {opa_path}")
+            return opa_path
+            
+        # For WSL, try to find it in the Windows path
+        if os.path.exists("/mnt/c"):
+            # Check if it's in /mnt/c/opa
+            wsl_paths = [
+                "/mnt/c/opa/opa.exe",
+                "/mnt/c/opa/opa_windows_amd64.exe"
+            ]
+            for path in wsl_paths:
+                if os.path.exists(path) and os.access(path, os.X_OK):
+                    logging.info(f"Found OPA in WSL Windows path: {path}")
+                    return path
+            
+        # OPA wasn't found
+        error_msg = (
+            "OPA executable not found. Please ensure OPA is installed correctly:\n"
+            "1. Download from https://openpolicyagent.org/docs/latest/#1-download-opa\n"
+            "2. Rename to opa.exe and place in C:\\opa\\ on Windows or use 'sudo mv opa /usr/local/bin/' on Unix\n"
+            "3. Or add OPA to your PATH\n"
+            "4. Or set the OPA_PATH environment variable to the path of the OPA executable\n"
+            f"Current PATH: {os.environ.get('PATH', '')}"
+        )
+        logging.error(error_msg)
+        raise RuntimeError(error_msg)
         
-        if not opa_path and sys.platform == "win32":
-            # On Windows, also check for the downloaded filename
-            opa_dir = Path("C:/opa")  # Create Path object for OPA directory
-            custom_paths = [
-                opa_dir / "opa_windows_amd64.exe",
-                opa_dir / "opa.exe",
-                Path.cwd() / "opa_windows_amd64.exe"
+    def _evaluate_with_local_opa(self, policy_path: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Evaluate policy using local OPA binary.
+        
+        Args:
+            policy_path: Path to the policy file
+            input_data: Input data for evaluation
+            
+        Returns:
+            Dict[str, Any]: Evaluation results
+        """
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
+            # Use CustomJSONEncoder to handle UUID serialization
+            json.dump(input_data, temp_file, cls=CustomJSONEncoder)
+            temp_file_path = temp_file.name
+            
+        try:
+            cmd = [
+                self.opa_path,
+                "eval",
+                "--format", "json",
+                "--data", policy_path,
+                "--input", temp_file_path,
+                "data"
             ]
             
-            logging.info(f"Checking custom paths: {[str(p) for p in custom_paths]}")
-            for path in custom_paths:
-                logging.info(f"Checking path: {path}")
-                if path.is_file():
-                    opa_path = str(path)
-                    logging.info(f"Found OPA at: {opa_path}")
-                    break
-                else:
-                    logging.info(f"Path not found: {path}")
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return json.loads(result.stdout)
+        except subprocess.CalledProcessError as e:
+            logging.error(f"OPA evaluation error: {e.stderr}")
+            return {"error": e.stderr}
+        finally:
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                
+    def _evaluate_with_external_opa(self, policy_path: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Evaluate policy using external OPA server.
         
-        if not opa_path:
-            # Check PATH environment variable
-            path_env = os.environ.get('PATH', '')
-            logging.info(f"Current PATH: {path_env}")
+        Args:
+            policy_path: Path to evaluate in the policy structure (e.g., "fairness/evaluate")
+            input_data: Input data for evaluation
             
-            # Additional check for Windows - look in PATH directories
-            if sys.platform == "win32":
-                for path_dir in path_env.split(os.pathsep):
-                    try:
-                        dir_path = Path(path_dir.strip('"'))  # Remove quotes if present
-                        possible_paths = [
-                            dir_path / "opa.exe",
-                            dir_path / "opa_windows_amd64.exe"
-                        ]
-                        for p in possible_paths:
-                            logging.info(f"Checking PATH location: {p}")
-                            if p.is_file():
-                                opa_path = str(p)
-                                logging.info(f"Found OPA in PATH at: {opa_path}")
-                                break
-                        if opa_path:
-                            break
-                    except Exception as e:
-                        logging.debug(f"Error checking path {path_dir}: {e}")
-                        continue
-            
-        if not opa_path:
-            raise RuntimeError(
-                "OPA executable not found. Please ensure OPA is installed and either:\n"
-                "1. Rename 'opa_windows_amd64.exe' to 'opa.exe', or\n"
-                "2. Add the full path to the OPA executable in your system PATH.\n"
-                "Current PATH environment variable contains:\n"
-                f"{path_env}\n"
-                "Visit https://www.openpolicyagent.org/docs/latest/#1-download-opa for installation instructions."
+        Returns:
+            Dict[str, Any]: Evaluation results
+        """
+        url = f"{self.server_url}/v1/data/{policy_path}"
+        headers = {"Content-Type": "application/json"}
+        
+        try:
+            # Use CustomJSONEncoder to handle UUID serialization
+            response = requests.post(
+                url, 
+                data=json.dumps({"input": input_data}, cls=CustomJSONEncoder), 
+                headers=headers
             )
+            if response.status_code == 200:
+                return response.json()
+            else:
+                error_msg = f"OPA server returned status code: {response.status_code}, body: {response.text}"
+                logging.error(error_msg)
+                return {"error": error_msg}
+        except requests.RequestException as e:
+            error_msg = f"Error connecting to OPA server: {str(e)}"
+            logging.error(error_msg)
+            return {"error": error_msg}
+                
+    def load_policies(self, policy_dir: Optional[str] = None) -> None:
+        """Load policies from directory.
+        
+        Args:
+            policy_dir: Directory containing policy files
+        """
+        if self.policies_loaded:
+            return
             
-        return opa_path
-    
+        if not policy_dir:
+            # Use default policy directory
+            policy_dir = os.path.join(os.path.dirname(__file__), "..", "opa_policies")
+            
+        self.policies = self.policy_loader.load_policies(policy_dir)
+        
+        # If using external server, upload policies to it
+        if self.use_external_server:
+            self._upload_policies_to_server()
+        
+        self.policies_loaded = True
+        logging.info(f"Loaded {len(self.policies)} policies")
+        
+    def _upload_policies_to_server(self) -> None:
+        """Upload policies to the external OPA server."""
+        for policy in self.policies:
+            policy_name = os.path.basename(policy.path)
+            if policy_name.endswith('.rego'):
+                policy_name = policy_name[:-5]  # Remove .rego extension
+                
+            url = f"{self.server_url}/v1/policies/{policy_name}"
+            headers = {"Content-Type": "text/plain"}
+            
+            try:
+                response = requests.put(url, data=policy.content, headers=headers)
+                if response.status_code not in (200, 201):
+                    logging.warning(f"Failed to upload policy {policy_name}: {response.status_code}")
+            except requests.RequestException as e:
+                logging.error(f"Error uploading policy {policy_name}: {str(e)}")
+            
+    def evaluate_contract(self, contract: Contract) -> Dict[str, Any]:
+        """Evaluate a contract against loaded policies.
+        
+        Args:
+            contract: The contract to evaluate
+            
+        Returns:
+            Dict[str, Any]: Evaluation results
+        """
+        # Ensure policies are loaded
+        self.load_policies()
+        
+        # Convert contract to dictionary for evaluation
+        contract_dict = contract.model_dump()
+        
+        # Evaluate the contract against all policy types
+        results = {}
+        policy_types = ["fairness", "security", "compliance", "regulatory", "operational"]
+        
+        for policy_type in policy_types:
+            try:
+                if self.use_external_server:
+                    # Evaluate using external OPA server
+                    policy_path = f"{policy_type}/evaluate"
+                    result = self._evaluate_with_external_opa(policy_path, contract_dict)
+                    results[policy_type] = result.get("result", {})
+                else:
+                    # Evaluate using local OPA binary
+                    # Find all policies of this type
+                    type_policies = [p for p in self.policies if policy_type in p.path.lower()]
+                    
+                    if not type_policies:
+                        logging.warning(f"No policies found for type: {policy_type}")
+                        results[policy_type] = {"warning": f"No policies defined for {policy_type}"}
+                        continue
+                        
+                    # Evaluate each policy
+                    type_results = {}
+                    for policy in type_policies:
+                        result = self._evaluate_with_local_opa(policy.path, contract_dict)
+                        policy_name = os.path.basename(policy.path).replace('.rego', '')
+                        type_results[policy_name] = result
+                        
+                    results[policy_type] = type_results
+            except Exception as e:
+                logging.error(f"Error evaluating {policy_type} policies: {str(e)}")
+                results[policy_type] = {"error": str(e)}
+        
+        return results
+
     def evaluate_policy(
         self, 
         policy_path: Union[str, List[str]], 
@@ -127,7 +295,7 @@ class OpaEvaluator:
             
             # Convert all paths to absolute paths in POSIX format
             abs_policy_paths = [Path(p).resolve().as_posix() for p in policy_files]
-            logging.info(f"Policy file paths: {abs_policy_paths}")
+            logging.debug(f"Policy file paths: {abs_policy_paths}")
             
             # Verify all policy files exist
             for path in abs_policy_paths:
@@ -140,15 +308,9 @@ class OpaEvaluator:
             
             # Convert input_data to proper JSON string
             try:
-                # Custom JSON encoder to handle UUID objects
-                class UUIDEncoder(json.JSONEncoder):
-                    def default(self, obj):
-                        if isinstance(obj, UUID):
-                            return str(obj)
-                        return super().default(obj)
-                
-                input_json = json.dumps(input_data, cls=UUIDEncoder)
-                logging.info(f"Input data: {input_json}")
+                # Use our global CustomJSONEncoder to handle UUID and datetime objects
+                input_json = json.dumps(input_data, cls=CustomJSONEncoder)
+                logging.debug(f"Input data: {input_json}")
             except Exception as e:
                 logging.error(f"Error converting input data to JSON: {e}")
                 return {"error": f"Failed to serialize input data: {str(e)}"}
@@ -156,12 +318,12 @@ class OpaEvaluator:
             # If query is not provided, build it from policy file
             if not query:
                 query = self.policy_loader.build_query_for_policy(primary_policy_path)
-                logging.info(f"Using query built from policy: {query}")
+                logging.debug(f"Using query built from policy: {query}")
             
             # Resolve policy dependencies if not already provided
             if len(abs_policy_paths) == 1:
                 policy_files = self.policy_loader.resolve_policy_dependencies(abs_policy_paths)
-                logging.info(f"Using policy files with dependencies: {policy_files}")
+                logging.debug(f"Using policy files with dependencies: {policy_files}")
             else:
                 policy_files = abs_policy_paths
             
@@ -187,7 +349,7 @@ class OpaEvaluator:
                     "--coverage",          # Report coverage
                     "--format", "pretty",  # More readable output
                 ])
-                logging.info("Using development mode with failure explanations and coverage reporting")
+                logging.debug("Using development mode with failure explanations and coverage reporting")
             elif mode == "debug":
                 cmd.extend([
                     "--explain", "full",   # Full explanations
@@ -196,7 +358,7 @@ class OpaEvaluator:
                     "--instrument",        # Instrumentation
                     "--format", "pretty",  # More readable output
                 ])
-                logging.info("Using debug mode with full explanations, coverage, and metrics")
+                logging.debug("Using debug mode with full explanations, coverage, and metrics")
             else:  # production mode
                 cmd.extend([
                     "--format", "json",    # JSON output for parsing
@@ -206,9 +368,9 @@ class OpaEvaluator:
                 # Only add optimization if we have an entrypoint
                 if optimize_level > 0 and entrypoint:
                     cmd.extend(["--optimize", str(optimize_level)])
-                    logging.info(f"Using production mode with optimization level {optimize_level}")
+                    logging.debug(f"Using production mode with optimization level {optimize_level}")
                 else:
-                    logging.info("Using production mode without optimizations")
+                    logging.debug("Using production mode without optimizations")
             
             # Always add stdin-input for consistent input handling
             cmd.append("--stdin-input")
@@ -216,9 +378,9 @@ class OpaEvaluator:
             # If using optimization with an entrypoint, include it
             if optimize_level > 0 and entrypoint and mode == "production":
                 cmd.extend(["-e", entrypoint])
-                logging.info(f"Using entrypoint: {entrypoint}")
+                logging.debug(f"Using entrypoint: {entrypoint}")
             
-            logging.info(f"Executing command: {cmd}")
+            logging.debug(f"Executing command: {cmd}")
             
             # Pass input via stdin
             try:
@@ -298,7 +460,7 @@ class OpaEvaluator:
                     "details": "The policy evaluation returned no output. Check if the compliance_report rule exists in the policy."
                 }
             
-            logging.info(f"OPA stdout output: {result.stdout[:200]}..." if len(result.stdout) > 200 else f"OPA stdout output: {result.stdout}")
+            logging.debug(f"OPA stdout output: {result.stdout[:200]}..." if len(result.stdout) > 200 else f"OPA stdout output: {result.stdout}")
             
             # Parse the output based on the format
             if mode in ["development", "debug"]:
@@ -323,7 +485,7 @@ class OpaEvaluator:
                     # Extract package prefix from the query
                     package_prefix = query.split("data.")[1].split(".")[0] if "data." in query else ""
                     allow_query = f"data.{package_prefix}.allow"
-                    logging.info(f"Trying alternative query for allow rule: {allow_query}")
+                    logging.debug(f"Trying alternative query for allow rule: {allow_query}")
                     
                     # Create a new command for the allow query
                     allow_cmd = [
@@ -403,27 +565,93 @@ class OpaEvaluator:
             logging.error(traceback.format_exc())
             return {"error": f"Policy evaluation failed: {str(e)}"}
 
-    def evaluate_policies_by_category(self, category: str, input_data: Dict[str, Any], subcategory: str = "", version: str = None) -> List[Dict[str, Any]]:
-        """
-        Evaluate all policies for a specific category against input data.
+    def evaluate_policies_by_category(
+        self, 
+        category: str, 
+        subcategory: str,
+        input_data: Dict[str, Any],
+        version: str = None,
+        mode: ExecutionMode = "production"
+    ) -> Dict[str, Any]:
+        """Evaluate policies by category and subcategory.
         
         Args:
-            category: Policy category (global, international, etc.)
-            input_data: Dictionary containing the input data
-            subcategory: Policy subcategory (empty for global, eu_ai_act for international, etc.)
-            version: Optional policy version (e.g., "v1")
+            category: The policy category (e.g. 'industry_specific', 'international')
+            subcategory: The policy subcategory (e.g. 'healthcare', 'eu_ai_act')
+            input_data: Input data for evaluation
+            version: Policy version to use (default: latest)
+            mode: Execution mode ('production', 'development', 'debug')
             
         Returns:
-            List of dictionaries containing evaluation results
+            Dict[str, Any]: Evaluation results
         """
+        # Ensure policies are loaded
+        self.load_policies()
+        
+        # If no version specified, use latest
+        if not version:
+            version = self.policy_loader.get_latest_version(category, subcategory)
+            if not version:
+                logging.error(f"No version found for {category}/{subcategory}")
+                return {"error": f"No policies found for {category}/{subcategory}"}
+                
+        logging.info(f"Evaluating policies for {category}/{subcategory}/{version}")
+        
+        # Get policies for this category/subcategory/version
         policies = self.policy_loader.get_policies(category, subcategory, version)
         if not policies:
-            logging.error(f"No policies found for category '{category}', subcategory '{subcategory}', version '{version}'")
-            return [{"error": f"No policies found for category '{category}', subcategory '{subcategory}', version '{version}'"}]
-        
-        results = []
+            logging.error(f"No policies found for {category}/{subcategory}/{version}")
+            return {"error": f"No policies found for {category}/{subcategory}/{version}"}
+            
+        # Log the policies for debugging
+        logging.debug(f"Found {len(policies)} policies for {category}/{subcategory}/{version}")
         for policy in policies:
-            result = self.evaluate_policy(policy, input_data)
-            results.append(result)
-        
+            logging.debug(f"  Policy: {policy}")
+            
+        # Evaluate each policy in this category
+        results = {}
+        for policy_path in policies:
+            try:
+                policy_basename = os.path.basename(policy_path).replace('.rego', '')
+                policy_name = f"{category}.{subcategory}.{version}.{policy_basename}" if subcategory else f"{category}.{version}.{policy_basename}"
+                
+                # For EU AI Act fairness policy, update the path format
+                if category == "international" and subcategory == "eu_ai_act":
+                    policy_name = f"international.eu_ai_act.v1.fairness"
+                
+                logging.info(f"Evaluating policy: {policy_name}")
+                
+                # Check if we're using an external server
+                if self.use_external_server:
+                    # Format the package path for the external server
+                    if category == "industry_specific" and subcategory == "healthcare":
+                        if "multi_specialist" in policy_path:
+                            policy_package = "healthcare.multi_specialist.diagnostic_safety"
+                        else:
+                            policy_package = f"{subcategory}.{policy_basename}"
+                    elif category == "international" and subcategory == "eu_ai_act":
+                        if "fairness" in policy_path:
+                            policy_package = "international.eu_ai_act.v1.fairness"
+                        else:
+                            policy_package = f"{category}.{subcategory}.{version}.{policy_basename}"
+                    else:
+                        policy_package = f"{category}.{subcategory}.{version}.{policy_basename}" if subcategory else f"{category}.{version}.{policy_basename}"
+                        
+                    result = self._evaluate_with_external_opa(
+                        f"data.{policy_package}.compliance_report",
+                        input_data
+                    )
+                    results[policy_basename] = result.get("result", {})
+                else:
+                    # Evaluate with local OPA binary
+                    result = self._evaluate_policy(
+                        policy_path=policy_path,
+                        input_data=input_data,
+                        mode=mode
+                    )
+                    results[policy_basename] = result
+            except Exception as e:
+                logging.error(f"Error evaluating policy {policy_path}: {str(e)}")
+                results[os.path.basename(policy_path).replace('.rego', '')] = {"error": str(e)}
+                
         return results
