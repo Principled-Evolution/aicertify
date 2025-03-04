@@ -30,18 +30,23 @@ class CustomJSONEncoder(json.JSONEncoder):
 class OpaEvaluator:
     """Evaluator class for OPA policy evaluation."""
 
-    def __init__(self, use_external_server: bool = False, server_url: str = "http://localhost:8181"):
+    def __init__(self, use_external_server: bool = False, server_url: str = "http://localhost:8181", debug: bool = False):
         """Initialize the OPA evaluator.
         
         Args:
             use_external_server: Whether to use an external OPA server instead of the local binary
             server_url: URL of the external OPA server if use_external_server is True
+            debug: Whether to enable debug mode
         """
         self.policy_loader = PolicyLoader()
         self.opa_path = None if use_external_server else self._verify_opa_installation()
         self.use_external_server = use_external_server
         self.server_url = server_url
+        self.debug = debug
         self.policies_loaded = False
+        
+        # Log the debug mode status immediately
+        logging.info(f"OPA evaluator debug mode: {'ENABLED' if self.debug else 'DISABLED'}")
         
     def _verify_opa_installation(self) -> str:
         """Verify OPA is installed and return the path to the executable.
@@ -53,14 +58,14 @@ class OpaEvaluator:
             RuntimeError: If OPA is not found
         """
         # First check if OPA_PATH environment variable is set
-        opa_path = os.environ.get("OPA_PATH")
-        if opa_path and os.path.exists(opa_path) and os.access(opa_path, os.X_OK):
-            logging.info(f"Found OPA at environment variable OPA_PATH: {opa_path}")
-            return opa_path
-            
-        # Check for fixed path on Windows
+        opa_path_env = os.environ.get("OPA_PATH")
+        if opa_path_env and os.path.exists(opa_path_env) and os.access(opa_path_env, os.X_OK):
+            logging.info(f"Found OPA at environment variable OPA_PATH: {opa_path_env}")
+            return opa_path_env
+
+        # Check OS-specific fixed locations
         if os.name == "nt":
-            # Try several possible Windows paths
+            # Windows: Try several possible Windows paths
             windows_paths = [
                 "C:/opa/opa_windows_amd64.exe",
                 "C:/opa/opa.exe",
@@ -70,7 +75,7 @@ class OpaEvaluator:
                 if os.path.exists(path) and os.access(path, os.X_OK):
                     logging.info(f"Found OPA at fixed Windows path: {path}")
                     return path
-                    
+
             # Check PATH for opa.exe and opa_windows_amd64.exe
             for path_dir in os.environ.get("PATH", "").split(os.pathsep):
                 for filename in ["opa.exe", "opa_windows_amd64.exe"]:
@@ -78,16 +83,16 @@ class OpaEvaluator:
                     if os.path.exists(exe_path) and os.access(exe_path, os.X_OK):
                         logging.info(f"Found OPA in PATH: {exe_path}")
                         return exe_path
-                        
-        # Check if it's in the PATH (works on Linux/macOS and potentially Windows)
-        opa_path = shutil.which("opa")
-        if opa_path:
-            logging.info(f"Found OPA in PATH: {opa_path}")
-            return opa_path
-            
-        # For WSL, try to find it in the Windows path
+
+        elif sys.platform.startswith("linux"):
+            # Linux: Try a fixed path first
+            linux_path = "/usr/local/bin/opa"
+            if os.path.exists(linux_path) and os.access(linux_path, os.X_OK):
+                logging.info(f"Found OPA at fixed Linux path: {linux_path}")
+                return linux_path
+
+        # For WSL, try to find it in the Windows path using /mnt/c
         if os.path.exists("/mnt/c"):
-            # Check if it's in /mnt/c/opa
             wsl_paths = [
                 "/mnt/c/opa/opa.exe",
                 "/mnt/c/opa/opa_windows_amd64.exe"
@@ -96,7 +101,13 @@ class OpaEvaluator:
                 if os.path.exists(path) and os.access(path, os.X_OK):
                     logging.info(f"Found OPA in WSL Windows path: {path}")
                     return path
-            
+
+        # Finally, check if it's in the PATH (works on Linux/macOS and potentially Windows)
+        opa_path = shutil.which("opa")
+        if opa_path:
+            logging.info(f"Found OPA in PATH: {opa_path}")
+            return opa_path
+
         # OPA wasn't found
         error_msg = (
             "OPA executable not found. Please ensure OPA is installed correctly:\n"
@@ -134,14 +145,27 @@ class OpaEvaluator:
                 "data"
             ]
             
+            # Optionally add debugging flags if debug mode is enabled
+            if self.debug:
+                cmd.extend(["--explain", "full", "--coverage", "--instrument", "--metrics"])
+                logging.debug("Debug mode active: Added OPA debugging flags to the command")
+            
+            logging.debug(f"Running OPA command: {' '.join(cmd)}")
+            
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            logging.debug(f"OPA stdout: {result.stdout}")
+            if result.stderr:
+                logging.debug(f"OPA stderr: {result.stderr}")
             return json.loads(result.stdout)
         except subprocess.CalledProcessError as e:
             logging.error(f"OPA evaluation error: {e.stderr}")
             return {"error": e.stderr}
         finally:
             if os.path.exists(temp_file_path):
-                os.unlink(temp_file_path)
+                if self.debug:
+                    logging.debug(f"Keeping temporary input file for manual inspection: {temp_file_path}")
+                else:
+                    os.unlink(temp_file_path)
                 
     def _evaluate_with_external_opa(self, policy_path: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Evaluate policy using external OPA server.
@@ -573,85 +597,71 @@ class OpaEvaluator:
         version: str = None,
         mode: ExecutionMode = "production"
     ) -> Dict[str, Any]:
-        """Evaluate policies by category and subcategory.
-        
+        """Evaluate policies by category and subcategory using a recursive folder scan.
+        For Phase 1, we require an exact match folder to exist, otherwise error out.
+        This method recursively scans the folder tree for .rego files and evaluates all of them.
+
         Args:
-            category: The policy category (e.g. 'industry_specific', 'international')
-            subcategory: The policy subcategory (e.g. 'healthcare', 'eu_ai_act')
+            category: The policy category, e.g. 'industry_specific' or 'international'
+            subcategory: The policy subcategory, e.g. 'healthcare'
             input_data: Input data for evaluation
-            version: Policy version to use (default: latest)
+            version: (Ignored for Phase 1) 
             mode: Execution mode ('production', 'development', 'debug')
             
         Returns:
-            Dict[str, Any]: Evaluation results
+            Dict[str, Any]: Evaluation results from all policies in the folder tree.
         """
-        # Ensure policies are loaded
-        self.load_policies()
-        
-        # If no version specified, use latest
-        if not version:
-            version = self.policy_loader.get_latest_version(category, subcategory)
-            if not version:
-                logging.error(f"No version found for {category}/{subcategory}")
-                return {"error": f"No policies found for {category}/{subcategory}"}
-                
-        logging.info(f"Evaluating policies for {category}/{subcategory}/{version}")
-        
-        # Get policies for this category/subcategory/version
-        policies = self.policy_loader.get_policies(category, subcategory, version)
-        if not policies:
-            logging.error(f"No policies found for {category}/{subcategory}/{version}")
-            return {"error": f"No policies found for {category}/{subcategory}/{version}"}
-            
-        # Log the policies for debugging
-        logging.debug(f"Found {len(policies)} policies for {category}/{subcategory}/{version}")
-        for policy in policies:
-            logging.debug(f"  Policy: {policy}")
-            
-        # Evaluate each policy in this category
+        # Determine base policy directory
+        base_policy_dir = os.path.join(os.path.dirname(__file__), "..", "opa_policies")
+        # Construct target folder path using category and subcategory
+        if subcategory:
+            target_folder = os.path.join(base_policy_dir, category, subcategory)
+        else:
+            target_folder = os.path.join(base_policy_dir, category)
+
+        if not os.path.isdir(target_folder):
+            error_msg = f"No policy folder found for {category}/{subcategory}. Expected folder: {target_folder}"
+            logging.error(error_msg)
+            return {"error": error_msg}
+
+        logging.info(f"Searching for policy files in folder: {target_folder}")
+
+        # Recursively gather all .rego files in the target_folder
+        policy_files = []
+        for root, dirs, files in os.walk(target_folder):
+            for file in files:
+                if file.endswith('.rego'):
+                    policy_files.append(os.path.join(root, file))
+
+        logging.info(f"Found {len(policy_files)} .rego policy files in folder {target_folder}")
+
+        if not policy_files:
+            error_msg = f"No policy files found in folder {target_folder}"
+            logging.error(error_msg)
+            return {"error": error_msg}
+
+        logging.info(f"Evaluating policies from folder: {target_folder}")
         results = {}
-        for policy_path in policies:
+        for policy_path in policy_files:
             try:
                 policy_basename = os.path.basename(policy_path).replace('.rego', '')
-                policy_name = f"{category}.{subcategory}.{version}.{policy_basename}" if subcategory else f"{category}.{version}.{policy_basename}"
-                
-                # For EU AI Act fairness policy, update the path format
-                if category == "international" and subcategory == "eu_ai_act":
-                    policy_name = f"international.eu_ai_act.v1.fairness"
-                
-                logging.info(f"Evaluating policy: {policy_name}")
-                
-                # Check if we're using an external server
+                logging.info(f"Evaluating policy: {policy_basename} from {policy_path}")
                 if self.use_external_server:
-                    # Format the package path for the external server
-                    if category == "industry_specific" and subcategory == "healthcare":
-                        if "multi_specialist" in policy_path:
-                            policy_package = "healthcare.multi_specialist.diagnostic_safety"
-                        else:
-                            policy_package = f"{subcategory}.{policy_basename}"
-                    elif category == "international" and subcategory == "eu_ai_act":
-                        if "fairness" in policy_path:
-                            policy_package = "international.eu_ai_act.v1.fairness"
-                        else:
-                            policy_package = f"{category}.{subcategory}.{version}.{policy_basename}"
-                    else:
-                        policy_package = f"{category}.{subcategory}.{version}.{policy_basename}" if subcategory else f"{category}.{version}.{policy_basename}"
-                        
-                    result = self._evaluate_with_external_opa(
-                        f"data.{policy_package}.compliance_report",
-                        input_data
-                    )
+                    # For external server, construct package path by converting folder structure to dot notation
+                    # Remove base_policy_dir and .rego extension, then replace os separators with dots
+                    relative_path = os.path.relpath(policy_path, base_policy_dir)
+                    package_path = relative_path.replace(os.sep, '.').replace('.rego', '')
+                    # Prepend 'data.' as required by OPA
+                    full_policy_path = f"data.{package_path}.compliance_report"
+                    result = self._evaluate_with_external_opa(full_policy_path, input_data)
                     results[policy_basename] = result.get("result", {})
                 else:
-                    # Evaluate with local OPA binary
-                    result = self._evaluate_policy(
-                        policy_path=policy_path,
-                        input_data=input_data,
-                        mode=mode
-                    )
+                    result = self._evaluate_with_local_opa(policy_path, input_data)
+                    if "error" in result:
+                        logging.error(f"OPA local evaluation for policy {policy_basename} returned error: {result.get('error')}")
                     results[policy_basename] = result
             except Exception as e:
                 logging.error(f"Error evaluating policy {policy_path}: {str(e)}")
                 results[os.path.basename(policy_path).replace('.rego', '')] = {"error": str(e)}
-                
+
         return results

@@ -16,7 +16,7 @@ from shutil import copy2
 from uuid import UUID
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+#logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 # Import models and evaluation components
@@ -60,8 +60,13 @@ from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator
 
 # Create instances of key components for API functions
+debug_mode = os.environ.get("OPA_DEBUG", "0") == "1"
+opa_evaluator = OpaEvaluator(
+    use_external_server=False,  # Force local evaluator
+    server_url=os.environ.get("OPA_SERVER_URL", "http://localhost:8181"),
+    debug=debug_mode
+)
 policy_loader = PolicyLoader()
-opa_evaluator = OpaEvaluator()
 report_generator = ReportGenerator()
 
 def _ensure_valid_evaluation_structure(evaluation_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -707,14 +712,20 @@ async def evaluate_contract_comprehensive(
         input_json_str = json.dumps({"contract": contract_dict, "evaluation": evaluation_result}, cls=CustomJSONEncoder)
         input_data_serialized = json.loads(input_json_str)
         
-        # Evaluate OPA policies
+        # Split the policy_category parameter (expected to be in the form 'parent/sub') into category and subcategory
+        if "/" in policy_category:
+            cat, subcat = policy_category.split("/", 1)
+        else:
+            cat = policy_category
+            subcat = ""
+        
         opa_results = opa_evaluator.evaluate_policies_by_category(
-            category="international",
-            subcategory=policy_category,
+            category=cat,
+            subcategory=subcat,
             input_data=input_data_serialized
         )
         
-        logger.info(f"OPA policy evaluation complete")
+        logger.info("OPA policy evaluation complete")
     except Exception as e:
         logger.error(f"Error during OPA policy evaluation: {str(e)}")
         opa_results = [{"error": f"OPA evaluation error: {str(e)}"}]

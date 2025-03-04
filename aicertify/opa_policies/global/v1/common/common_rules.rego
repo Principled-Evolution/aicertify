@@ -2,7 +2,7 @@
 # title: Common Policy Rules Library
 # description: Reusable policy rules and functions for AICertify
 # entrypoint: true
-package global.library
+package global.v1.common.common_rules
 
 import rego.v1
 
