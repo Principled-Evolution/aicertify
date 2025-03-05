@@ -1,4 +1,4 @@
-package common.content_safety
+package global.v1.common.content_safety
 
 import rego.v1
 

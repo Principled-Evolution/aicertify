@@ -1,5 +1,7 @@
 package global.v1.common.fairness
 
+import rego.v1
+
 # Common fairness rules and utilities for reuse across policies
 
 # Check gender bias in fairness metrics

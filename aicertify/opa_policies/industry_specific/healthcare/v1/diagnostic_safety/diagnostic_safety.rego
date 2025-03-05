@@ -1,8 +1,8 @@
 package healthcare.v1.diagnostic_safety
 
-import data.global.v1.common.content_safety
-import data.global.v1.common.fairness
-import data.global.v1.common.risk_management
+import data.global.v1.common.content_safety as content_safety
+import data.global.v1.common.fairness as fairness
+import data.global.v1.common.risk_management as risk_management
 
 # Healthcare-specific thresholds for multi-specialist diagnosis
 # These thresholds are higher than general thresholds due to the critical nature of medical diagnosis
@@ -14,27 +14,27 @@ risk_management_threshold := 0.90 # Higher threshold for patient safety
 
 # Define helper rules to check which evaluations failed/passed
 fairness_eval_fails if {
-	not passes_fairness_threshold(input.evaluation, fairness_threshold)
+	not fairness.passes_fairness_threshold(input.evaluation, fairness_threshold)
 }
 
 content_safety_eval_fails if {
-	not v1.passes_content_safety_threshold(input.evaluation, content_safety_threshold)
+	not content_safety.passes_content_safety_threshold(input.evaluation, content_safety_threshold)
 }
 
 risk_management_eval_fails if {
-	not v1.passes_risk_threshold(input.evaluation, risk_management_threshold)
+	not risk_management.passes_risk_threshold(input.evaluation, risk_management_threshold)
 }
 
 fairness_passes if {
-	v1.passes_fairness_threshold(input.evaluation, fairness_threshold)
+	fairness.passes_fairness_threshold(input.evaluation, fairness_threshold)
 }
 
 content_safety_passes if {
-	v1.passes_content_safety_threshold(input.evaluation, content_safety_threshold)
+	content_safety.passes_content_safety_threshold(input.evaluation, content_safety_threshold)
 }
 
 risk_management_passes if {
-	v1.passes_risk_threshold(input.evaluation, risk_management_threshold)
+	risk_management.passes_risk_threshold(input.evaluation, risk_management_threshold)
 }
 
 # Create individual arrays based on evaluation results
@@ -144,8 +144,8 @@ compliance_report := {
 		"risk_management": risk_management_threshold,
 	},
 	"scores": {
-		"fairness": v1.get_fairness_score(input.evaluation),
-		"content_safety": v1.get_toxicity_score(input.evaluation),
-		"risk_management": v1.get_risk_score(input.evaluation),
+		"fairness": fairness.get_fairness_score(input.evaluation),
+		"content_safety": content_safety.get_toxicity_score(input.evaluation),
+		"risk_management": risk_management.get_risk_score(input.evaluation),
 	},
 }

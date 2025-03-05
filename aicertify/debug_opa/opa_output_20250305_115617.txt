@@ -1,0 +1,95 @@
+query:1     Enter data.industry_specific.healthcare.v1.diagnostic_safety = _
+query:1     | Eval data.industry_specific.healthcare.v1.diagnostic_safety = _
+query:1     | Fail data.industry_specific.healthcare.v1.diagnostic_safety = _
+undefined
++----------------------------------------------------------+--------------------+
+|                          METRIC                          |       VALUE        |
++----------------------------------------------------------+--------------------+
+| counter_compile_stage_comprehension_index_build          | 0                  |
+| counter_eval_op_base_cache_miss                          | 1                  |
+| histogram_eval_op_plug_75%                               | 432                |
+| histogram_eval_op_plug_90%                               | 508                |
+| histogram_eval_op_plug_95%                               | 508                |
+| histogram_eval_op_plug_99%                               | 508                |
+| histogram_eval_op_plug_99.9%                             | 508                |
+| histogram_eval_op_plug_99.99%                            | 508                |
+| histogram_eval_op_plug_count                             | 4                  |
+| histogram_eval_op_plug_max                               | 508                |
+| histogram_eval_op_plug_mean                              | 203.25             |
+| histogram_eval_op_plug_median                            | 152.5              |
+| histogram_eval_op_plug_min                               | 0                  |
+| histogram_eval_op_plug_stddev                            | 190.15700749643702 |
+| histogram_eval_op_resolve_75%                            | 3861               |
+| histogram_eval_op_resolve_90%                            | 3861               |
+| histogram_eval_op_resolve_95%                            | 3861               |
+| histogram_eval_op_resolve_99%                            | 3861               |
+| histogram_eval_op_resolve_99.9%                          | 3861               |
+| histogram_eval_op_resolve_99.99%                         | 3861               |
+| histogram_eval_op_resolve_count                          | 1                  |
+| histogram_eval_op_resolve_max                            | 3861               |
+| histogram_eval_op_resolve_mean                           | 3861               |
+| histogram_eval_op_resolve_median                         | 3861               |
+| histogram_eval_op_resolve_min                            | 3861               |
+| histogram_eval_op_resolve_stddev                         | 0                  |
+| timer_compile_stage_build_required_capabilities_ns       | 20019              |
+| timer_compile_stage_check_imports_ns                     | 5488               |
+| timer_compile_stage_check_keyword_overrides_ns           | 232502             |
+| timer_compile_stage_check_recursion_ns                   | 296725             |
+| timer_compile_stage_check_rule_conflicts_ns              | 1162713            |
+| timer_compile_stage_check_safety_rule_bodies_ns          | 4350571            |
+| timer_compile_stage_check_safety_rule_heads_ns           | 1032134            |
+| timer_compile_stage_check_types_ns                       | 1970373            |
+| timer_compile_stage_check_undefined_funcs_ns             | 286461             |
+| timer_compile_stage_check_void_calls_ns                  | 202931             |
+| timer_compile_stage_init_local_var_gen_ns                | 263902             |
+| timer_compile_stage_parse_metadata_blocks_ns             | 176104             |
+| timer_compile_stage_rebuild_comprehension_indices_ns     | 992605             |
+| timer_compile_stage_rebuild_indices_ns                   | 506464             |
+| timer_compile_stage_remove_imports_ns                    | 3455               |
+| timer_compile_stage_resolve_refs_ns                      | 684092             |
+| timer_compile_stage_rewrite_comprehension_terms_ns       | 869342             |
+| timer_compile_stage_rewrite_dynamic_terms_ns             | 263495             |
+| timer_compile_stage_rewrite_equals_ns                    | 548839             |
+| timer_compile_stage_rewrite_expr_terms_ns                | 506565             |
+| timer_compile_stage_rewrite_local_vars_ns                | 3315084            |
+| timer_compile_stage_rewrite_print_calls_ns               | 271117             |
+| timer_compile_stage_rewrite_refs_in_head_ns              | 137794             |
+| timer_compile_stage_rewrite_rego_metadata_calls_ns       | 185148             |
+| timer_compile_stage_rewrite_rule_head_refs_ns            | 18799              |
+| timer_compile_stage_rewrite_test_rules_for_tracing_ns    | 203                |
+| timer_compile_stage_rewrite_with_values_ns               | 770671             |
+| timer_compile_stage_set_annotationset_ns                 | 12905              |
+| timer_compile_stage_set_graph_ns                         | 618752             |
+| timer_compile_stage_set_module_tree_ns                   | 17784              |
+| timer_compile_stage_set_rule_tree_ns                     | 168991             |
+| timer_compile_state_check_deprecated_builtins_ns         | 915                |
+| timer_compile_state_check_unsafe_builtins_ns             | 305                |
+| timer_eval_op_plug_ns                                    | 813                |
+| timer_eval_op_resolve_ns                                 | 3861               |
+| timer_query_compile_stage_build_comprehension_index_ns   | 1525               |
+| timer_query_compile_stage_check_deprecated_builtins_ns   | 101                |
+| timer_query_compile_stage_check_keyword_overrides_ns     | 305                |
+| timer_query_compile_stage_check_safety_ns                | 9756               |
+| timer_query_compile_stage_check_types_ns                 | 9755               |
+| timer_query_compile_stage_check_undefined_funcs_ns       | 1219               |
+| timer_query_compile_stage_check_unsafe_builtins_ns       | 610                |
+| timer_query_compile_stage_check_void_calls_ns            | 813                |
+| timer_query_compile_stage_resolve_refs_ns                | 2947               |
+| timer_query_compile_stage_rewrite_comprehension_terms_ns | 2947               |
+| timer_query_compile_stage_rewrite_dynamic_terms_ns       | 1525               |
+| timer_query_compile_stage_rewrite_expr_terms_ns          | 2134               |
+| timer_query_compile_stage_rewrite_local_vars_ns          | 7723               |
+| timer_query_compile_stage_rewrite_print_calls_ns         | 1423               |
+| timer_query_compile_stage_rewrite_to_capture_value_ns    | 11584              |
+| timer_query_compile_stage_rewrite_with_values_ns         | 813                |
+| timer_rego_external_resolve_ns                           | 305                |
+| timer_rego_load_bundles_ns                               | 9693646            |
+| timer_rego_module_compile_ns                             | 20624085           |
+| timer_rego_module_parse_ns                               | 8397712            |
+| timer_rego_query_compile_ns                              | 65341              |
+| timer_rego_query_eval_ns                                 | 43797              |
+| timer_rego_query_parse_ns                                | 41765              |
++----------------------------------------------------------+--------------------+
++------------------+------+
+| Overall Coverage | 0.00 |
++------------------+------+

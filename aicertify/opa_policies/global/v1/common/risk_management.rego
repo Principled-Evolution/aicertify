@@ -1,4 +1,4 @@
-package common.risk_management
+package global.v1.common.risk_management
 
 import rego.v1
 

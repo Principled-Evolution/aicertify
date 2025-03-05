@@ -166,42 +166,35 @@ async def generate_report(
             opa_results = {}
     
     try:
-        # Create a report generator instance directly
+        # Import required components
         from aicertify.report_generation.report_generator import ReportGenerator
+        from aicertify.report_generation.data_extraction import create_evaluation_report
+        from aicertify.report_generation.report_models import (
+            EvaluationReport, ApplicationDetails,
+            MetricGroup, MetricValue, PolicyResult
+        )
         
-        # Try to use data extraction if available
-        data_extraction_available = False
+        # Create the evaluation report model
         try:
-            from aicertify.report_generation.data_extraction import create_evaluation_report
-            data_extraction_available = True
-        except ImportError:
-            logger.warning("Report data extraction module not available, using fallback")
-        
-        if data_extraction_available:
             report_model = create_evaluation_report(evaluation_result, opa_results)
-        else:
+        except Exception as e:
+            logger.warning(f"Error creating evaluation report model: {e}, using fallback")
             # Create a minimal report model with basic information
-            from aicertify.report_generation.report_models import (
-                EvaluationReport, ApplicationDetails,
-                MetricGroup, MetricValue, PolicyResult
-            )
-            
             app_name = evaluation_result.get("app_name", "Unknown")
+            if app_name == "Unknown" and "application_name" in evaluation_result:
+                app_name = evaluation_result["application_name"]
+                
             report_model = EvaluationReport(
                 app_details=ApplicationDetails(
                     name=app_name,
                     evaluation_mode="Standard",
-                    contract_count=0,
+                    contract_count=1,
                     evaluation_date=datetime.now()
                 ),
                 metric_groups=[],
                 policy_results=[],
                 summary="Basic evaluation report"
             )
-        
-        # Generate reports
-        report_gen = ReportGenerator()
-        report_paths = {}
         
         # Setup output directory
         if not output_dir:
@@ -211,14 +204,20 @@ async def generate_report(
         
         # Get application name for the filename
         app_name = report_model.app_details.name.replace(" ", "_")
-        if app_name == "Unknown_Application" and "application_name" in evaluation_result:
+        if app_name == "Unknown" and "application_name" in evaluation_result:
             app_name = evaluation_result["application_name"].replace(" ", "_")
         
         # Get a timestamp for uniqueness
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # *** Always generate the markdown content for PDF conversion ***
+        # Create ReportGenerator instance
+        report_gen = ReportGenerator()
+        
+        # Generate markdown content
         md_content = report_gen.generate_markdown_report(report_model)
+        
+        # Generate reports
+        report_paths = {}
         
         # Markdown report generation if requested
         if "markdown" in output_formats:
@@ -543,11 +542,24 @@ async def generate_reports(
     report_paths = {}
     
     try:
+        # Import required components
+        from aicertify.report_generation.report_generator import ReportGenerator
+        from aicertify.report_generation.data_extraction import create_evaluation_report
+        
+        # Create the evaluation report model
+        report_model = create_evaluation_report(evaluation_result, opa_results)
+        
+        # Create ReportGenerator instance
+        report_gen = ReportGenerator()
+        
+        # Generate markdown content
+        md_content = report_gen.generate_markdown_report(report_model)
+        
         # Generate markdown report
         if report_format.lower() in ["markdown", "both"]:
             md_path = os.path.join(output_dir, f"report_{app_name}_{timestamp}.md")
-            md_content = generate_report(evaluation_result, opa_results, "markdown")
             
+            # Save markdown report
             with open(md_path, "w") as f:
                 f.write(md_content)
             
@@ -556,11 +568,16 @@ async def generate_reports(
         
         # Generate PDF report
         if report_format.lower() in ["pdf", "both"]:
-            pdf_path = os.path.join(output_dir, f"report_{app_name}_{timestamp}-{timestamp}.pdf")
-            pdf_content = generate_report(evaluation_result, opa_results, "pdf", pdf_path)
+            pdf_path = os.path.join(output_dir, f"report_{app_name}_{timestamp}.pdf")
             
-            logger.info(f"PDF report saved to: {pdf_path}")
-            report_paths["pdf"] = pdf_path
+            # Generate PDF from markdown content
+            pdf_result = report_gen.generate_pdf_report(md_content, pdf_path)
+            
+            logger.info(f"PDF report saved to: {pdf_result}")
+            report_paths["pdf"] = pdf_result
+    except ImportError as e:
+        logger.error(f"Required modules for report generation not available: {e}")
+        report_paths["error"] = f"Report generation failed: {str(e)}"
     except Exception as e:
         logger.error(f"Error generating reports: {e}", exc_info=True)
         report_paths["error"] = str(e)
@@ -750,15 +767,29 @@ async def evaluate_contract_comprehensive(
             
             # Generate report
             try:
+                from aicertify.report_generation.report_generator import ReportGenerator
+                from aicertify.report_generation.data_extraction import create_evaluation_report
+                
+                # Create report generator instance
+                report_gen = ReportGenerator()
+                
                 report_data = create_evaluation_report(
-                    app_name=contract.application_name,
-                    phase1_results=phase1_results.get("results", {}),
+                    evaluation_result=evaluation_result,
                     opa_results=opa_results
                 )
                 
-                report_content = report_generator.generate_report(
-                    report_data, format=report_format
-                )
+                # Generate report based on format
+                if report_format == "markdown":
+                    report_content = report_gen.generate_markdown_report(report_data)
+                elif report_format == "pdf":
+                    # First generate markdown content
+                    md_content = report_gen.generate_markdown_report(report_data)
+                    # Then convert to PDF
+                    pdf_path = os.path.join(output_dir, f"report_{contract.application_name}_{timestamp}.pdf")
+                    report_gen.generate_pdf_report(md_content, pdf_path)
+                    report_content = f"PDF report generated at {pdf_path}"
+                else:
+                    report_content = report_gen.generate_markdown_report(report_data)
                 
                 # Save report
                 report_path = os.path.join(output_dir, filename)
@@ -766,6 +797,147 @@ async def evaluate_contract_comprehensive(
                     f.write(report_content)
                 
                 logger.info(f"Saved comprehensive report to {report_path}")
+            except Exception as e:
+                logger.error(f"Error generating report: {str(e)}")
+    
+    # Return results
+    return {
+        "phase1_results": phase1_results,
+        "opa_results": opa_results,
+        "report_path": report_path,
+        "contract_id": str(contract.contract_id),
+        "application_name": contract.application_name
+    }
+
+async def evaluate_contract_by_folder(
+    contract: AiCertifyContract,
+    policy_folder: str,
+    evaluators: Optional[List[str]] = None,
+    evaluator_config: Optional[Dict[str, Any]] = None,
+    generate_report: bool = True,
+    report_format: str = "markdown",
+    output_dir: Optional[str] = None,
+    opa_evaluator: Optional[Any] = None
+) -> Dict[str, Any]:
+    """
+    Perform comprehensive evaluation of a contract using both OPA policies 
+    and Phase 1 evaluators, using the folder-based approach for OPA policies.
+    
+    Args:
+        contract: The AiCertifyContract object to evaluate
+        policy_folder: Folder name to search for in the OPA policies directory
+        evaluators: List of evaluator names to use, or None for all available
+        evaluator_config: Configuration for the evaluators
+        generate_report: Whether to generate a report
+        report_format: Format of the report (json, markdown, pdf)
+        output_dir: Directory to save the report
+        opa_evaluator: Optional existing OpaEvaluator instance to reuse
+        
+    Returns:
+        Dictionary containing evaluation results and report paths
+    """
+    logger.info(f"Performing folder-based evaluation of contract {contract.contract_id}")
+    
+    # Evaluate with Phase 1 evaluators
+    phase1_results = await evaluate_contract_with_phase1_evaluators(
+        contract=contract,
+        evaluators=evaluators,
+        evaluator_config=evaluator_config,
+        generate_report=False  # We'll generate a combined report later
+    )
+    
+    # Evaluate with OPA policies using folder-based approach
+    try:
+        # Create a simple evaluator result for OPA
+        evaluation_result = {
+            "contract_id": str(contract.contract_id),
+            "application_name": contract.application_name,
+            "interaction_count": len(contract.interactions),
+            "fairness_metrics": {},  # Will be populated later
+            "summary_text": f"Evaluation of {contract.application_name} with {len(contract.interactions)} interactions"
+        }
+        
+        # Add Phase 1 metrics to the evaluation result
+        if phase1_results and "results" in phase1_results:
+            fairness_result = phase1_results["results"].get("fairness", {})
+            if fairness_result:
+                evaluation_result["fairness_metrics"] = fairness_result.get("details", {})
+        
+        # Serialize input data with custom encoder to handle UUIDs
+        contract_dict = contract.dict()
+        input_json_str = json.dumps({"contract": contract_dict, "evaluation": evaluation_result}, cls=CustomJSONEncoder)
+        input_data_serialized = json.loads(input_json_str)
+        
+        # Use the provided OpaEvaluator or create a new one
+        if opa_evaluator is None:
+            logger.info("Creating new OpaEvaluator instance")
+            from aicertify.opa_core.evaluator import OpaEvaluator
+            opa_evaluator = OpaEvaluator(use_external_server=False)
+            opa_evaluator.load_policies()
+        else:
+            logger.info("Using provided OpaEvaluator instance")
+        
+        # Use the folder-based evaluation method
+        opa_results = opa_evaluator.evaluate_by_folder_name(
+            folder_name=policy_folder,
+            input_data=input_data_serialized
+        )
+        
+        logger.info("OPA policy evaluation complete using folder-based approach")
+    except Exception as e:
+        logger.error(f"Error during OPA policy evaluation: {str(e)}")
+        opa_results = {"error": f"OPA evaluation error: {str(e)}"}
+    
+    # Generate combined report if requested
+    report_path = None
+    if generate_report:
+        if output_dir:
+            # Ensure output directory exists
+            os.makedirs(output_dir, exist_ok=True)
+            
+            # Generate filename
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+            if report_format == "json":
+                filename = f"folder_report_{contract.application_name}_{timestamp}.json"
+            elif report_format == "markdown":
+                filename = f"folder_report_{contract.application_name}_{timestamp}.md"
+            elif report_format == "pdf":
+                filename = f"folder_report_{contract.application_name}_{timestamp}.pdf"
+            else:
+                filename = f"folder_report_{contract.application_name}_{timestamp}.txt"
+            
+            # Generate report
+            try:
+                from aicertify.report_generation.report_generator import ReportGenerator
+                from aicertify.report_generation.data_extraction import create_evaluation_report
+                
+                # Create report generator instance
+                report_gen = ReportGenerator()
+                
+                report_data = create_evaluation_report(
+                    evaluation_result=evaluation_result,
+                    opa_results=opa_results
+                )
+                
+                # Generate report based on format
+                if report_format == "markdown":
+                    report_content = report_gen.generate_markdown_report(report_data)
+                elif report_format == "pdf":
+                    # First generate markdown content
+                    md_content = report_gen.generate_markdown_report(report_data)
+                    # Then convert to PDF
+                    pdf_path = os.path.join(output_dir, f"report_{contract.application_name}_{timestamp}.pdf")
+                    report_gen.generate_pdf_report(md_content, pdf_path)
+                    report_content = f"PDF report generated at {pdf_path}"
+                else:
+                    report_content = report_gen.generate_markdown_report(report_data)
+                
+                # Save report
+                report_path = os.path.join(output_dir, filename)
+                with open(report_path, "w") as f:
+                    f.write(report_content)
+                
+                logger.info(f"Saved folder-based report to {report_path}")
             except Exception as e:
                 logger.error(f"Error generating report: {str(e)}")
     

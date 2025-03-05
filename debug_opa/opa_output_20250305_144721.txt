@@ -1,0 +1,197 @@
+query:1                                                              Enter data.industry_specific.healthcare = _
+query:1                                                              | Eval data.industry_specific.healthcare = _
+query:1                                                              | Index data.industry_specific.healthcare.v1.patient_safety.allow (matched 0 rules, early exit)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:28     | Enter data.industry_specific.healthcare.v1.patient_safety.allow
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:28     | | Eval true
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:28     | | Exit data.industry_specific.healthcare.v1.patient_safety.allow early
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:28     | Redo data.industry_specific.healthcare.v1.patient_safety.allow
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:28     | | Redo true
+query:1                                                              | Index data.industry_specific.healthcare.v1.patient_safety.compliance_report (matched 1 rule)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:36     | Enter data.industry_specific.healthcare.v1.patient_safety.compliance_report
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:36     | | Eval true
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:42     | | Eval concat(" ", ["Healthcare patient safety policy implementation is pending.", "This is a placeholder that will be replaced with actual compliance checks in a future release."], __local164__)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:36     | | Exit data.industry_specific.healthcare.v1.patient_safety.compliance_report
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:36     | Redo data.industry_specific.healthcare.v1.patient_safety.compliance_report
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:42     | | Redo concat(" ", ["Healthcare patient safety policy implementation is pending.", "This is a placeholder that will be replaced with actual compliance checks in a future release."], __local164__)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:36     | | Redo true
+query:1                                                              | Index data.industry_specific.healthcare.v1.patient_safety.implementation_pending (matched 1 rule, early exit)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:33     | Enter data.industry_specific.healthcare.v1.patient_safety.implementation_pending
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:33     | | Eval true
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:33     | | Exit data.industry_specific.healthcare.v1.patient_safety.implementation_pending early
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:33     | Redo data.industry_specific.healthcare.v1.patient_safety.implementation_pending
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:33     | | Redo true
+query:1                                                              | Index data.industry_specific.healthcare.v1.patient_safety.metadata (matched 1 rule)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:6      | Enter data.industry_specific.healthcare.v1.patient_safety.metadata
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:6      | | Eval true
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:13     | | Eval concat("", ["FDA AI/ML Guidance: ", "https://www.fda.gov/medical-devices/software-medical-device-samd/", "artificial-intelligence-and-machine-learning-medical-device-software"], __local162__)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:19     | | Eval concat("", ["Good Machine Learning Practice: ", "https://www.fda.gov/medical-devices/software-medical-device-samd/", "good-machine-learning-practice-medical-device-development-guiding-principles"], __local163__)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:6      | | Exit data.industry_specific.healthcare.v1.patient_safety.metadata
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:6      | Redo data.industry_specific.healthcare.v1.patient_safety.metadata
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:19     | | Redo concat("", ["Good Machine Learning Practice: ", "https://www.fda.gov/medical-devices/software-medical-device-samd/", "good-machine-learning-practice-medical-device-development-guiding-principles"], __local163__)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:13     | | Redo concat("", ["FDA AI/ML Guidance: ", "https://www.fda.gov/medical-devices/software-medical-device-samd/", "artificial-intelligence-and-machine-learning-medical-device-software"], __local162__)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:6      | | Redo true
+query:1                                                              | Index data.industry_specific.healthcare.v1.patient_safety.non_compliant (matched 1 rule, early exit)
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:31     | Enter data.industry_specific.healthcare.v1.patient_safety.non_compliant
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:31     | | Eval true
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:31     | | Exit data.industry_specific.healthcare.v1.patient_safety.non_compliant early
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:31     | Redo data.industry_specific.healthcare.v1.patient_safety.non_compliant
+/home/...fic/healthcare/v1/patient_safety/patient_safety.rego:31     | | Redo true
+query:1                                                              | Exit data.industry_specific.healthcare = _
+query:1                                                              Redo data.industry_specific.healthcare = _
+query:1                                                              | Redo data.industry_specific.healthcare = _
+{
+  "v1": {
+    "patient_safety": {
+      "allow": false,
+      "compliance_report": {
+        "details": {
+          "message": "Healthcare patient safety policy implementation is pending. This is a placeholder that will be replaced with actual compliance checks in a future release."
+        },
+        "implementation_pending": true,
+        "overall_result": false,
+        "policy": "Healthcare Patient Safety Requirements",
+        "recommendations": [
+          "Check back for future releases with healthcare-specific evaluations",
+          "Consider using global compliance policies in the meantime",
+          "Review FDA guidance on AI/ML in medical devices",
+          "Implement preliminary risk assessment based on Good Machine Learning Practice principles",
+          "Consider HIPAA compliance for any patient data handling"
+        ],
+        "status": "PLACEHOLDER - Pending detailed implementation",
+        "version": "1.0.0"
+      },
+      "implementation_pending": true,
+      "metadata": {
+        "category": "Industry-Specific",
+        "description": "Placeholder for healthcare patient safety requirements for AI systems",
+        "references": [
+          "FDA AI/ML Guidance: https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-and-machine-learning-medical-device-software",
+          "HIPAA: https://www.hhs.gov/hipaa/index.html",
+          "Good Machine Learning Practice: https://www.fda.gov/medical-devices/software-medical-device-samd/good-machine-learning-practice-medical-device-development-guiding-principles"
+        ],
+        "status": "PLACEHOLDER - Pending detailed implementation",
+        "title": "Healthcare Patient Safety Requirements",
+        "version": "1.0.0"
+      },
+      "non_compliant": true
+    }
+  }
+}
++----------------------------------------------------------+--------------------+
+|                          METRIC                          |       VALUE        |
++----------------------------------------------------------+--------------------+
+| counter_compile_stage_comprehension_index_build          | 0                  |
+| counter_eval_op_base_cache_miss                          | 1                  |
+| counter_eval_op_virtual_cache_miss                       | 5                  |
+| histogram_eval_op_builtin_call_75%                       | 1266.75            |
+| histogram_eval_op_builtin_call_90%                       | 2331               |
+| histogram_eval_op_builtin_call_95%                       | 2331               |
+| histogram_eval_op_builtin_call_99%                       | 2331               |
+| histogram_eval_op_builtin_call_99.9%                     | 2331               |
+| histogram_eval_op_builtin_call_99.99%                    | 2331               |
+| histogram_eval_op_builtin_call_count                     | 6                  |
+| histogram_eval_op_builtin_call_max                       | 2331               |
+| histogram_eval_op_builtin_call_mean                      | 726.5              |
+| histogram_eval_op_builtin_call_median                    | 456.5              |
+| histogram_eval_op_builtin_call_min                       | 101                |
+| histogram_eval_op_builtin_call_stddev                    | 781.4948816211147  |
+| histogram_eval_op_plug_75%                               | 102                |
+| histogram_eval_op_plug_90%                               | 203                |
+| histogram_eval_op_plug_95%                               | 912.1999999999914  |
+| histogram_eval_op_plug_99%                               | 2635               |
+| histogram_eval_op_plug_99.9%                             | 2635               |
+| histogram_eval_op_plug_99.99%                            | 2635               |
+| histogram_eval_op_plug_count                             | 91                 |
+| histogram_eval_op_plug_max                               | 2635               |
+| histogram_eval_op_plug_mean                              | 212.65934065934067 |
+| histogram_eval_op_plug_median                            | 101                |
+| histogram_eval_op_plug_min                               | 0                  |
+| histogram_eval_op_plug_stddev                            | 430.8306115161103  |
+| histogram_eval_op_resolve_75%                            | 2432               |
+| histogram_eval_op_resolve_90%                            | 2432               |
+| histogram_eval_op_resolve_95%                            | 2432               |
+| histogram_eval_op_resolve_99%                            | 2432               |
+| histogram_eval_op_resolve_99.9%                          | 2432               |
+| histogram_eval_op_resolve_99.99%                         | 2432               |
+| histogram_eval_op_resolve_count                          | 1                  |
+| histogram_eval_op_resolve_max                            | 2432               |
+| histogram_eval_op_resolve_mean                           | 2432               |
+| histogram_eval_op_resolve_median                         | 2432               |
+| histogram_eval_op_resolve_min                            | 2432               |
+| histogram_eval_op_resolve_stddev                         | 0                  |
+| histogram_eval_op_rule_index_75%                         | 4003.5             |
+| histogram_eval_op_rule_index_90%                         | 5068               |
+| histogram_eval_op_rule_index_95%                         | 5068               |
+| histogram_eval_op_rule_index_99%                         | 5068               |
+| histogram_eval_op_rule_index_99.9%                       | 5068               |
+| histogram_eval_op_rule_index_99.99%                      | 5068               |
+| histogram_eval_op_rule_index_count                       | 5                  |
+| histogram_eval_op_rule_index_max                         | 5068               |
+| histogram_eval_op_rule_index_mean                        | 2979.4             |
+| histogram_eval_op_rule_index_median                      | 2432               |
+| histogram_eval_op_rule_index_min                         | 2229               |
+| histogram_eval_op_rule_index_stddev                      | 1076.0789190389337 |
+| timer_compile_stage_build_required_capabilities_ns       | 10136              |
+| timer_compile_stage_check_imports_ns                     | 4257               |
+| timer_compile_stage_check_keyword_overrides_ns           | 280142             |
+| timer_compile_stage_check_recursion_ns                   | 266560             |
+| timer_compile_stage_check_rule_conflicts_ns              | 1052762            |
+| timer_compile_stage_check_safety_rule_bodies_ns          | 4342603            |
+| timer_compile_stage_check_safety_rule_heads_ns           | 351900             |
+| timer_compile_stage_check_types_ns                       | 1584565            |
+| timer_compile_stage_check_undefined_funcs_ns             | 255107             |
+| timer_compile_stage_check_void_calls_ns                  | 165409             |
+| timer_compile_stage_init_local_var_gen_ns                | 269803             |
+| timer_compile_stage_parse_metadata_blocks_ns             | 218823             |
+| timer_compile_stage_rebuild_comprehension_indices_ns     | 543662             |
+| timer_compile_stage_rebuild_indices_ns                   | 435112             |
+| timer_compile_stage_remove_imports_ns                    | 3142               |
+| timer_compile_stage_resolve_refs_ns                      | 668530             |
+| timer_compile_stage_rewrite_comprehension_terms_ns       | 696706             |
+| timer_compile_stage_rewrite_dynamic_terms_ns             | 211829             |
+| timer_compile_stage_rewrite_equals_ns                    | 523593             |
+| timer_compile_stage_rewrite_expr_terms_ns                | 451936             |
+| timer_compile_stage_rewrite_local_vars_ns                | 2985273            |
+| timer_compile_stage_rewrite_print_calls_ns               | 261594             |
+| timer_compile_stage_rewrite_refs_in_head_ns              | 126388             |
+| timer_compile_stage_rewrite_rego_metadata_calls_ns       | 314703             |
+| timer_compile_stage_rewrite_rule_head_refs_ns            | 19156              |
+| timer_compile_stage_rewrite_test_rules_for_tracing_ns    | 101                |
+| timer_compile_stage_rewrite_with_values_ns               | 487613             |
+| timer_compile_stage_set_annotationset_ns                 | 2736               |
+| timer_compile_stage_set_graph_ns                         | 852588             |
+| timer_compile_stage_set_module_tree_ns                   | 15811              |
+| timer_compile_stage_set_rule_tree_ns                     | 158518             |
+| timer_compile_state_check_deprecated_builtins_ns         | 507                |
+| timer_compile_state_check_unsafe_builtins_ns             | 203                |
+| timer_eval_op_builtin_call_ns                            | 4359               |
+| timer_eval_op_plug_ns                                    | 19352              |
+| timer_eval_op_resolve_ns                                 | 2432               |
+| timer_eval_op_rule_index_ns                              | 14897              |
+| timer_query_compile_stage_build_comprehension_index_ns   | 1317               |
+| timer_query_compile_stage_check_deprecated_builtins_ns   | 101                |
+| timer_query_compile_stage_check_keyword_overrides_ns     | 304                |
+| timer_query_compile_stage_check_safety_ns                | 6790               |
+| timer_query_compile_stage_check_types_ns                 | 9933               |
+| timer_query_compile_stage_check_undefined_funcs_ns       | 1115               |
+| timer_query_compile_stage_check_unsafe_builtins_ns       | 709                |
+| timer_query_compile_stage_check_void_calls_ns            | 709                |
+| timer_query_compile_stage_resolve_refs_ns                | 2332               |
+| timer_query_compile_stage_rewrite_comprehension_terms_ns | 1824               |
+| timer_query_compile_stage_rewrite_dynamic_terms_ns       | 1014               |
+| timer_query_compile_stage_rewrite_expr_terms_ns          | 2230               |
+| timer_query_compile_stage_rewrite_local_vars_ns          | 6690               |
+| timer_query_compile_stage_rewrite_print_calls_ns         | 1115               |
+| timer_query_compile_stage_rewrite_to_capture_value_ns    | 7804               |
+| timer_query_compile_stage_rewrite_with_values_ns         | 913                |
+| timer_rego_external_resolve_ns                           | 203                |
+| timer_rego_load_bundles_ns                               | 8961495            |
+| timer_rego_module_compile_ns                             | 18205970           |
+| timer_rego_module_parse_ns                               | 7165710            |
+| timer_rego_query_compile_ns                              | 54326              |
+| timer_rego_query_eval_ns                                 | 202100             |
+| timer_rego_query_parse_ns                                | 38211              |
++----------------------------------------------------------+--------------------+
++------------------+------+
+| Overall Coverage | 1.38 |
++------------------+------+

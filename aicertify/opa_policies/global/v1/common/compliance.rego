@@ -1,4 +1,4 @@
-package common.compliance
+package global.v1.common.compliance
 
 import rego.v1
 

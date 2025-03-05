@@ -183,7 +183,7 @@ class PolicyLoader:
                 
                 # Add the policy file path
                 policies[category][subcategory][version].append(str(policy_file))
-                logging.debug(f"Added policy file: {policy_file} to {category}/{subcategory}/{version}")
+                #logging.debug(f"Added policy file: {policy_file} to {category}/{subcategory}/{version}")
                 
             except Exception as e:
                 logging.error(f"Error processing policy file {policy_file}: {e}")
@@ -218,7 +218,7 @@ class PolicyLoader:
                                 if match:
                                     package_name = match.group(1)
                                     package_mappings[package_name] = policy_file
-                                    logging.debug(f"Mapped package '{package_name}' to file: {policy_file}")
+                                    #logging.debug(f"Mapped package '{package_name}' to file: {policy_file}")
                         except Exception as e:
                             logging.error(f"Error extracting package from {policy_file}: {e}")
         
@@ -584,6 +584,15 @@ class PolicyLoader:
                             logging.error(f"Error loading policy {policy_file}: {str(e)}")
                             
         return all_policies
+
+    def get_policy_dir(self) -> str:
+        """Get the base directory for OPA policies.
+        
+        Returns:
+            str: The absolute path to the policy directory
+        """
+        # Default to the opa_policies directory in the aicertify package
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "opa_policies"))
 
 # Standalone test
 if __name__ == "__main__":

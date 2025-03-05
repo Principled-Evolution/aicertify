@@ -19,20 +19,108 @@ import glob
 import json
 from uuid import UUID
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Union
 
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from transformers import logging as hf_logging
+import colorlog
+
+from aicertify.utils.logging_config import setup_colored_logging
+
+# Set OPA_DEBUG environment variable only if not already set
+if "OPA_DEBUG" not in os.environ:
+    os.environ["OPA_DEBUG"] = "1"
+    print(f"Setting OPA_DEBUG=1 (not previously set in environment)")
+else:
+    print(f"Using existing OPA_DEBUG={os.environ['OPA_DEBUG']} from environment")
+
+# Get log configuration from environment variables
+log_level = os.environ.get("LOG_LEVEL", "INFO")
+log_file = os.environ.get("LOG_FILE", None)  # Define log_file variable
+log_level_num = getattr(logging, log_level.upper(), logging.INFO)
+
+# Configure colored logging
+handler = colorlog.StreamHandler()
+handler.setFormatter(colorlog.ColoredFormatter(
+    "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    log_colors={
+        'DEBUG': 'cyan',
+        'INFO': 'green',
+        'WARNING': 'yellow',
+        'ERROR': 'red',
+        'CRITICAL': 'red,bg_white',
+    }
+))
+
+# Set up root logger
+root_logger = logging.getLogger()
+root_logger.setLevel(log_level_num)
+for hdlr in root_logger.handlers[:]:
+    root_logger.removeHandler(hdlr)
+root_logger.addHandler(handler)
+
+# Add file handler if log file is specified
+if log_file:
+    # Create directory for log file if it doesn't exist
+    log_dir = os.path.dirname(log_file)
+    if log_dir and not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+        
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(log_level_num)
+    file_handler.setFormatter(logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    ))
+    root_logger.addHandler(file_handler)
+
+# Set up logger for this module
+logger = logging.getLogger(__name__)
+
+# Set OpenAI logging levels
+logging.getLogger("openai").setLevel(logging.INFO)
+logging.getLogger("openai._base_client").setLevel(logging.INFO)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+# Create handlers list
+handlers = [logging.StreamHandler()]
+
+# Add file handler if LOG_FILE is specified
+if log_file:
+    log_dir = os.path.dirname(log_file)
+    if log_dir and not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    file_handler = logging.FileHandler(log_file, mode='w')
+    handlers.append(file_handler)
+    print(f"Logging to file: {log_file}")
+
+# Configure logging with all handlers
+logging.basicConfig(
+    level=getattr(logging, log_level),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=handlers
+)
+
+# Ensure all libraries log at appropriate levels
+logging.getLogger("aicertify").setLevel(getattr(logging, log_level))
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
+
+# Set HuggingFace logging to less verbose
+hf_logging.set_verbosity_error()
+
+logger.info(f"Logging initialized at level {log_level}")
+
+# Add the parent directory to sys.path to import aicertify
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Global logging configuration (set to INFO for less verbosity)
 #hf_logging.set_verbosity_debug()
 logging.basicConfig(
-    level=logging.DEBUG,  # Changed from DEBUG to INFO for lower verbosity
-    format='%(asctime)s [%(levelname)s] %(name)s - %(message)s',
-    stream=sys.stdout,
-    force=True
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()]
 )
-logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.DEBUG)
 # Reduce verbosity of other loggers
@@ -43,7 +131,7 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 # Import AICertify modules needed for evaluation
 from aicertify.models.contract_models import load_contract
-from aicertify.api import evaluate_contract_comprehensive
+from aicertify.api import evaluate_contract_comprehensive, evaluate_contract_by_folder
 from aicertify.opa_core.evaluator import OpaEvaluator
 
 # Custom JSON encoder to handle UUID and datetime objects
@@ -79,124 +167,38 @@ async def evaluate_contract_only(contract_path: str, output_dir: str, report_for
         # Get domain from context to choose appropriate policy category
         domain = contract.context.get("domain", "").lower()
         
+        # Initialize OPA evaluator once and reuse it for all evaluations
+        debug_mode = os.environ.get("OPA_DEBUG", "1") == "1"  # Default to debug mode enabled
+        opa_evaluator = OpaEvaluator(
+            use_external_server=False,  # Force local evaluator
+            server_url=os.environ.get("OPA_SERVER_URL", "http://localhost:8181"),
+            debug=debug_mode
+        )
+        logger.info(f"OPA external server: {opa_evaluator.use_external_server}")
+        logger.info(f"OPA server URL: {opa_evaluator.server_url}")
+        
+        logger.info("Loading OPA policies...")
+        opa_evaluator.load_policies()
+        
         # Use the correct policy category path based on domain
         if domain == "healthcare":
+            # For folder-based evaluation
+            policy_folder = "healthcare"
+            # For comprehensive evaluation
             policy_category = "industry_specific/healthcare"
+            
             logger.info(f"Domain detected: {domain}")
+            logger.info(f"Using policy_folder: {policy_folder}")
             logger.info(f"Using policy_category: {policy_category}")
-            
-            debug_mode = os.environ.get("OPA_DEBUG", "0") == "1"
-            opa_evaluator = OpaEvaluator(
-                use_external_server=False,  # Force local evaluator
-                server_url=os.environ.get("OPA_SERVER_URL", "http://localhost:8181"),
-                debug=debug_mode
-            )
-            logger.info(f"OPA external server: {opa_evaluator.use_external_server}")
-            logger.info(f"OPA server URL: {opa_evaluator.server_url}")
-            
-            logger.info("Loading OPA policies...")
-            opa_evaluator.load_policies()
-            
-            contract_dict = contract.model_dump()
-            
-            evaluation_result = {
-                "fairness": {
-                    "score": 0.9,
-                    "gender_bias_detected": False,
-                    "racial_bias_detected": False
-                },
-                "content_safety": {
-                    "score": 0.95,
-                    "toxicity": {
-                        "score": 0.05
-                    }
-                },
-                "risk_management": {
-                    "score": 0.92
-                }
-            }
-            
-            input_data = {
-                "contract": contract_dict,
-                "evaluation": evaluation_result
-            }
-            
-            logger.info("Attempting direct OPA evaluation...")
-            try:
-                policy_path = "healthcare.multi_specialist.diagnostic_safety"
-                logger.info(f"Evaluating with policy path: {policy_path}")
-                
-                input_json_str = json.dumps(input_data, cls=CustomJSONEncoder)
-                input_data_serialized = json.loads(input_json_str)
-                
-                opa_results = opa_evaluator.evaluate_policies_by_category(
-                    category="industry_specific",
-                    subcategory="healthcare",
-                    input_data=input_data_serialized,
-                    version="v1"
-                )
-                
-                logger.info(f"Direct OPA evaluation results: {json.dumps(opa_results, indent=2)}")
-            except Exception as e:
-                logger.error(f"Direct OPA evaluation failed: {str(e)}")
-                logger.error(traceback.format_exc())
         else:
+            # For folder-based evaluation
+            policy_folder = "eu_ai_act"
+            # For comprehensive evaluation
             policy_category = "international/eu_ai_act"
+            
             logger.info(f"Domain detected: {domain}")
+            logger.info(f"Using policy_folder: {policy_folder}")
             logger.info(f"Using policy_category: {policy_category}")
-
-            debug_mode = os.environ.get("OPA_DEBUG", "0") == "1"
-            opa_evaluator = OpaEvaluator(
-                use_external_server=False,
-                server_url=os.environ.get("OPA_SERVER_URL", "http://localhost:8181"),
-                debug=debug_mode
-            )
-            logger.info(f"OPA external server: {opa_evaluator.use_external_server}")
-            logger.info(f"OPA server URL: {opa_evaluator.server_url}")
-            
-            logger.info("Loading OPA policies...")
-            opa_evaluator.load_policies()
-            
-            contract_dict = contract.model_dump()
-            
-            evaluation_result = {
-                "fairness": {
-                    "score": 0.85
-                },
-                "metrics": {
-                    "gender_bias_detected": False,
-                    "racial_bias_detected": False,
-                    "toxicity": {
-                        "score": 0.1
-                    }
-                }
-            }
-            
-            input_data = {
-                "contract": contract_dict,
-                "evaluation": evaluation_result,
-                "metrics": evaluation_result["metrics"]
-            }
-            
-            logger.info("Attempting direct OPA evaluation...")
-            try:
-                policy_path = "international.eu_ai_act.v1.fairness"
-                logger.info(f"Evaluating with policy path: {policy_path}")
-                
-                input_json_str = json.dumps(input_data, cls=CustomJSONEncoder)
-                input_data_serialized = json.loads(input_json_str)
-                
-                opa_results = opa_evaluator.evaluate_policies_by_category(
-                    category="international",
-                    subcategory="eu_ai_act",
-                    input_data=input_data_serialized,
-                    version="v1"
-                )
-                
-                logger.info(f"Direct OPA evaluation results: {json.dumps(opa_results, indent=2)}")
-            except Exception as e:
-                logger.error(f"Direct OPA evaluation failed: {str(e)}")
-                logger.error(traceback.format_exc())
         
         logger.debug("Contract context details:")
         for key, value in contract.context.items():
@@ -206,20 +208,23 @@ async def evaluate_contract_only(contract_path: str, output_dir: str, report_for
                 logger.debug(f"  {key}: {value}")
         
         try:
-            logger.info("Starting contract evaluation with comprehensive API...")
-            logger.debug("Calling evaluate_contract_comprehensive with parameters:")
-            logger.debug(f"  policy_category: {policy_category}")
+            logger.info("Starting contract evaluation with folder-based API...")
+            logger.debug("Calling evaluate_contract_by_folder with parameters:")
+            logger.debug(f"  policy_folder: {policy_folder}")
             logger.debug(f"  generate_report: True")
             logger.debug(f"  report_format: {report_format}")
             logger.debug(f"  output_dir: {output_dir}")
             
+            # Pass the existing OpaEvaluator to avoid reloading policies
+            # Use the new folder-based evaluation function
             eval_result = await asyncio.wait_for(
-                evaluate_contract_comprehensive(
+                evaluate_contract_by_folder(
                     contract=contract,
-                    policy_category=policy_category,
+                    policy_folder=policy_folder,
                     generate_report=True,
                     report_format=report_format,
-                    output_dir=output_dir
+                    output_dir=output_dir,
+                    opa_evaluator=opa_evaluator  # Pass the existing evaluator
                 ),
                 timeout=120
             )

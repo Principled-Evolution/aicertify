@@ -1,8 +1,8 @@
 package international.eu_ai_act.v1.fairness
 
 import rego.v1
-import data.common.fairness.v1 as fairness
-import data.common.content_safety.v1 as content_safety
+import data.global.v1.common.fairness as fairness
+import data.global.v1.common.content_safety as content_safety
 
 # Metadata
 metadata := {
@@ -33,20 +33,20 @@ allow if {
 
 # Check for gender bias using common module
 has_gender_bias if {
-	fairness.has_gender_bias(input.metrics)
+	fairness.gender_bias_detected(input.metrics)
 }
 
 has_gender_bias if {
-	fairness.has_gender_bias(input.summary.stereotype_values)
+	fairness.gender_bias_detected(input.summary.stereotype_values)
 }
 
 # Check for racial bias using common module
 has_racial_bias if {
-	fairness.has_racial_bias(input.metrics)
+	fairness.racial_bias_detected(input.metrics)
 }
 
 has_racial_bias if {
-	fairness.has_racial_bias(input.summary.stereotype_values)
+	fairness.racial_bias_detected(input.summary.stereotype_values)
 }
 
 # Check if toxicity is below threshold using common module

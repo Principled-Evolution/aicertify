@@ -11,6 +11,7 @@ from uuid import UUID
 from datetime import datetime
 import tempfile
 import requests
+import atexit
 
 from ..models.contract_models import AiCertifyContract as Contract
 
@@ -31,22 +32,36 @@ class OpaEvaluator:
     """Evaluator class for OPA policy evaluation."""
 
     def __init__(self, use_external_server: bool = False, server_url: str = "http://localhost:8181", debug: bool = False):
-        """Initialize the OPA evaluator.
+        """
+        Initialize the OPA evaluator.
         
         Args:
-            use_external_server: Whether to use an external OPA server instead of the local binary
-            server_url: URL of the external OPA server if use_external_server is True
+            use_external_server: Whether to use an external OPA server
+            server_url: URL of the external OPA server
             debug: Whether to enable debug mode
         """
+        # Check environment variable for debug mode override
+        env_debug_value = os.environ.get("OPA_DEBUG", "")
+        env_debug = env_debug_value.lower() in ("1", "true", "yes", "on") and env_debug_value.lower() not in ("0", "false", "no", "off")
+        self.debug = debug or env_debug
+        
+        logging.debug(f"OPA Evaluator initialized with debug={self.debug} (env value: {env_debug_value}, env override: {env_debug})")
+        
         self.policy_loader = PolicyLoader()
         self.opa_path = None if use_external_server else self._verify_opa_installation()
         self.use_external_server = use_external_server
         self.server_url = server_url
-        self.debug = debug
         self.policies_loaded = False
         
+        # Create a temporary directory for policy bundles
+        self.temp_dir = tempfile.mkdtemp()
+        atexit.register(lambda: shutil.rmtree(self.temp_dir, ignore_errors=True))
+        
         # Log the debug mode status immediately
-        logging.info(f"OPA evaluator debug mode: {'ENABLED' if self.debug else 'DISABLED'}")
+        if self.debug:
+            logging.debug("OPA Evaluator debug mode is ENABLED")
+        else:
+            logging.debug("OPA Evaluator debug mode is DISABLED")
         
     def _verify_opa_installation(self) -> str:
         """Verify OPA is installed and return the path to the executable.
@@ -124,31 +139,50 @@ class OpaEvaluator:
         """Evaluate policy using local OPA binary.
         
         Args:
-            policy_path: Path to the policy file
+            policy_path: Path to the policy file or directory
             input_data: Input data for evaluation
             
         Returns:
             Dict[str, Any]: Evaluation results
         """
+        # Check environment variable for debug mode override
+        env_debug_value = os.environ.get("OPA_DEBUG", "")
+        env_debug = env_debug_value.lower() in ("1", "true", "yes", "on") and env_debug_value.lower() not in ("0", "false", "no", "off")
+        debug_mode = self.debug or env_debug
+        
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
             # Use CustomJSONEncoder to handle UUID serialization
             json.dump(input_data, temp_file, cls=CustomJSONEncoder)
             temp_file_path = temp_file.name
             
         try:
+            # Always use the entire opa_policies directory as the bundle
+            bundle_path = self.policy_loader.get_policy_dir()
+            logging.debug(f"Using entire opa_policies directory as bundle: {bundle_path}")
+            
+            # Determine the query based on the specific policy path
+            query = "data"
+            if Path(policy_path).is_file():
+                # If a specific file is provided, try to build a more specific query
+                package_name = self.extract_package_from_file(Path(policy_path))
+                if package_name:
+                    query = f"data.{package_name}"
+                    logging.debug(f"Using specific query for policy file: {query}")
+            
+            # Use bundle loading with the entire opa_policies directory
             cmd = [
                 self.opa_path,
                 "eval",
                 "--format", "json",
-                "--data", policy_path,
+                "--bundle", bundle_path,  # Use entire opa_policies directory
                 "--input", temp_file_path,
-                "data"
+                query
             ]
             
             # Optionally add debugging flags if debug mode is enabled
-            if self.debug:
+            if debug_mode:
                 cmd.extend(["--explain", "full", "--coverage", "--instrument", "--metrics"])
-                logging.debug("Debug mode active: Added OPA debugging flags to the command")
+                logging.debug(f"Debug mode active (self.debug={self.debug}, env_debug={env_debug}, env_value={env_debug_value}): Added OPA debugging flags to the command")
             
             logging.debug(f"Running OPA command: {' '.join(cmd)}")
             
@@ -162,7 +196,7 @@ class OpaEvaluator:
             return {"error": e.stderr}
         finally:
             if os.path.exists(temp_file_path):
-                if self.debug:
+                if debug_mode:
                     logging.debug(f"Keeping temporary input file for manual inspection: {temp_file_path}")
                 else:
                     os.unlink(temp_file_path)
@@ -171,32 +205,71 @@ class OpaEvaluator:
         """Evaluate policy using external OPA server.
         
         Args:
-            policy_path: Path to evaluate in the policy structure (e.g., "fairness/evaluate")
+            policy_path: Path to the policy file or directory
             input_data: Input data for evaluation
             
         Returns:
             Dict[str, Any]: Evaluation results
         """
-        url = f"{self.server_url}/v1/data/{policy_path}"
-        headers = {"Content-Type": "application/json"}
+        # Check environment variable for debug mode override
+        env_debug_value = os.environ.get("OPA_DEBUG", "")
+        env_debug = env_debug_value.lower() in ("1", "true", "yes", "on") and env_debug_value.lower() not in ("0", "false", "no", "off")
+        debug_mode = self.debug or env_debug
         
         try:
-            # Use CustomJSONEncoder to handle UUID serialization
-            response = requests.post(
-                url, 
-                data=json.dumps({"input": input_data}, cls=CustomJSONEncoder), 
-                headers=headers
-            )
-            if response.status_code == 200:
-                return response.json()
+            # For external server, we need to determine the package and query
+            # First, determine if policy_path is a file or directory
+            if Path(policy_path).is_file():
+                # Extract package from the policy file
+                package_name = self.extract_package_from_file(Path(policy_path))
+                if not package_name:
+                    return {"error": f"Could not extract package name from policy file: {policy_path}"}
             else:
-                error_msg = f"OPA server returned status code: {response.status_code}, body: {response.text}"
-                logging.error(error_msg)
-                return {"error": error_msg}
-        except requests.RequestException as e:
-            error_msg = f"Error connecting to OPA server: {str(e)}"
-            logging.error(error_msg)
-            return {"error": error_msg}
+                # For directories, convert the path to a package path
+                policy_dir = self.policy_loader.get_policy_dir()
+                try:
+                    rel_path = Path(policy_path).relative_to(Path(policy_dir))
+                    package_name = str(rel_path).replace(os.sep, '.')
+                except ValueError:
+                    # If policy_path is not relative to policy_dir
+                    return {"error": f"Policy path {policy_path} is not within the policy directory {policy_dir}"}
+            
+            # Build the data query URL
+            query_url = f"{self.server_url}/v1/data/{package_name.replace('.', '/')}"
+            
+            # Prepare request parameters
+            request_params = {"input": input_data}
+            
+            # Add debug parameters if debug mode is enabled
+            if debug_mode:
+                request_params.update({
+                    "explain": "full",
+                    "metrics": True,
+                    "instrument": True,
+                    "pretty": True
+                })
+                logging.debug(f"Debug mode active (self.debug={self.debug}, env_debug={env_debug}, env_value={env_debug_value}): Added debug parameters to OPA server request")
+            
+            logging.debug(f"Making request to OPA server: {query_url}")
+            
+            # Make the request to the OPA server
+            response = requests.post(
+                query_url,
+                json=request_params,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code != 200:
+                return {"error": f"OPA server returned error: {response.text}"}
+            
+            # Log the response if in debug mode
+            if debug_mode:
+                logging.debug(f"OPA server response: {response.text}")
+                
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error evaluating policy with external OPA server: {str(e)}")
+            return {"error": f"External OPA evaluation failed: {str(e)}"}
                 
     def load_policies(self, policy_dir: Optional[str] = None) -> None:
         """Load policies from directory.
@@ -246,6 +319,13 @@ class OpaEvaluator:
         Returns:
             Dict[str, Any]: Evaluation results
         """
+        # Check environment variable for debug mode override
+        env_debug = os.environ.get("OPA_DEBUG", "").lower() in ("1", "true", "yes", "on")
+        debug_mode = self.debug or env_debug
+        
+        if debug_mode:
+            logging.debug(f"Debug mode active for contract evaluation (self.debug={self.debug}, env_debug={env_debug})")
+        
         # Ensure policies are loaded
         self.load_policies()
         
@@ -292,15 +372,16 @@ class OpaEvaluator:
         policy_path: Union[str, List[str]], 
         input_data: Dict[str, Any], 
         query: str = None,
-        mode: ExecutionMode = "production",
+        mode: ExecutionMode = "debug",
         entrypoint: str = None,
-        optimize_level: int = 2
+        optimize_level: int = 2,
+        retry_count: int = 0  # Add retry counter
     ) -> Optional[Dict[str, Any]]:
         """
         Evaluate an OPA policy against input data with enhanced execution modes.
         
         Args:
-            policy_path: Path to the .rego policy file or list of policy files
+            policy_path: Path to the .rego policy file, list of policy files, or directory containing policies
             input_data: Dictionary containing the input data
             query: Optional query parameter for the OPA evaluation
             mode: Execution mode determining the level of feedback and debugging
@@ -313,58 +394,68 @@ class OpaEvaluator:
         Returns:
             Dictionary containing evaluation results or None if evaluation fails
         """
+        # Check environment variable for debug mode override
+        env_debug_value = os.environ.get("OPA_DEBUG", "")
+        env_debug_forces_production = env_debug_value.lower() in ("0", "false", "no", "off")
+        
+        if env_debug_value.lower() in ("1", "true", "yes", "on"):
+            mode = "debug"
+            logging.debug("OPA_DEBUG environment variable set to true, forcing debug mode")
+        elif env_debug_forces_production and mode == "debug":
+            mode = "production"
+            logging.debug("OPA_DEBUG environment variable set to false, forcing production mode")
+        elif self.debug and mode != "debug":
+            logging.debug(f"Debug mode enabled in evaluator, but mode is {mode}. Consider using debug mode for more detailed output.")
+        
         try:
-            # Handle single policy path or list of policy paths
-            policy_files = [policy_path] if isinstance(policy_path, str) else policy_path
-            
-            # Convert all paths to absolute paths in POSIX format
-            abs_policy_paths = [Path(p).resolve().as_posix() for p in policy_files]
-            logging.debug(f"Policy file paths: {abs_policy_paths}")
-            
-            # Verify all policy files exist
-            for path in abs_policy_paths:
-                if not Path(path).is_file():
-                    logging.error(f"Policy file not found: {path}")
-                    return {"error": f"Policy file not found: {path}"}
-            
-            # Use the first policy file for query building if needed
-            primary_policy_path = abs_policy_paths[0]
+            # Always use the entire opa_policies directory as the bundle
+            bundle_path = self.policy_loader.get_policy_dir()
+            logging.debug(f"Using entire opa_policies directory as bundle: {bundle_path}")
             
             # Convert input_data to proper JSON string
             try:
                 # Use our global CustomJSONEncoder to handle UUID and datetime objects
                 input_json = json.dumps(input_data, cls=CustomJSONEncoder)
-                logging.debug(f"Input data: {input_json}")
+                # Log a truncated version of the input data for debugging
+                input_preview = input_json[:200] + "..." if len(input_json) > 200 else input_json
+                logging.debug(f"Input data: {input_preview}")
+                
+                # Optionally save input to file for debugging
+                if self.debug:
+                    debug_dir = Path("./debug_opa")
+                    debug_dir.mkdir(exist_ok=True)
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    input_file = debug_dir / f"opa_input_{timestamp}.json"
+                    with open(input_file, "w") as f:
+                        f.write(input_json)
+                    logging.debug(f"Saved input data to {input_file}")
             except Exception as e:
                 logging.error(f"Error converting input data to JSON: {e}")
                 return {"error": f"Failed to serialize input data: {str(e)}"}
             
             # If query is not provided, build it from policy file
-            if not query:
-                query = self.policy_loader.build_query_for_policy(primary_policy_path)
+            if not query and isinstance(policy_path, str) and Path(policy_path).is_file():
+                # Try to extract package from the file
+                package_name = self.extract_package_from_file(Path(policy_path))
+                if package_name:
+                    query = f"data.{package_name}"
+                    logging.debug(f"Using query built from package name: {query}")
+                else:
+                    # Fall back to the policy loader's query builder
+                    query = self.policy_loader.build_query_for_policy(policy_path)
                 logging.debug(f"Using query built from policy: {query}")
+            elif not query:
+                # Default query if we can't determine a specific one
+                query = "data"
+                logging.debug(f"Using default query: {query}")
             
-            # Resolve policy dependencies if not already provided
-            if len(abs_policy_paths) == 1:
-                policy_files = self.policy_loader.resolve_policy_dependencies(abs_policy_paths)
-                logging.debug(f"Using policy files with dependencies: {policy_files}")
-            else:
-                policy_files = abs_policy_paths
-            
-            # Create a list of policy file arguments for OPA
-            policy_args = []
-            for policy_file in policy_files:
-                policy_args.extend(["-d", Path(policy_file).resolve().as_posix()])
-            
-            # Base command with query and policy files
+            # Base command with query and bundle
             cmd = [
                 self.opa_path,
                 "eval",
                 query,  # Positional query argument
+                "--bundle", bundle_path  # Use entire opa_policies directory
             ]
-            
-            # Add all policy files
-            cmd.extend(policy_args)
             
             # Add mode-specific options
             if mode == "development":
@@ -422,11 +513,48 @@ class OpaEvaluator:
             # Handle non-zero exit code with enhanced error recovery
             if result.returncode != 0:
                 logging.error(f"OPA command failed with return code {result.returncode}")
+                
+                # Log stderr output with more detail
                 if result.stderr:
                     logging.error(f"OPA stderr output: {result.stderr}")
+                    # Save stderr to file for debugging
+                    if self.debug:
+                        debug_dir = Path("./debug_opa")
+                        debug_dir.mkdir(exist_ok=True)
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        stderr_file = debug_dir / f"opa_stderr_{timestamp}.txt"
+                        with open(stderr_file, "w") as f:
+                            f.write(result.stderr)
+                        logging.debug(f"Saved stderr output to {stderr_file}")
+                else:
+                    logging.error("OPA command failed but stderr is empty. Trying with --format json for better error reporting")
+                    # Try again with JSON format to get more structured error information
+                    json_cmd = cmd.copy()
+                    # Replace format option if it exists
+                    if "--format" in json_cmd:
+                        format_index = json_cmd.index("--format")
+                        if format_index + 1 < len(json_cmd):
+                            json_cmd[format_index + 1] = "json"
+                    else:
+                        json_cmd.extend(["--format", "json"])
+                    
+                    try:
+                        json_result = subprocess.run(
+                            json_cmd,
+                            input=input_json,
+                            capture_output=True,
+                            text=True,
+                            check=False
+                        )
+                        if json_result.stderr:
+                            logging.error(f"OPA stderr output (JSON format): {json_result.stderr}")
+                        if json_result.stdout:
+                            logging.error(f"OPA stdout output (JSON format): {json_result.stdout}")
+                    except Exception as e:
+                        logging.error(f"Error running OPA with JSON format: {e}")
                 
                 # Check for specific error about bundle optimizations requiring entrypoint
-                if "bundle optimizations require at least one entrypoint" in result.stderr:
+                if result.stderr and "bundle optimizations require at least one entrypoint" in result.stderr:
                     logging.warning("OPA optimization requires an entrypoint, retrying without optimization")
                     # Retry without optimization
                     return self.evaluate_policy(
@@ -438,25 +566,49 @@ class OpaEvaluator:
                         optimize_level=0  # Disable optimization
                     )
                 
-                # If not already in debug mode, retry with debug options for better diagnostics
-                if mode != "debug":
-                    logging.info("Retrying with debug mode to get more detailed error information")
+                # If not in debug mode and retry count is less than max retries, retry with debug mode
+                # Only if OPA_DEBUG doesn't force production mode
+                if mode != "debug" and retry_count < 2 and not env_debug_forces_production:
+                    logging.info(f"Retrying with debug mode to get more detailed error information (retry {retry_count+1}/2)")
                     return self.evaluate_policy(
                         policy_path=policy_path, 
                         input_data=input_data, 
                         query=query, 
                         mode="debug",
-                        entrypoint=None,  # Clear entrypoint in debug mode
-                        optimize_level=0  # Disable optimization in debug mode
+                        entrypoint=None,
+                        optimize_level=0,
+                        retry_count=retry_count + 1  # Increment retry counter
                     )
                 
                 # Structured error response with detailed information
-                return {
+                error_response = {
                     "error": f"OPA execution returned non-zero exit code: {result.returncode}",
-                    "stderr": result.stderr,
                     "command": " ".join(cmd),
-                    "policy_files": policy_files
+                    "policy_files": policy_path if isinstance(policy_path, list) else [policy_path],
+                    "query": query
                 }
+                
+                # Include stderr if available
+                if result.stderr:
+                    error_response["stderr"] = result.stderr
+                
+                # In debug mode, stdout often contains the detailed error messages
+                if result.stdout:
+                    error_response["stdout"] = result.stdout
+                    # Log the stdout for visibility
+                    logging.error(f"OPA stdout error details: {result.stdout}")
+                
+                return error_response
+            
+            # Save output for debugging
+            if self.debug and result.stdout:
+                debug_dir = Path("./debug_opa")
+                debug_dir.mkdir(exist_ok=True)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                output_file = debug_dir / f"opa_output_{timestamp}.txt"
+                with open(output_file, "w") as f:
+                    f.write(result.stdout)
+                logging.debug(f"Saved output to {output_file}")
             
             if result.stderr:
                 logging.warning(f"OPA stderr output (non-fatal): {result.stderr}")
@@ -464,21 +616,23 @@ class OpaEvaluator:
             if not result.stdout or result.stdout.strip() == "":
                 logging.warning("OPA returned empty output")
                 
-                # If not in debug mode, retry with debug mode
-                if mode != "debug":
-                    logging.info("Retrying with debug mode to diagnose empty output")
+                # If not in debug mode and retry count is less than max retries, retry with debug mode
+                # Only if OPA_DEBUG doesn't force production mode
+                if mode != "debug" and retry_count < 2 and not env_debug_forces_production:
+                    logging.info(f"Retrying with debug mode to diagnose empty output (retry {retry_count+1}/2)")
                     return self.evaluate_policy(
                         policy_path=policy_path, 
                         input_data=input_data, 
                         query=query, 
                         mode="debug",
-                        entrypoint=None,  # Clear entrypoint in debug mode
-                        optimize_level=0  # Disable optimization in debug mode
+                        entrypoint=None,
+                        optimize_level=0,
+                        retry_count=retry_count + 1  # Increment retry counter
                     )
                 
                 # Return a structured result indicating empty output
                 return {
-                    "policy_name": Path(primary_policy_path).stem,
+                    "policy_name": Path(policy_path).stem if isinstance(policy_path, str) else Path(policy_path[0]).stem,
                     "result": False,
                     "error": "Empty result from OPA",
                     "details": "The policy evaluation returned no output. Check if the compliance_report rule exists in the policy."
@@ -519,7 +673,7 @@ class OpaEvaluator:
                     ]
                     
                     # Add policy files
-                    allow_cmd.extend(policy_args)
+                    allow_cmd.extend(policy_path if isinstance(policy_path, list) else [policy_path])
                     
                     # Add format and input options
                     allow_cmd.extend([
@@ -552,7 +706,7 @@ class OpaEvaluator:
                         "result": [{
                             "expressions": [{
                                 "value": {
-                                    "policy": Path(primary_policy_path).stem,
+                                    "policy": Path(policy_path).stem if isinstance(policy_path, str) else Path(policy_path[0]).stem,
                                     "overall_result": allow_value,
                                     "detailed_results": {
                                         "compliance": {
@@ -597,71 +751,168 @@ class OpaEvaluator:
         version: str = None,
         mode: ExecutionMode = "production"
     ) -> Dict[str, Any]:
-        """Evaluate policies by category and subcategory using a recursive folder scan.
-        For Phase 1, we require an exact match folder to exist, otherwise error out.
-        This method recursively scans the folder tree for .rego files and evaluates all of them.
+        """
+        Evaluate all policies in a specific category and subcategory.
 
         Args:
-            category: The policy category, e.g. 'industry_specific' or 'international'
-            subcategory: The policy subcategory, e.g. 'healthcare'
-            input_data: Input data for evaluation
-            version: (Ignored for Phase 1) 
-            mode: Execution mode ('production', 'development', 'debug')
+            category: The policy category (e.g., 'global', 'industry_specific')
+            subcategory: The policy subcategory (e.g., 'fairness', 'healthcare')
+            input_data: The input data for evaluation
+            version: Optional version string (e.g., 'v1')
+            mode: Execution mode (production, development, debug)
             
         Returns:
-            Dict[str, Any]: Evaluation results from all policies in the folder tree.
+            Dict[str, Any]: Evaluation results for all policies
         """
-        # Determine base policy directory
-        base_policy_dir = os.path.join(os.path.dirname(__file__), "..", "opa_policies")
-        # Construct target folder path using category and subcategory
-        if subcategory:
-            target_folder = os.path.join(base_policy_dir, category, subcategory)
+        # Check environment variable for debug mode override
+        env_debug_value = os.environ.get("OPA_DEBUG", "")
+        if env_debug_value.lower() in ("1", "true", "yes", "on"):
+            mode = "debug"
+            logging.debug(f"OPA_DEBUG environment variable set to true, forcing debug mode for category evaluation: {category}/{subcategory}")
+        elif env_debug_value.lower() in ("0", "false", "no", "off") and mode == "debug":
+            mode = "production"
+            logging.debug(f"OPA_DEBUG environment variable set to false, forcing production mode for category evaluation: {category}/{subcategory}")
+        elif self.debug and mode != "debug":
+            logging.debug(f"Debug mode enabled in evaluator, but mode is {mode}. Consider using debug mode for more detailed output.")
+        
+        # Construct the policy directory path to determine the query
+        policy_dir = self.policy_loader.get_policy_dir()
+        
+        if version:
+            category_path = Path(policy_dir) / category / version / subcategory
         else:
-            target_folder = os.path.join(base_policy_dir, category)
+            # Try to find the latest version
+            base_path = Path(policy_dir) / category
+            if not base_path.exists():
+                return {"error": f"Category path not found: {base_path}"}
+                
+            # Find all version directories (assuming they start with 'v')
+            version_dirs = [d for d in base_path.iterdir() if d.is_dir() and d.name.startswith('v')]
+            if not version_dirs:
+                return {"error": f"No version directories found in {base_path}"}
+                
+            # Sort by version number (assuming format 'vX' or 'vX.Y')
+            version_dirs.sort(key=lambda d: [int(n) for n in d.name[1:].split('.')])
+            latest_version = version_dirs[-1].name
+            category_path = base_path / latest_version / subcategory
+        
+        if not category_path.exists():
+            return {"error": f"Policy path not found: {category_path}"}
+            
+        logging.info(f"Evaluating policies in: {category_path}")
+        
+        # Build a query based on the category path
+        # Convert the relative path to a package path (replace / with .)
+        rel_path = category_path.relative_to(Path(policy_dir))
+        package_path = str(rel_path).replace(os.sep, '.')
+        query = f"data.{package_path}"
+        logging.debug(f"Using query for category: {query}")
+        
+        # Use the entire opa_policies directory as a bundle for evaluation
+        return self.evaluate_policy(
+            policy_path=str(category_path),  # Still pass the specific path for reference
+            input_data=input_data,
+            query=query,  # Use the specific query for this category
+            mode=mode
+        )
 
-        if not os.path.isdir(target_folder):
-            error_msg = f"No policy folder found for {category}/{subcategory}. Expected folder: {target_folder}"
-            logging.error(error_msg)
-            return {"error": error_msg}
+    def extract_package_from_file(self, policy_file: Path) -> Optional[str]:
+        """Extract the package name from a Rego policy file.
+        
+        Args:
+            policy_file: Path to the Rego policy file
+            
+        Returns:
+            Optional[str]: The package name or None if not found
+        """
+        try:
+            with open(policy_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+                
+            # Look for package declaration using regex
+            import re
+            package_match = re.search(r'package\s+([^\s{]+)', content)
+            if package_match:
+                return package_match.group(1)
+            
+            return None
+        except Exception as e:
+            logging.error(f"Error extracting package from {policy_file}: {e}")
+            return None
+    def find_matching_policy_folders(self, folder_name: str) -> List[str]:
+        """
+        Find all policy folders that match the given name.
+        
+        Args:
+            folder_name: Name of the folder to search for
+            
+        Returns:
+            List of full paths to matching folders
+        """
+        matching_folders = []
+        
+        # Get the policy directory
+        policy_dir = Path(self.policy_loader.get_policy_dir())
+        
+        # Recursive search for folders with the given name
+        for path in policy_dir.rglob(f"{folder_name}"):
+            if path.is_dir():
+                matching_folders.append(str(path))
+            
+        return matching_folders
 
-        logging.info(f"Searching for policy files in folder: {target_folder}")
+    def evaluate_by_folder_name(self, folder_name: str, input_data: Dict[str, Any], mode: ExecutionMode = "debug") -> Dict[str, Any]:
+        """
+        Find folders matching the name and evaluate policies in the first match.
+        
+        Args:
+            folder_name: Name of the folder to search for
+            input_data: Input data for evaluation
+            mode: Execution mode (production, development, debug)
+            
+        Returns:
+            Evaluation results or error
+        """
+        # Check environment variable for debug mode override
+        env_debug_value = os.environ.get("OPA_DEBUG", "")
+        if env_debug_value.lower() in ("1", "true", "yes", "on"):
+            mode = "debug"
+            logging.debug(f"OPA_DEBUG environment variable set to true, forcing debug mode for folder evaluation: {folder_name}")
+        elif env_debug_value.lower() in ("0", "false", "no", "off") and mode == "debug":
+            mode = "production"
+            logging.debug(f"OPA_DEBUG environment variable set to false, forcing production mode for folder evaluation: {folder_name}")
+        elif self.debug and mode != "debug":
+            logging.debug(f"Debug mode enabled in evaluator, but mode is {mode}. Consider using debug mode for more detailed output.")
+        
+        matching_folders = self.find_matching_policy_folders(folder_name)
+        
+        if not matching_folders:
+            return {
+                "error": f"No policy folders found matching: {folder_name}",
+                "searched_in": self.policy_loader.get_policy_dir()
+            }
+        
+        # Log all matches
+        if len(matching_folders) > 1:
+            logging.info(f"Found multiple matching folders for '{folder_name}':")
+            for folder in matching_folders:
+                logging.info(f"  - {folder}")
+            logging.info(f"Using the first match: {matching_folders[0]}")
+        
+        # Use the first match for evaluation
+        target_folder = matching_folders[0]
+        
+        # Build relative path from policy dir to determine package
+        policy_dir = Path(self.policy_loader.get_policy_dir())
+        rel_path = Path(target_folder).relative_to(policy_dir)
+        package_path = str(rel_path).replace(os.sep, '.')
+        query = f"data.{package_path}"
+        
+        # Evaluate using the entire bundle
+        return self.evaluate_policy(
+            policy_path=target_folder,
+            input_data=input_data,
+            query=query,
+            mode=mode
+        )
 
-        # Recursively gather all .rego files in the target_folder
-        policy_files = []
-        for root, dirs, files in os.walk(target_folder):
-            for file in files:
-                if file.endswith('.rego'):
-                    policy_files.append(os.path.join(root, file))
-
-        logging.info(f"Found {len(policy_files)} .rego policy files in folder {target_folder}")
-
-        if not policy_files:
-            error_msg = f"No policy files found in folder {target_folder}"
-            logging.error(error_msg)
-            return {"error": error_msg}
-
-        logging.info(f"Evaluating policies from folder: {target_folder}")
-        results = {}
-        for policy_path in policy_files:
-            try:
-                policy_basename = os.path.basename(policy_path).replace('.rego', '')
-                logging.info(f"Evaluating policy: {policy_basename} from {policy_path}")
-                if self.use_external_server:
-                    # For external server, construct package path by converting folder structure to dot notation
-                    # Remove base_policy_dir and .rego extension, then replace os separators with dots
-                    relative_path = os.path.relpath(policy_path, base_policy_dir)
-                    package_path = relative_path.replace(os.sep, '.').replace('.rego', '')
-                    # Prepend 'data.' as required by OPA
-                    full_policy_path = f"data.{package_path}.compliance_report"
-                    result = self._evaluate_with_external_opa(full_policy_path, input_data)
-                    results[policy_basename] = result.get("result", {})
-                else:
-                    result = self._evaluate_with_local_opa(policy_path, input_data)
-                    if "error" in result:
-                        logging.error(f"OPA local evaluation for policy {policy_basename} returned error: {result.get('error')}")
-                    results[policy_basename] = result
-            except Exception as e:
-                logging.error(f"Error evaluating policy {policy_path}: {str(e)}")
-                results[os.path.basename(policy_path).replace('.rego', '')] = {"error": str(e)}
-
-        return results

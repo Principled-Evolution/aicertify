@@ -279,7 +279,49 @@ def extract_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult]:
     # Handle case where no OPA results are provided
     if not opa_results:
         return policy_results
+    
+    # Handle case where OPA results are a string (debug output)
+    if isinstance(opa_results, str):
+        logger.warning("OPA results are in string format (debug output). Attempting to extract policy information.")
+        debug_output = opa_results
+        extracted_data = extract_structured_data_from_debug(debug_output)
         
+        if extracted_data:
+            # Process the extracted data
+            return process_extracted_policy_data(extracted_data)
+        else:
+            # Create a generic policy result with the debug information
+            policy_results.append(PolicyResult(
+                name="opa_debug_output",
+                result=False,  # Default to non-compliant
+                details={
+                    "debug_output": debug_output[:1000] + "..." if len(debug_output) > 1000 else debug_output,
+                    "note": "OPA evaluation was run in debug mode. Switch to production mode for structured results."
+                }
+            ))
+            return policy_results
+    
+    # Handle case where the entire result object is a string in a dictionary
+    if "result" in opa_results and isinstance(opa_results["result"], str):
+        logger.warning("OPA result field contains string output. Attempting to extract policy information.")
+        debug_output = opa_results["result"]
+        extracted_data = extract_structured_data_from_debug(debug_output)
+        
+        if extracted_data:
+            # Process the extracted data
+            return process_extracted_policy_data(extracted_data)
+        else:
+            # Create a generic policy result with the debug information
+            policy_results.append(PolicyResult(
+                name="opa_string_result",
+                result=False,  # Default to non-compliant
+                details={
+                    "output": debug_output[:1000] + "..." if len(debug_output) > 1000 else debug_output,
+                    "note": "OPA evaluation returned string output. Consider using production mode for structured results."
+                }
+            ))
+            return policy_results
+    
     # Case 1: Direct policy results as a dictionary of policy names to results
     for policy_name, policy_data in opa_results.items():
         # Skip non-policy keys
@@ -289,6 +331,26 @@ def extract_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult]:
         # Case 1.1: Standard OPA result format
         if "result" in policy_data and policy_data["result"]:
             try:
+                # Handle case where result is a string
+                if isinstance(policy_data["result"], str):
+                    debug_output = policy_data["result"]
+                    extracted_data = extract_structured_data_from_debug(debug_output)
+                    
+                    if extracted_data:
+                        # Process the extracted data for this specific policy
+                        extracted_results = process_extracted_policy_data(extracted_data)
+                        policy_results.extend(extracted_results)
+                    else:
+                        policy_results.append(PolicyResult(
+                            name=policy_name,
+                            result=False,  # Default to non-compliant
+                            details={
+                                "output": debug_output[:1000] + "..." if len(debug_output) > 1000 else debug_output,
+                                "note": "Policy returned string output instead of structured data."
+                            }
+                        ))
+                    continue
+                
                 # Extract expressions data
                 expressions = policy_data["result"][0]["expressions"][0]["value"]
                 
@@ -364,6 +426,311 @@ def extract_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult]:
                     result=result,
                     details=details
                 ))
+    
+    return policy_results
+
+def extract_structured_data_from_debug(debug_output: str) -> Dict[str, Any]:
+    """
+    Extract structured data from OPA debug output.
+    
+    This function tries multiple strategies to extract JSON data from debug output:
+    1. Look for complete JSON objects
+    2. Parse specific sections of the debug output
+    3. Extract policy-specific information
+    
+    Args:
+        debug_output: String containing OPA debug output
+        
+    Returns:
+        Dictionary containing structured data extracted from debug output,
+        or None if no structured data could be extracted
+    """
+    # Strategy 1: Look for complete JSON objects
+    try:
+        import re
+        import json
+        
+        # First try to find JSON data that starts with {"v1": {
+        v1_json_match = re.search(r'(\{\s*"v1"\s*:[\s\S]*?\}\s*\}(?=\s*\n|\s*$))', debug_output)
+        if v1_json_match:
+            try:
+                json_str = v1_json_match.group(1)
+                # Try to parse it directly
+                try:
+                    json_data = json.loads(json_str)
+                    if isinstance(json_data, dict) and "v1" in json_data:
+                        return json_data
+                except json.JSONDecodeError:
+                    # If direct parsing fails, try to clean up the string
+                    # Remove any trailing commas before closing braces
+                    json_str = re.sub(r',\s*\}', '}', json_str)
+                    # Ensure all property names are quoted
+                    json_str = re.sub(r'([{,]\s*)([a-zA-Z0-9_]+)(\s*:)', r'\1"\2"\3', json_str)
+                    # Try parsing again
+                    json_data = json.loads(json_str)
+                    if isinstance(json_data, dict) and "v1" in json_data:
+                        return json_data
+            except Exception as e:
+                logger.warning(f"Error parsing v1 JSON object: {e}")
+        
+        # If that fails, try to find any JSON object in the output
+        json_pattern = r'(\{(?:[^{}]|(?1))*\})'
+        json_matches = list(re.finditer(json_pattern, debug_output, re.DOTALL))
+        
+        if json_matches:
+            # Sort by length to find the largest JSON object
+            json_matches.sort(key=lambda m: len(m.group(1)), reverse=True)
+            
+            for match in json_matches:
+                try:
+                    json_str = match.group(1)
+                    # Try to parse it directly
+                    try:
+                        json_data = json.loads(json_str)
+                        # Check if this looks like a valid OPA result
+                        if isinstance(json_data, dict) and "v1" in json_data:
+                            return json_data
+                    except json.JSONDecodeError:
+                        # If direct parsing fails, try to clean up the string
+                        # Remove any trailing commas before closing braces
+                        json_str = re.sub(r',\s*\}', '}', json_str)
+                        # Ensure all property names are quoted
+                        json_str = re.sub(r'([{,]\s*)([a-zA-Z0-9_]+)(\s*:)', r'\1"\2"\3', json_str)
+                        # Try parsing again
+                        json_data = json.loads(json_str)
+                        if isinstance(json_data, dict) and "v1" in json_data:
+                            return json_data
+                except Exception:
+                    continue
+    except Exception as e:
+        logger.warning(f"Error extracting JSON from debug output: {e}")
+    
+    # Strategy 2: Manual extraction of the JSON structure
+    try:
+        # Look for the start of the JSON object
+        v1_start_match = re.search(r'{\s*"v1":', debug_output)
+        if v1_start_match:
+            start_pos = v1_start_match.start()
+            # Find the matching closing brace
+            brace_count = 1
+            end_pos = start_pos + 1
+            
+            while brace_count > 0 and end_pos < len(debug_output):
+                if debug_output[end_pos] == '{':
+                    brace_count += 1
+                elif debug_output[end_pos] == '}':
+                    brace_count -= 1
+                end_pos += 1
+            
+            if brace_count == 0:
+                json_str = debug_output[start_pos:end_pos]
+                try:
+                    # Try to parse it directly
+                    try:
+                        json_data = json.loads(json_str)
+                        return json_data
+                    except json.JSONDecodeError:
+                        # If direct parsing fails, try to clean up the string
+                        # Remove any trailing commas before closing braces
+                        json_str = re.sub(r',\s*\}', '}', json_str)
+                        # Ensure all property names are quoted
+                        json_str = re.sub(r'([{,]\s*)([a-zA-Z0-9_]+)(\s*:)', r'\1"\2"\3', json_str)
+                        # Try parsing again
+                        json_data = json.loads(json_str)
+                        return json_data
+                except Exception as e:
+                    logger.warning(f"Error parsing manually extracted JSON: {e}")
+    except Exception as e:
+        logger.warning(f"Error during manual JSON extraction: {e}")
+    
+    # Strategy 3: Parse specific sections of the debug output
+    try:
+        result = {}
+        
+        # Look for policy evaluation results
+        policy_sections = re.findall(r'data\.([a-zA-Z0-9_\.]+)\.([a-zA-Z0-9_]+)\.compliance_report', debug_output)
+        
+        for domain_path, policy_name in policy_sections:
+            # Extract domain and policy information
+            domain_parts = domain_path.split('.')
+            
+            # Extract compliance information - look for the specific structure in your example
+            compliance_match = re.search(
+                r'compliance_report.*?{.*?details.*?{.*?message.*?:.*?"(.*?)".*?}', 
+                debug_output, 
+                re.DOTALL
+            )
+            
+            if compliance_match:
+                message = compliance_match.group(1)
+                
+                # Build the nested structure
+                current = result
+                if "v1" not in current:
+                    current["v1"] = {}
+                current = current["v1"]
+                
+                for part in domain_parts:
+                    if part not in current:
+                        current[part] = {}
+                    current = current[part]
+                
+                if policy_name not in current:
+                    current[policy_name] = {}
+                
+                # Create a basic compliance report structure
+                current[policy_name]["compliance_report"] = {
+                    "overall_result": False,
+                    "policy": f"{domain_parts[-1].capitalize()} {policy_name.replace('_', ' ').capitalize()}",
+                    "version": "1.0.0",
+                    "details": {
+                        "message": message
+                    }
+                }
+                
+                # Look for recommendations
+                recommendations_match = re.search(
+                    r'recommendations.*?\[(.*?)\]', 
+                    debug_output, 
+                    re.DOTALL
+                )
+                
+                if recommendations_match:
+                    recommendations_str = recommendations_match.group(1)
+                    recommendations = []
+                    
+                    # Extract individual recommendations
+                    for rec_match in re.finditer(r'"(.*?)"', recommendations_str):
+                        recommendations.append(rec_match.group(1))
+                    
+                    if recommendations:
+                        current[policy_name]["compliance_report"]["recommendations"] = recommendations
+                
+                # Also look for allow, implementation_pending, and non_compliant
+                allow_match = re.search(rf'{policy_name}\.allow.*?(true|false)', debug_output)
+                if allow_match:
+                    current[policy_name]["allow"] = allow_match.group(1) == "true"
+                
+                pending_match = re.search(rf'{policy_name}\.implementation_pending.*?(true|false)', debug_output)
+                if pending_match:
+                    current[policy_name]["implementation_pending"] = pending_match.group(1) == "true"
+                    # Also add to compliance report
+                    current[policy_name]["compliance_report"]["implementation_pending"] = pending_match.group(1) == "true"
+                
+                non_compliant_match = re.search(rf'{policy_name}\.non_compliant.*?(true|false)', debug_output)
+                if non_compliant_match:
+                    current[policy_name]["non_compliant"] = non_compliant_match.group(1) == "true"
+        
+        if "v1" in result:
+            return result
+    except Exception as e:
+        logger.warning(f"Error parsing debug output sections: {e}")
+    
+    # Strategy 4: Direct extraction from the example format
+    try:
+        # Look for the specific format in the example
+        pattern = r'{\s*"v1":\s*{\s*"([^"]+)":\s*{\s*"allow":\s*(true|false),\s*"compliance_report":\s*{\s*"details":\s*{\s*"message":\s*"([^"]+)"'
+        match = re.search(pattern, debug_output, re.DOTALL)
+        
+        if match:
+            policy_name = match.group(1)
+            allow_value = match.group(2) == "true"
+            message = match.group(3)
+            
+            # Create a basic result structure
+            result = {
+                "v1": {
+                    policy_name: {
+                        "allow": allow_value,
+                        "compliance_report": {
+                            "overall_result": False,
+                            "policy": policy_name.replace("_", " ").capitalize(),
+                            "version": "1.0.0",
+                            "details": {
+                                "message": message
+                            }
+                        }
+                    }
+                }
+            }
+            
+            # Look for recommendations
+            recommendations_match = re.search(
+                r'"recommendations":\s*\[(.*?)\]', 
+                debug_output, 
+                re.DOTALL
+            )
+            
+            if recommendations_match:
+                recommendations_str = recommendations_match.group(1)
+                recommendations = []
+                
+                # Extract individual recommendations
+                for rec_match in re.finditer(r'"(.*?)"', recommendations_str):
+                    recommendations.append(rec_match.group(1))
+                
+                if recommendations:
+                    result["v1"][policy_name]["compliance_report"]["recommendations"] = recommendations
+            
+            return result
+    except Exception as e:
+        logger.warning(f"Error extracting from example format: {e}")
+    
+    # If all strategies fail, return None
+    return None
+
+def process_extracted_policy_data(extracted_data: Dict[str, Any]) -> List[PolicyResult]:
+    """
+    Process extracted policy data to create PolicyResult objects.
+    
+    Args:
+        extracted_data: Dictionary containing structured data extracted from debug output
+        
+    Returns:
+        List of PolicyResult objects
+    """
+    policy_results = []
+    
+    try:
+        if "v1" in extracted_data:
+            for domain, domain_data in extracted_data["v1"].items():
+                for policy_name, policy_data in domain_data.items():
+                    if isinstance(policy_data, dict) and "compliance_report" in policy_data:
+                        report_data = policy_data["compliance_report"]
+                        result = report_data.get("overall_result", False)
+                        
+                        details = {
+                            "policy": report_data.get("policy", f"{domain}.{policy_name}"),
+                            "version": report_data.get("version", "1.0"),
+                            "timestamp": datetime.now().isoformat()
+                        }
+                        
+                        # Extract recommendations if available
+                        if "recommendations" in report_data:
+                            details["recommendations"] = report_data["recommendations"]
+                        
+                        # Extract message if available
+                        if "details" in report_data and "message" in report_data["details"]:
+                            details["message"] = report_data["details"]["message"]
+                        
+                        policy_results.append(PolicyResult(
+                            name=policy_name,
+                            result=result,
+                            details=details
+                        ))
+    except Exception as e:
+        logger.warning(f"Error processing extracted policy data: {e}")
+        # Add a fallback policy result
+        policy_results.append(PolicyResult(
+            name="extracted_data",
+            result=False,
+            details={
+                "error": f"Failed to process extracted data: {e}",
+                "policy": "Fallback Policy",
+                "version": "1.0",
+                "timestamp": datetime.now().isoformat()
+            }
+        ))
     
     return policy_results
 
