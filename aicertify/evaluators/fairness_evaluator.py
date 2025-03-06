@@ -146,12 +146,47 @@ class FairnessEvaluator(BaseEvaluator):
         # Generate reason
         reason = self._generate_reason(counterfactual_results, stereotype_results, combined_score)
         
+        # Extract key metrics for easier access
+        counterfactual_score = 0.0
+        stereotype_score = 0.0
+        
+        # Extract counterfactual score
+        if "average_score" in counterfactual_results:
+            counterfactual_score = counterfactual_results["average_score"]
+        elif counterfactual_results and not all(k == "error" for k in counterfactual_results.keys()):
+            # Calculate average from individual metrics
+            valid_scores = []
+            for metric_name, metric_data in counterfactual_results.items():
+                if metric_name != "error" and "score" in metric_data:
+                    valid_scores.append(metric_data["score"])
+            if valid_scores:
+                counterfactual_score = sum(valid_scores) / len(valid_scores)
+        
+        # Extract stereotype score
+        if "average_score" in stereotype_results:
+            stereotype_score = stereotype_results["average_score"]
+        elif "stereotype_score" in stereotype_results:
+            stereotype_score = stereotype_results["stereotype_score"]
+        
+        # Log the extracted scores
+        logger.info(f"Average counterfactual score: {counterfactual_score:.3f}")
+        logger.info(f"Average stereotype score: {stereotype_score:.3f}")
+        logger.info(f"Combined fairness score: {combined_score:.3f}")
+        
         # Create detailed results
         details = {
             "counterfactual": counterfactual_results,
             "stereotypes": stereotype_results,
             "combined_score": combined_score,
-            "threshold": self.threshold
+            "threshold": self.threshold,
+            # Add key metrics directly to details for easier extraction
+            "counterfactual_score": counterfactual_score,
+            "stereotype_score": stereotype_score,
+            "sentiment_bias": counterfactual_results.get("SentimentBias", {}).get("score", 0.0),
+            "bleu_similarity": counterfactual_results.get("BleuSimilarity", {}).get("score", 0.0),
+            "rouge_similarity": counterfactual_results.get("RougelSimilarity", {}).get("score", 0.0),
+            "gender_bias_detected": stereotype_results.get("gender_bias_detected", False),
+            "racial_bias_detected": stereotype_results.get("racial_bias_detected", False)
         }
         
         # Create and return result

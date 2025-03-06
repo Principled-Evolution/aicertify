@@ -538,6 +538,18 @@ class OpaEvaluator:
                     else:
                         json_cmd.extend(["--format", "json"])
                     
+                    # Add debug flags if not already present
+                    if "--explain" not in json_cmd:
+                        json_cmd.extend(["--explain", "full"])
+                    if "--coverage" not in json_cmd:
+                        json_cmd.append("--coverage")
+                    if "--metrics" not in json_cmd:
+                        json_cmd.append("--metrics")
+                    if "--instrument" not in json_cmd:
+                        json_cmd.append("--instrument")
+                    
+                    logging.debug(f"Retrying with debug flags: {json_cmd}")
+                    
                     try:
                         json_result = subprocess.run(
                             json_cmd,
@@ -902,11 +914,42 @@ class OpaEvaluator:
         # Use the first match for evaluation
         target_folder = matching_folders[0]
         
+        # Check if the folder exists and contains .rego files
+        target_path = Path(target_folder)
+        if not target_path.exists():
+            return {
+                "error": f"Policy folder does not exist: {target_folder}",
+                "searched_in": self.policy_loader.get_policy_dir()
+            }
+        
+        rego_files = list(target_path.rglob("*.rego"))
+        if not rego_files:
+            return {
+                "error": f"No .rego policy files found in folder or subfolders: {target_folder}",
+                "searched_in": target_folder
+            }
+        
+        # Log the policy files found for debugging
+        logging.debug(f"Found {len(rego_files)} policy files in {target_folder}:")
+        for rego_file in rego_files:
+            logging.debug(f"  - {rego_file.name}")
+        
         # Build relative path from policy dir to determine package
         policy_dir = Path(self.policy_loader.get_policy_dir())
         rel_path = Path(target_folder).relative_to(policy_dir)
         package_path = str(rel_path).replace(os.sep, '.')
         query = f"data.{package_path}"
+        
+        # Force debug mode if this is a retry after a failure
+        if os.environ.get("OPA_RETRY_DEBUG") == "1":
+            mode = "debug"
+            logging.debug(f"Forcing debug mode for retry evaluation of {folder_name}")
+        
+        # Set environment variable to indicate this is a retry if mode is debug
+        if mode == "debug":
+            os.environ["OPA_RETRY_DEBUG"] = "1"
+        else:
+            os.environ.pop("OPA_RETRY_DEBUG", None)
         
         # Evaluate using the entire bundle
         return self.evaluate_policy(

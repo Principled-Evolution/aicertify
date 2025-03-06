@@ -18,5 +18,6 @@
         "aicertify/examples/pydanticai/__pycache__": true,
         "aicertify/examples/__pycache__": true
     },
-    "hide-files.files": []
+    "hide-files.files": [],
+    "terminal.integrated.defaultProfile.linux": "zsh"
 }

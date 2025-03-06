@@ -877,16 +877,62 @@ async def evaluate_contract_by_folder(
         else:
             logger.info("Using provided OpaEvaluator instance")
         
-        # Use the folder-based evaluation method
+        # First, store the initial OPA results
         opa_results = opa_evaluator.evaluate_by_folder_name(
             folder_name=policy_folder,
             input_data=input_data_serialized
         )
-        
+        logger.info("OPA policy evaluation complete using folder-based approach")
+
+        # Add the policy results to the OPA results
+        if "result" in opa_results and isinstance(opa_results["result"], list) and len(opa_results["result"]) > 0:
+            first_result = opa_results["result"][0]
+            if "expressions" in first_result and len(first_result["expressions"]) > 0:
+                first_expr = first_result["expressions"][0]
+                if "value" in first_expr:
+                    # Create v1 if it doesn't exist
+                    if "v1" not in first_expr["value"]:
+                        first_expr["value"]["v1"] = {}
+        else:
+            logger.warning("Could not add policy results to OPA results structure")
+
         logger.info("OPA policy evaluation complete using folder-based approach")
     except Exception as e:
         logger.error(f"Error during OPA policy evaluation: {str(e)}")
         opa_results = {"error": f"OPA evaluation error: {str(e)}"}
+    
+    # Add debug logging to see what's in the OPA results
+    logger.debug(f"OPA results structure: {json.dumps(opa_results, indent=2, cls=CustomJSONEncoder)}")
+
+    # Ensure the OPA results are properly structured for report generation
+    if isinstance(opa_results, dict) and "result" in opa_results:
+        # Log the structure to help diagnose issues
+        logger.debug(f"Found 'result' key in OPA results with {len(opa_results['result'])} items")
+        
+        # Check if we have expressions in the first result
+        if len(opa_results["result"]) > 0 and "expressions" in opa_results["result"][0]:
+            expressions = opa_results["result"][0]["expressions"]
+            logger.debug(f"Found {len(expressions)} expressions in first result")
+            
+            # Check if we have a value in the first expression
+            if len(expressions) > 0 and "value" in expressions[0]:
+                value = expressions[0]["value"]
+                logger.debug(f"Value keys: {list(value.keys())}")
+                
+                # Check for version keys (v1, v2, etc.)
+                version_keys = [k for k in value.keys() if k.startswith("v")]
+                logger.debug(f"Found version keys: {version_keys}")
+                
+                # Ensure all policies from all versions are accessible to the report generator
+                # This is the key part - we need to make sure all policies are visible
+                for version_key in version_keys:
+                    version_data = value[version_key]
+                    logger.debug(f"Version {version_key} has {len(version_data)} policies")
+                    
+                    # Log each policy and whether it has a compliance_report
+                    for policy_name, policy_data in version_data.items():
+                        has_compliance_report = "compliance_report" in policy_data
+                        logger.debug(f"Policy {policy_name} has compliance_report: {has_compliance_report}")
     
     # Generate combined report if requested
     report_path = None

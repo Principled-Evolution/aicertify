@@ -14,6 +14,12 @@ from aicertify.report_generation.report_models import (
     MetricGroup, MetricValue, PolicyResult
 )
 
+# Import feature flag configuration
+from aicertify.report_generation.config import use_flexible_extraction
+
+# Import flexible extraction system
+from aicertify.report_generation.flexible_extraction import extract_metrics as flexible_extract_metrics
+
 logger = logging.getLogger(__name__)
 
 def extract_application_details(evaluation_result: Dict[str, Any]) -> ApplicationDetails:
@@ -134,6 +140,78 @@ def extract_fairness_metrics(evaluation_result: Dict[str, Any]) -> List[MetricVa
             value=evaluation_result["gender_words_count"]
         ))
     
+    # Case 3: Fairness metrics in a dedicated fairness_metrics field
+    if "fairness_metrics" in evaluation_result and isinstance(evaluation_result["fairness_metrics"], dict):
+        fairness_data = evaluation_result["fairness_metrics"]
+        
+        # Add counterfactual score if present
+        if "counterfactual_score" in fairness_data:
+            metrics.append(MetricValue(
+                name="counterfactual_score",
+                display_name="Counterfactual Score",
+                value=fairness_data["counterfactual_score"]
+            ))
+        
+        # Add stereotype score if present
+        if "stereotype_score" in fairness_data:
+            metrics.append(MetricValue(
+                name="stereotype_score",
+                display_name="Stereotype Score",
+                value=fairness_data["stereotype_score"]
+            ))
+        
+        # Add combined score if present
+        if "combined_score" in fairness_data:
+            metrics.append(MetricValue(
+                name="combined_score",
+                display_name="Combined Score",
+                value=fairness_data["combined_score"]
+            ))
+        
+        # Check for details
+        if "details" in fairness_data and isinstance(fairness_data["details"], dict):
+            details = fairness_data["details"]
+            
+            # Add sentiment bias if present
+            if "sentiment_bias" in details:
+                metrics.append(MetricValue(
+                    name="sentiment_bias",
+                    display_name="Sentiment Bias",
+                    value=details["sentiment_bias"]
+                ))
+            
+            # Add BLEU similarity if present
+            if "bleu_similarity" in details:
+                metrics.append(MetricValue(
+                    name="bleu_similarity",
+                    display_name="BLEU Similarity",
+                    value=details["bleu_similarity"]
+                ))
+            
+            # Add ROUGE similarity if present
+            if "rouge_similarity" in details:
+                metrics.append(MetricValue(
+                    name="rouge_similarity",
+                    display_name="ROUGE Similarity",
+                    value=details["rouge_similarity"]
+                ))
+            
+            # Add gender bias if present
+            if "gender_bias" in details:
+                metrics.append(MetricValue(
+                    name="gender_bias_detected",
+                    display_name="Gender Bias Detected",
+                    value=details["gender_bias"]
+                ))
+            
+            # Add racial bias if present
+            if "racial_bias" in details:
+                metrics.append(MetricValue(
+                    name="racial_bias_detected",
+                    display_name="Racial Bias Detected",
+                    value=details["racial_bias"]
+        ))
+    
     # If no metrics found, add placeholder metrics
     if not metrics:
         metrics = [
@@ -174,6 +252,22 @@ def extract_toxicity_metrics(evaluation_result: Dict[str, Any]) -> List[MetricVa
     # Case 3: Toxicity metrics at root level
     elif "toxic_fraction" in evaluation_result or "max_toxicity" in evaluation_result:
         toxicity_data = evaluation_result
+    
+    # Case 4: Content safety structure in sample data
+    elif "content_safety" in evaluation_result and isinstance(evaluation_result["content_safety"], dict):
+        content_safety = evaluation_result["content_safety"]
+        
+        # Add overall score if present
+        if "score" in content_safety:
+            metrics.append(MetricValue(
+                name="content_safety_score",
+                display_name="Content Safety Score",
+                value=content_safety["score"]
+            ))
+        
+        # Check for details
+        if "details" in content_safety and isinstance(content_safety["details"], dict):
+            toxicity_data = content_safety["details"]
     
     # Extract specific metrics from the toxicity data
     if toxicity_data:
@@ -239,6 +333,29 @@ def extract_stereotype_metrics(evaluation_result: Dict[str, Any]) -> List[Metric
     elif "gender_bias_detected" in evaluation_result or "racial_bias_detected" in evaluation_result:
         stereotype_data = evaluation_result
     
+    # Case 4: Fairness metrics structure in sample data
+    elif "fairness_metrics" in evaluation_result and isinstance(evaluation_result["fairness_metrics"], dict):
+        fairness_metrics = evaluation_result["fairness_metrics"]
+        
+        # Add stereotype score if present
+        if "stereotype_score" in fairness_metrics:
+            metrics.append(MetricValue(
+                name="stereotype_score",
+                display_name="Stereotype Score",
+                value=fairness_metrics["stereotype_score"]
+            ))
+        
+        # Check for details
+        if "details" in fairness_metrics and isinstance(fairness_metrics["details"], dict):
+            details = fairness_metrics["details"]
+            
+            # Extract gender and racial bias if present
+            if "gender_bias" in details:
+                stereotype_data["gender_bias_detected"] = details["gender_bias"]
+            
+            if "racial_bias" in details:
+                stereotype_data["racial_bias_detected"] = details["racial_bias"]
+    
     # Extract specific metrics from the stereotype data
     if stereotype_data:
         if "gender_bias_detected" in stereotype_data:
@@ -265,168 +382,87 @@ def extract_stereotype_metrics(evaluation_result: Dict[str, Any]) -> List[Metric
     return metrics
 
 def extract_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult]:
-    """
-    Extract policy results from OPA evaluation results.
-    
-    Args:
-        opa_results: Dictionary containing OPA policy evaluation results
-        
-    Returns:
-        List of PolicyResult objects
-    """
+    """Extract policy results from OPA evaluation results."""
     policy_results = []
     
-    # Handle case where no OPA results are provided
-    if not opa_results:
+    # Check if we have a valid OPA result structure
+    if not opa_results or "result" not in opa_results:
+        logger.warning("No valid OPA results found")
         return policy_results
     
-    # Handle case where OPA results are a string (debug output)
-    if isinstance(opa_results, str):
-        logger.warning("OPA results are in string format (debug output). Attempting to extract policy information.")
-        debug_output = opa_results
-        extracted_data = extract_structured_data_from_debug(debug_output)
-        
-        if extracted_data:
-            # Process the extracted data
-            return process_extracted_policy_data(extracted_data)
-        else:
-            # Create a generic policy result with the debug information
-            policy_results.append(PolicyResult(
-                name="opa_debug_output",
-                result=False,  # Default to non-compliant
-                details={
-                    "debug_output": debug_output[:1000] + "..." if len(debug_output) > 1000 else debug_output,
-                    "note": "OPA evaluation was run in debug mode. Switch to production mode for structured results."
-                }
-            ))
-            return policy_results
+    # Get the first result
+    if not opa_results["result"] or not isinstance(opa_results["result"], list):
+        logger.warning("OPA results has empty or invalid result list")
+        return policy_results
     
-    # Handle case where the entire result object is a string in a dictionary
-    if "result" in opa_results and isinstance(opa_results["result"], str):
-        logger.warning("OPA result field contains string output. Attempting to extract policy information.")
-        debug_output = opa_results["result"]
-        extracted_data = extract_structured_data_from_debug(debug_output)
-        
-        if extracted_data:
-            # Process the extracted data
-            return process_extracted_policy_data(extracted_data)
-        else:
-            # Create a generic policy result with the debug information
-            policy_results.append(PolicyResult(
-                name="opa_string_result",
-                result=False,  # Default to non-compliant
-                details={
-                    "output": debug_output[:1000] + "..." if len(debug_output) > 1000 else debug_output,
-                    "note": "OPA evaluation returned string output. Consider using production mode for structured results."
-                }
-            ))
-            return policy_results
+    first_result = opa_results["result"][0]
     
-    # Case 1: Direct policy results as a dictionary of policy names to results
-    for policy_name, policy_data in opa_results.items():
-        # Skip non-policy keys
-        if policy_name in ["error", "available_categories"]:
-            continue
+    # Check for expressions
+    if "expressions" not in first_result or not first_result["expressions"]:
+        logger.warning("No expressions found in OPA result")
+        return policy_results
+    
+    first_expr = first_result["expressions"][0]
+    
+    # Check for value
+    if "value" not in first_expr:
+        logger.warning("No value found in OPA expression")
+        return policy_results
+    
+    value = first_expr["value"]
+    
+    # Log the structure of the value
+    logger.debug(f"OPA result value keys: {list(value.keys())}")
+    
+    # Process all version keys (v1, v2, etc.) instead of just "v1"
+    version_keys = [k for k in value.keys() if k.startswith("v")]
+    logger.debug(f"Found version keys: {version_keys}")
+    
+    for version_key in version_keys:
+        version_data = value[version_key]
+        logger.debug(f"Processing version {version_key} with {len(version_data)} policies")
+        
+        # Process each policy in the current version
+        for policy_name, policy_data in version_data.items():
+            logger.debug(f"Processing policy: {policy_name}")
             
-        # Case 1.1: Standard OPA result format
-        if "result" in policy_data and policy_data["result"]:
-            try:
-                # Handle case where result is a string
-                if isinstance(policy_data["result"], str):
-                    debug_output = policy_data["result"]
-                    extracted_data = extract_structured_data_from_debug(debug_output)
-                    
-                    if extracted_data:
-                        # Process the extracted data for this specific policy
-                        extracted_results = process_extracted_policy_data(extracted_data)
-                        policy_results.extend(extracted_results)
-                    else:
-                        policy_results.append(PolicyResult(
-                            name=policy_name,
-                            result=False,  # Default to non-compliant
-                            details={
-                                "output": debug_output[:1000] + "..." if len(debug_output) > 1000 else debug_output,
-                                "note": "Policy returned string output instead of structured data."
-                            }
-                        ))
-                    continue
+            # Check if the policy has a compliance report
+            if "compliance_report" in policy_data:
+                compliance_report = policy_data["compliance_report"]
+                logger.debug(f"Found compliance report for {policy_name}")
                 
-                # Extract expressions data
-                expressions = policy_data["result"][0]["expressions"][0]["value"]
+                # Extract details from the compliance report
+                overall_result = compliance_report.get("overall_result", False)
+                policy_title = compliance_report.get("policy", policy_name.replace("_", " ").title())
+                status = compliance_report.get("status", "Unknown")
+                details = compliance_report.get("details", {})
+                message = details.get("message", "No details provided")
+                recommendations = compliance_report.get("recommendations", [])
                 
-                # Extract overall result
-                result = False
-                if "overall_result" in expressions:
-                    result = expressions["overall_result"]
-                elif "allow" in expressions:
-                    result = expressions["allow"]
+                # Create a PolicyResult object
+                policy_result = PolicyResult(
+                    name=policy_title,
+                    result=overall_result,
+                    details=details,
+                    recommendations=recommendations
+                )
                 
-                # Extract details
-                details = {
-                    "policy": expressions.get("policy", policy_name),
-                    "version": expressions.get("version", "1.0"),
-                    "timestamp": datetime.now().isoformat()
-                }
+                # Add to the list of policy results
+                policy_results.append(policy_result)
+                logger.debug(f"Added policy result for {policy_name}")
+            else:
+                logger.warning(f"No compliance report found for {policy_name}")
                 
-                # Extract recommendations
-                if "recommendations" in expressions and expressions["recommendations"]:
-                    details["recommendations"] = expressions["recommendations"]
-                
-                # Add policy result
-                policy_results.append(PolicyResult(
-                    name=policy_name,
-                    result=result,
-                    details=details
-                ))
-            except (KeyError, IndexError, TypeError) as e:
-                # Fallback for error cases
-                logger.warning(f"Error extracting policy result for {policy_name}: {e}")
-                policy_results.append(PolicyResult(
-                    name=policy_name, 
+                # Add a placeholder result for policies without a compliance report
+                policy_result = PolicyResult(
+                    name=policy_name.replace("_", " ").title(),
                     result=False,
-                    details={"error": f"Failed to parse policy result: {e}"}
-                ))
+                    details="No compliance report available",
+                    recommendations=[]
+                )
+                policy_results.append(policy_result)
     
-    # Case 2: Nested policy_results format
-    if "policy_results" in opa_results:
-        policy_data = opa_results["policy_results"]
-        
-        # Case 2.1: List of policy results in policy_results field
-        if "policy_results" in policy_data and isinstance(policy_data["policy_results"], list):
-            for result in policy_data["policy_results"]:
-                policy_name = result.get("policy_name", "unknown")
-                policy_result = result.get("result", False)
-                
-                details = {}
-                if "recommendations" in result:
-                    details["recommendations"] = result["recommendations"]
-                
-                policy_results.append(PolicyResult(
-                    name=policy_name,
-                    result=policy_result,
-                    details=details
-                ))
-    
-    # If still no results, try to handle any other format as best we can
-    if not policy_results and isinstance(opa_results, dict):
-        for key, value in opa_results.items():
-            if key not in ["error", "available_categories"] and isinstance(value, dict):
-                # Try to extract any meaningful information
-                result = False
-                if "result" in value:
-                    result = bool(value["result"])
-                
-                details = {}
-                for detail_key, detail_value in value.items():
-                    if detail_key != "result" and not isinstance(detail_value, (dict, list)):
-                        details[detail_key] = detail_value
-                
-                policy_results.append(PolicyResult(
-                    name=key,
-                    result=result,
-                    details=details
-                ))
-    
+    logger.info(f"Extracted {len(policy_results)} policy results from OPA evaluation")
     return policy_results
 
 def extract_structured_data_from_debug(debug_output: str) -> Dict[str, Any]:
@@ -699,25 +735,23 @@ def process_extracted_policy_data(extracted_data: Dict[str, Any]) -> List[Policy
                         report_data = policy_data["compliance_report"]
                         result = report_data.get("overall_result", False)
                         
-                        details = {
+                details = {
                             "policy": report_data.get("policy", f"{domain}.{policy_name}"),
                             "version": report_data.get("version", "1.0"),
-                            "timestamp": datetime.now().isoformat()
-                        }
-                        
-                        # Extract recommendations if available
-                        if "recommendations" in report_data:
-                            details["recommendations"] = report_data["recommendations"]
-                        
-                        # Extract message if available
-                        if "details" in report_data and "message" in report_data["details"]:
-                            details["message"] = report_data["details"]["message"]
-                        
-                        policy_results.append(PolicyResult(
-                            name=policy_name,
-                            result=result,
-                            details=details
-                        ))
+                    "timestamp": datetime.now().isoformat()
+                }
+                # Extract recommendations if available
+                if "recommendations" in report_data:
+                    details["recommendations"] = report_data["recommendations"]
+                
+                # Extract message if available
+                if "details" in report_data and "message" in report_data["details"]:
+                    details["message"] = report_data["details"]["message"]
+                policy_results.append(PolicyResult(
+                    name=policy_name,
+                    result=result,
+                    details=details
+                ))
     except Exception as e:
         logger.warning(f"Error processing extracted policy data: {e}")
         # Add a fallback policy result
@@ -726,7 +760,7 @@ def process_extracted_policy_data(extracted_data: Dict[str, Any]) -> List[Policy
             result=False,
             details={
                 "error": f"Failed to process extracted data: {e}",
-                "policy": "Fallback Policy",
+                "policy": "Fallback Policy", 
                 "version": "1.0",
                 "timestamp": datetime.now().isoformat()
             }
@@ -755,16 +789,35 @@ def create_evaluation_report(
     # Extract application details
     app_details = extract_application_details(evaluation_result)
     
-    # Create metric groups
-    fairness_metrics = extract_fairness_metrics(evaluation_result)
-    toxicity_metrics = extract_toxicity_metrics(evaluation_result)
-    stereotype_metrics = extract_stereotype_metrics(evaluation_result)
-    
-    metric_groups = [
-        MetricGroup(
-            name="fairness",
-            display_name="Fairness Metrics",
-            metrics=fairness_metrics
+    # Create metric groups - use flexible extraction if enabled
+    if use_flexible_extraction():
+        logger.info("Using flexible extraction system")
+        all_metrics = flexible_extract_metrics(evaluation_result)
+        
+        metric_groups = []
+        for group_name, metrics in all_metrics.items():
+            if metrics:  # Only include non-empty metric groups
+                # Use display name from configuration if available
+                display_name = group_name.title() + " Metrics"
+                
+                metric_groups.append(
+                    MetricGroup(
+                        name=group_name,
+                        display_name=display_name,
+                        metrics=metrics
+                    )
+                )
+    else:
+        # Use legacy extraction system
+        fairness_metrics = extract_fairness_metrics(evaluation_result)
+        toxicity_metrics = extract_toxicity_metrics(evaluation_result)
+        stereotype_metrics = extract_stereotype_metrics(evaluation_result)
+        
+        metric_groups = [
+            MetricGroup(
+                name="fairness",
+                display_name="Fairness Metrics",
+                metrics=fairness_metrics
         ),
         MetricGroup(
             name="toxicity",
@@ -783,8 +836,8 @@ def create_evaluation_report(
     
     # Create summary if available
     summary = None
-    if "summary" in evaluation_result:
-        summary_data = evaluation_result["summary"]
+    if "summary_text" in evaluation_result:
+        summary_data = evaluation_result["summary_text"]
         if isinstance(summary_data, str):
             summary = summary_data
         elif isinstance(summary_data, dict):

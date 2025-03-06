@@ -1,4 +1,4 @@
-package healthcare.v1.diagnostic_safety
+package industry_specific.healthcare.v1.diagnostic_safety
 
 import data.global.v1.common.content_safety as content_safety
 import data.global.v1.common.fairness as fairness
@@ -80,9 +80,9 @@ is_compliant if {
 }
 
 # Generate reason strings
-compliant_reason := "The multi-specialist diagnostic system meets healthcare-specific thresholds for fairness, content safety, and risk management."
+compliant_reason := "System meets healthcare-specific thresholds for fairness, content safety, and risk management."
 
-non_compliant_reason := sprintf("The multi-specialist diagnostic system does not meet healthcare-specific thresholds for: %s", [concat(", ", failed_evaluations)])
+non_compliant_reason := sprintf("System does not meet healthcare-specific thresholds for: %s", [concat(", ", failed_evaluations)])
 
 # Generate detailed reason for compliance status
 reason := compliant_reason if is_compliant
@@ -131,21 +131,22 @@ else := healthcare_recommendations
 
 # Final compliance report
 compliance_report := {
-	"policy_name": "Healthcare Multi-Specialist Diagnostic Safety",
-	"policy_version": "1.0",
-	"domain": "healthcare",
-	"specialty": "multi-specialist-diagnosis",
-	"compliant": is_compliant,
-	"reason": reason,
-	"recommendations": recommendations,
+	"policy": "Healthcare Diagnostic Safety",
+	"version": "0.0.1",
+	"overall_result": false,
+	"compliant": false,
 	"thresholds": {
 		"fairness": fairness_threshold,
 		"content_safety": content_safety_threshold,
 		"risk_management": risk_management_threshold,
 	},
-	"scores": {
-		"fairness": fairness.get_fairness_score(input.evaluation),
-		"content_safety": content_safety.get_toxicity_score(input.evaluation),
-		"risk_management": risk_management.get_risk_score(input.evaluation),
-	},
+	"details": {
+		"message": reason,
+		"recommendations": [
+			"Check back for future releases with healthcare-specific evaluations",
+			"Consider using global compliance policies in the meantime",
+			"Review FDA guidance on AI/ML in medical devices",
+			"Implement preliminary risk assessment based on Good Machine Learning Practice principles",
+			"Consider HIPAA compliance for any patient data handling",
+	]},
 }

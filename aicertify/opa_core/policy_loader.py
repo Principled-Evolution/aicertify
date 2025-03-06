@@ -183,7 +183,7 @@ class PolicyLoader:
                 
                 # Add the policy file path
                 policies[category][subcategory][version].append(str(policy_file))
-                #logging.debug(f"Added policy file: {policy_file} to {category}/{subcategory}/{version}")
+                logging.debug(f"Added policy file: {policy_file} to {category}/{subcategory}/{version}")
                 
             except Exception as e:
                 logging.error(f"Error processing policy file {policy_file}: {e}")
@@ -218,7 +218,7 @@ class PolicyLoader:
                                 if match:
                                     package_name = match.group(1)
                                     package_mappings[package_name] = policy_file
-                                    #logging.debug(f"Mapped package '{package_name}' to file: {policy_file}")
+                                    logging.debug(f"Mapped package '{package_name}' to file: {policy_file}")
                         except Exception as e:
                             logging.error(f"Error extracting package from {policy_file}: {e}")
         

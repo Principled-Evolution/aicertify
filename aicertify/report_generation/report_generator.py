@@ -73,6 +73,11 @@ class ReportGenerator:
         lines.append("")
         lines.append(f"**Analysis Date:** {report.app_details.evaluation_date.strftime('%Y-%m-%d %H:%M:%S')}")
         lines.append("")
+        # Summary
+        if report.summary:
+            lines.append("## Evaluation Summary")
+            lines.append(report.summary)
+            lines.append("")
         # Application Details
         lines.append("## Application Details")
         lines.append(f"- **App Name:** {report.app_details.name}")
@@ -97,11 +102,6 @@ class ReportGenerator:
                 for key, value in policy.details.items():
                     lines.append(f"  - {key}: {value}")
         lines.append("")
-        # Summary
-        if report.summary:
-            lines.append("## Evaluation Summary")
-            lines.append(report.summary)
-            lines.append("")
         # Append full disclaimer at the end of the report.
         lines.append("## Disclaimer")
         lines.append("")
