@@ -968,6 +968,12 @@ async def evaluate_contract_by_folder(
                 # Generate report based on format
                 if report_format == "markdown":
                     report_content = report_gen.generate_markdown_report(report_data)
+                    # Save report
+                    report_path = os.path.join(output_dir, filename)
+                    with open(report_path, "w") as f:
+                        f.write(report_content)
+                    
+                    logger.info(f"Saved folder-based report to {report_path}")
                 elif report_format == "pdf":
                     # First generate markdown content
                     md_content = report_gen.generate_markdown_report(report_data)
@@ -975,15 +981,10 @@ async def evaluate_contract_by_folder(
                     pdf_path = os.path.join(output_dir, f"report_{contract.application_name}_{timestamp}.pdf")
                     report_gen.generate_pdf_report(md_content, pdf_path)
                     report_content = f"PDF report generated at {pdf_path}"
+                    report_path = pdf_path
                 else:
                     report_content = report_gen.generate_markdown_report(report_data)
                 
-                # Save report
-                report_path = os.path.join(output_dir, filename)
-                with open(report_path, "w") as f:
-                    f.write(report_content)
-                
-                logger.info(f"Saved folder-based report to {report_path}")
             except Exception as e:
                 logger.error(f"Error generating report: {str(e)}")
     

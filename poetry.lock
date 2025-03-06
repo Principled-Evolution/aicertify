@@ -815,14 +815,14 @@ vision = ["Pillow (>=9.4.0)"]
 
 [[package]]
 name = "deepeval"
-version = "2.4.9"
+version = "2.5.0"
 description = "The Open-Source LLM Evaluation Framework."
 optional = false
 python-versions = "<3.14,>=3.9"
 groups = ["main"]
 files = [
-    {file = "deepeval-2.4.9-py3-none-any.whl", hash = "sha256:757148e33f81090f828637a14dca061273a921b7dd4fa87d80515306b5f139c1"},
-    {file = "deepeval-2.4.9.tar.gz", hash = "sha256:835fe6d67d6317d8e211dae9a1f9a4171257b349b36ad515d8116627fe1786f2"},
+    {file = "deepeval-2.5.0-py3-none-any.whl", hash = "sha256:994982027cba41bc82dfbfce12f62f8383e6e2268c8160de7896417d193af932"},
+    {file = "deepeval-2.5.0.tar.gz", hash = "sha256:0b55c7d308ffdd272902e0fe109382b07cf36fd3430dcd3e24dd6f6c58387b1a"},
 ]
 
 [package.dependencies]

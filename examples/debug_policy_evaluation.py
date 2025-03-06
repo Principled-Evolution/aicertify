@@ -339,7 +339,7 @@ async def evaluate_contract_only(contract_path: str, output_dir: str, report_for
                         rel_path = policy_folder.relative_to(policy_dir)
                         package_path = str(rel_path).replace(os.sep, '.')
                         query = f"data.{package_path}"
-                        
+                       
                         # Serialize input data with custom encoder to handle UUIDs
                         contract_dict = contract.dict()
                         input_json_str = json.dumps({"contract": contract_dict, "evaluation": eval_result.get("phase1_results", {})}, cls=CustomJSONEncoder)
@@ -561,7 +561,7 @@ def main() -> None:
         asyncio.run(evaluate_contract_only(
             contract_path=latest_contract,
             output_dir=str(contract_storage),
-            report_format="markdown"
+            report_format="pdf"
         ))
         logger.info("Contract evaluation completed successfully")
     except Exception as e:
