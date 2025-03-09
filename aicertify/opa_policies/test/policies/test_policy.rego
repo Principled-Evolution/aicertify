@@ -29,7 +29,4 @@ calculate_compliance_score if {
 		[fairness_score, robustness_score, transparency_score],
 		[0.4, 0.4, 0.2],
 	)
-
-	# Return the score
-	calculate_compliance_score := score
 }

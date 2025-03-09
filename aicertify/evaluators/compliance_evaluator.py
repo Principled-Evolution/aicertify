@@ -16,6 +16,15 @@ from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult,
 from aicertify.evaluators.fairness_evaluator import FairnessEvaluator
 from aicertify.evaluators.content_safety_evaluator import ContentSafetyEvaluator
 from aicertify.evaluators.risk_management_evaluator import RiskManagementEvaluator
+from aicertify.evaluators.accuracy_evaluator import AccuracyEvaluator
+from aicertify.evaluators.biometric_categorization_evaluator import BiometricCategorizationEvaluator
+from aicertify.evaluators.prohibited_practices import (
+    ManipulationEvaluator,
+    VulnerabilityExploitationEvaluator,
+    SocialScoringEvaluator,
+    EmotionRecognitionEvaluator
+)
+from aicertify.evaluators.documentation import ModelCardEvaluator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -29,6 +38,13 @@ class EvaluatorConfig:
         self.fairness = kwargs.get("fairness", {})
         self.content_safety = kwargs.get("content_safety", {})
         self.risk_management = kwargs.get("risk_management", {})
+        self.accuracy = kwargs.get("accuracy", {})
+        self.biometric_categorization = kwargs.get("biometric_categorization", {})
+        self.manipulation = kwargs.get("manipulation", {})
+        self.vulnerability_exploitation = kwargs.get("vulnerability_exploitation", {})
+        self.social_scoring = kwargs.get("social_scoring", {})
+        self.emotion_recognition = kwargs.get("emotion_recognition", {})
+        self.model_card = kwargs.get("model_card", {})
         self.general = kwargs.get("general", {})
 
 class ComplianceEvaluator:
@@ -39,6 +55,10 @@ class ComplianceEvaluator:
     1. Fairness (via LangFair)
     2. Content Safety (via DeepEval)
     3. Risk Management
+    4. Accuracy and Hallucination (via DeepEval)
+    5. Biometric Categorization (via LangFair)
+    6. Prohibited Practices (via DeepEval)
+    7. Documentation Compliance
     
     It provides a unified interface for comprehensive compliance evaluation.
     """
@@ -66,12 +86,112 @@ class ComplianceEvaluator:
             self.config.content_safety["use_mock_if_unavailable"] = use_mock_if_unavailable
         if "use_mock_if_unavailable" not in self.config.risk_management:
             self.config.risk_management["use_mock_if_unavailable"] = use_mock_if_unavailable
+        if "use_mock_if_unavailable" not in self.config.accuracy:
+            self.config.accuracy["use_mock_if_unavailable"] = use_mock_if_unavailable
+        if "use_mock_if_unavailable" not in self.config.biometric_categorization:
+            self.config.biometric_categorization["use_mock_if_unavailable"] = use_mock_if_unavailable
+        if "use_mock_if_unavailable" not in self.config.manipulation:
+            self.config.manipulation["use_mock_if_unavailable"] = use_mock_if_unavailable
+        if "use_mock_if_unavailable" not in self.config.vulnerability_exploitation:
+            self.config.vulnerability_exploitation["use_mock_if_unavailable"] = use_mock_if_unavailable
+        if "use_mock_if_unavailable" not in self.config.social_scoring:
+            self.config.social_scoring["use_mock_if_unavailable"] = use_mock_if_unavailable
+        if "use_mock_if_unavailable" not in self.config.emotion_recognition:
+            self.config.emotion_recognition["use_mock_if_unavailable"] = use_mock_if_unavailable
+        if "use_mock_if_unavailable" not in self.config.model_card:
+            self.config.model_card["use_mock_if_unavailable"] = use_mock_if_unavailable
         
-        self.all_evaluators = {
-            "fairness": FairnessEvaluator(config=self.config.fairness),
-            "content_safety": ContentSafetyEvaluator(config=self.config.content_safety),
-            "risk_management": RiskManagementEvaluator(config=self.config.risk_management)
-        }
+        # Initialize all evaluators with their configurations
+        try:
+            # Original evaluators
+            self.fairness_evaluator = FairnessEvaluator(config=self.config.fairness)
+            self.content_safety_evaluator = ContentSafetyEvaluator(config=self.config.content_safety)
+            self.risk_management_evaluator = RiskManagementEvaluator(config=self.config.risk_management)
+            
+            # New EU AI Act evaluators
+            self.accuracy_evaluator = AccuracyEvaluator(**self.config.accuracy)
+            self.biometric_categorization_evaluator = BiometricCategorizationEvaluator(**self.config.biometric_categorization)
+            self.manipulation_evaluator = ManipulationEvaluator(**self.config.manipulation)
+            self.vulnerability_exploitation_evaluator = VulnerabilityExploitationEvaluator(**self.config.vulnerability_exploitation)
+            self.social_scoring_evaluator = SocialScoringEvaluator(**self.config.social_scoring)
+            self.emotion_recognition_evaluator = EmotionRecognitionEvaluator(**self.config.emotion_recognition)
+            self.model_card_evaluator = ModelCardEvaluator(**self.config.model_card)
+            
+            # Register all evaluators in the dictionary
+            self.all_evaluators = {
+                # Original evaluators
+                "fairness": self.fairness_evaluator,
+                "content_safety": self.content_safety_evaluator,
+                "risk_management": self.risk_management_evaluator,
+                
+                # New EU AI Act evaluators
+                "accuracy": self.accuracy_evaluator,
+                "biometric_categorization": self.biometric_categorization_evaluator,
+                "manipulation": self.manipulation_evaluator,
+                "vulnerability_exploitation": self.vulnerability_exploitation_evaluator,
+                "social_scoring": self.social_scoring_evaluator,
+                "emotion_recognition": self.emotion_recognition_evaluator,
+                "model_card": self.model_card_evaluator
+            }
+            
+            # Log initialization status
+            logger.info("Successfully initialized all evaluators")
+            
+        except Exception as e:
+            logger.error(f"Error initializing evaluators: {e}")
+            
+            # Fallback initialization with error handling for each evaluator
+            self.all_evaluators = {}
+            
+            try:
+                self.all_evaluators["fairness"] = FairnessEvaluator(config=self.config.fairness)
+            except Exception as e:
+                logger.error(f"Failed to initialize FairnessEvaluator: {e}")
+                
+            try:
+                self.all_evaluators["content_safety"] = ContentSafetyEvaluator(config=self.config.content_safety)
+            except Exception as e:
+                logger.error(f"Failed to initialize ContentSafetyEvaluator: {e}")
+                
+            try:
+                self.all_evaluators["risk_management"] = RiskManagementEvaluator(config=self.config.risk_management)
+            except Exception as e:
+                logger.error(f"Failed to initialize RiskManagementEvaluator: {e}")
+                
+            try:
+                self.all_evaluators["accuracy"] = AccuracyEvaluator(**self.config.accuracy)
+            except Exception as e:
+                logger.error(f"Failed to initialize AccuracyEvaluator: {e}")
+                
+            try:
+                self.all_evaluators["biometric_categorization"] = BiometricCategorizationEvaluator(**self.config.biometric_categorization)
+            except Exception as e:
+                logger.error(f"Failed to initialize BiometricCategorizationEvaluator: {e}")
+                
+            try:
+                self.all_evaluators["manipulation"] = ManipulationEvaluator(**self.config.manipulation)
+            except Exception as e:
+                logger.error(f"Failed to initialize ManipulationEvaluator: {e}")
+                
+            try:
+                self.all_evaluators["vulnerability_exploitation"] = VulnerabilityExploitationEvaluator(**self.config.vulnerability_exploitation)
+            except Exception as e:
+                logger.error(f"Failed to initialize VulnerabilityExploitationEvaluator: {e}")
+                
+            try:
+                self.all_evaluators["social_scoring"] = SocialScoringEvaluator(**self.config.social_scoring)
+            except Exception as e:
+                logger.error(f"Failed to initialize SocialScoringEvaluator: {e}")
+                
+            try:
+                self.all_evaluators["emotion_recognition"] = EmotionRecognitionEvaluator(**self.config.emotion_recognition)
+            except Exception as e:
+                logger.error(f"Failed to initialize EmotionRecognitionEvaluator: {e}")
+                
+            try:
+                self.all_evaluators["model_card"] = ModelCardEvaluator(**self.config.model_card)
+            except Exception as e:
+                logger.error(f"Failed to initialize ModelCardEvaluator: {e}")
         
         # Select which evaluators to use
         if evaluators is None:
@@ -85,6 +205,7 @@ class ComplianceEvaluator:
             }
         
         logger.info(f"Compliance evaluator initialized with {len(self.active_evaluators)} active evaluators")
+        logger.info(f"Active evaluators: {', '.join(self.active_evaluators.keys())}")
         
     def evaluate(self, data: Dict) -> Dict[str, EvaluationResult]:
         """

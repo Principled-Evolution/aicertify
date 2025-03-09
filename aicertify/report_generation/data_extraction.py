@@ -210,7 +210,7 @@ def extract_fairness_metrics(evaluation_result: Dict[str, Any]) -> List[MetricVa
                     name="racial_bias_detected",
                     display_name="Racial Bias Detected",
                     value=details["racial_bias"]
-        ))
+                ))
     
     # If no metrics found, add placeholder metrics
     if not metrics:
@@ -383,6 +383,26 @@ def extract_stereotype_metrics(evaluation_result: Dict[str, Any]) -> List[Metric
 
 def extract_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult]:
     """Extract policy results from OPA evaluation results."""
+    # Check if we should use the flexible extraction system
+    if use_flexible_extraction():
+        try:
+            # Use the new flexible extractor from opa_core
+            from aicertify.opa_core.extraction import extract_all_policy_results as flexible_extract
+            logger.info("Using flexible extraction system")
+            policy_results = flexible_extract(opa_results)
+            
+            # If we got results, return them
+            if policy_results:
+                logger.info(f"Extracted {len(policy_results)} policy results using flexible extractor")
+                return policy_results
+            
+            # If the flexible extraction failed, fall back to the original method
+            logger.warning("Flexible extraction returned no results, falling back to original method")
+        except Exception as e:
+            logger.error(f"Error using flexible extraction system: {e}")
+            logger.info("Falling back to original extraction method")
+    
+    # Original extraction method as fallback
     policy_results = []
     
     # Check if we have a valid OPA result structure
@@ -436,6 +456,11 @@ def extract_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult]:
                 policy_title = compliance_report.get("policy", policy_name.replace("_", " ").title())
                 status = compliance_report.get("status", "Unknown")
                 details = compliance_report.get("details", {})
+                
+                # Ensure details is a dictionary, not a string
+                if not isinstance(details, dict):
+                    details = {"error": f"Invalid details format: {details}"}
+                    
                 message = details.get("message", "No details provided")
                 recommendations = compliance_report.get("recommendations", [])
                 
@@ -457,7 +482,7 @@ def extract_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult]:
                 policy_result = PolicyResult(
                     name=policy_name.replace("_", " ").title(),
                     result=False,
-                    details="No compliance report available",
+                    details={"error": "No compliance report available"},
                     recommendations=[]
                 )
                 policy_results.append(policy_result)

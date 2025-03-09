@@ -26,6 +26,19 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             }
+        },
+        {
+            "label": "OPA Check",
+            "type": "shell",
+            "command": "zsh",
+            "args": [
+                "-c",
+                "opa check \"${relativeFile}\""
+            ],
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
         }
     ]
 }

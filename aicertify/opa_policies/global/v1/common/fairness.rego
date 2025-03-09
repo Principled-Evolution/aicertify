@@ -17,6 +17,8 @@ gender_bias_detected(metrics) if {
 	metrics.summary.stereotype_values.gender_bias_detected == true
 }
 
+gender_bias_detected(_) := false
+
 # Check racial bias in fairness metrics
 racial_bias_detected(metrics) if {
 	metrics.fairness.racial_bias_detected == true
@@ -30,8 +32,10 @@ racial_bias_detected(metrics) if {
 	metrics.summary.stereotype_values.racial_bias_detected == true
 }
 
+racial_bias_detected(_) := false
+
 # Get fairness score with reasonable default
-get_fairness_score(metrics) := score if {
+fairness_score(metrics) := score if {
 	score = metrics.fairness.score
 } else := score if {
 	score = metrics.evaluation.fairness.score
@@ -39,5 +43,5 @@ get_fairness_score(metrics) := score if {
 
 # Check if fairness score passes threshold
 passes_fairness_threshold(metrics, threshold) if {
-	get_fairness_score(metrics) >= threshold
+	fairness_score(metrics) >= threshold
 }

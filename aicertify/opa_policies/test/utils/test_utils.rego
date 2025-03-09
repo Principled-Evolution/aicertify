@@ -8,7 +8,7 @@ passes_threshold(score, threshold) if {
 }
 
 # A function to get a default score if none is provided
-get_default_score := 0.75
+default_score := 0.75
 
 # A function to calculate a weighted average of scores
 # This is a simplified version that works with exactly 3 scores and weights
@@ -21,7 +21,4 @@ weighted_average(scores, weights) if {
 
 	# Calculate the weighted average
 	result := sum_products / sum_weights
-
-	# Return the result
-	weighted_average := result
 }

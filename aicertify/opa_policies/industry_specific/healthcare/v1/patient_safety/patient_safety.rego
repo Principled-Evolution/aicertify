@@ -46,9 +46,9 @@ compliance_report := {
 		"recommendations": [
 			"Check back for future releases with healthcare-specific evaluations",
 			"Consider using global compliance policies in the meantime",
-				"Review FDA guidance on AI/ML in medical devices",
-				"Implement preliminary risk assessment based on Good Machine Learning Practice principles",
-				"Consider HIPAA compliance for any patient data handling",
-			],
+			"Review FDA guidance on AI/ML in medical devices",
+			"Implement preliminary risk assessment based on Good Machine Learning Practice principles",
+			"Consider HIPAA compliance for any patient data handling",
+		],
 	},
 }

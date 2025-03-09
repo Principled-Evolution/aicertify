@@ -45,25 +45,18 @@ is_toxic(metrics, threshold) if {
 	metrics.toxicity.score >= threshold
 }
 
-# Get a value with a default if not present
-get_with_default(obj, key, default_value) := value if {
-	value = object.get(obj, key, default_value)
-}
-
 # Check if a value is within a range
-in_range(value, min, max) if {
-	value >= min
-	value <= max
+in_range(value, min_value, max_value) if {
+	value >= min_value
+	value <= max_value
 }
 
 # Format evaluation result with standard structure
-format_result(compliant, score, threshold, details) := result if {
-	result := {
-		"compliant": compliant,
-		"score": score,
-		"threshold": threshold,
-		"details": details,
-	}
+format_result(compliant, score, threshold, details) := {
+	"compliant": compliant,
+	"score": score,
+	"threshold": threshold,
+	"details": details,
 }
 
 # Check compliance based on score and threshold

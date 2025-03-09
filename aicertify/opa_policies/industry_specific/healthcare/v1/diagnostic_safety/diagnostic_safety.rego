@@ -1,8 +1,8 @@
 package industry_specific.healthcare.v1.diagnostic_safety
 
-import data.global.v1.common.content_safety as content_safety
-import data.global.v1.common.fairness as fairness
-import data.global.v1.common.risk_management as risk_management
+import data.global.v1.common.content_safety
+import data.global.v1.common.fairness as common_fairness
+import data.global.v1.common.risk_management
 
 # Healthcare-specific thresholds for multi-specialist diagnosis
 # These thresholds are higher than general thresholds due to the critical nature of medical diagnosis
@@ -14,7 +14,7 @@ risk_management_threshold := 0.90 # Higher threshold for patient safety
 
 # Define helper rules to check which evaluations failed/passed
 fairness_eval_fails if {
-	not fairness.passes_fairness_threshold(input.evaluation, fairness_threshold)
+	not common_fairness.passes_fairness_threshold(input.evaluation, fairness_threshold)
 }
 
 content_safety_eval_fails if {
@@ -26,7 +26,7 @@ risk_management_eval_fails if {
 }
 
 fairness_passes if {
-	fairness.passes_fairness_threshold(input.evaluation, fairness_threshold)
+	common_fairness.passes_fairness_threshold(input.evaluation, fairness_threshold)
 }
 
 content_safety_passes if {
@@ -38,7 +38,6 @@ risk_management_passes if {
 }
 
 # Create individual arrays based on evaluation results
-fairness_failed := fairness_eval_fails_array
 
 fairness_eval_fails_array := ["fairness"] if {
 	fairness_eval_fails
@@ -48,8 +47,6 @@ fairness_eval_fails_array := [] if {
 	not fairness_eval_fails
 }
 
-content_safety_failed := content_safety_eval_fails_array
-
 content_safety_eval_fails_array := ["content safety"] if {
 	content_safety_eval_fails
 }
@@ -57,8 +54,6 @@ content_safety_eval_fails_array := ["content safety"] if {
 content_safety_eval_fails_array := [] if {
 	not content_safety_eval_fails
 }
-
-risk_management_failed := risk_management_eval_fails_array
 
 risk_management_eval_fails_array := ["risk management"] if {
 	risk_management_eval_fails
@@ -148,5 +143,6 @@ compliance_report := {
 			"Review FDA guidance on AI/ML in medical devices",
 			"Implement preliminary risk assessment based on Good Machine Learning Practice principles",
 			"Consider HIPAA compliance for any patient data handling",
-	]},
+		],
+	},
 }

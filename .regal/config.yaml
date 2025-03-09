@@ -1,0 +1,9 @@
+rules:
+  idiomatic:
+    directory-package-mismatch:
+      level: ignore
+  style:
+    rule-name-repeats-package:
+      level: ignore
+    line-length:
+      level: ignore

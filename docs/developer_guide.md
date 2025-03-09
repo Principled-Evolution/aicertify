@@ -25,6 +25,11 @@ Welcome to the AICertify Developer Guide. This document provides step-by-step in
   - [Running the Example](#running-the-example-1)
   - [Integration Code Breakdown](#integration-code-breakdown)
   - [Developer Tips for PDF Reports](#developer-tips-for-pdf-reports)
+- [EU AI Act Compliance](#eu-ai-act-compliance)
+  - [Model Card Interface](#model-card-interface)
+  - [Simplified Evaluation for EU AI Act](#simplified-evaluation-for-eu-ai-act)
+  - [Focus Areas for EU AI Act Compliance](#focus-areas-for-eu-ai-act-compliance)
+  - [EU AI Act Risk Categories](#eu-ai-act-risk-categories)
 
 ---
 
@@ -407,6 +412,131 @@ When generating PDF reports for compliance documentation:
 4. **Error Handling**: Always include proper error handling around the API call as shown in the example
 
 This loan application example demonstrates a streamlined approach to integrating AICertify into financial applications where formal PDF documentation is essential for regulatory compliance.
+
+---
+
+## EU AI Act Compliance
+
+The AICertify framework provides specialized support for evaluating compliance with the EU AI Act requirements. This section outlines the enhanced interfaces and tools designed specifically for EU AI Act compliance evaluation.
+
+### Model Card Interface
+
+The ModelCard interface provides a structured way to document your AI model following HuggingFace Model Card format with additional fields required for EU AI Act compliance:
+
+```python
+from aicertify.models.model_card import ModelCard, create_model_card
+
+# Create a model card with minimum required fields
+model_card = create_model_card(
+    model_name="MyAIModel",
+    model_type="text-generation",
+    organization="MyCompany",
+    primary_uses=["Customer support automation"],
+    description="Large language model for customer support"
+)
+
+# Or create a more detailed model card
+model_card = ModelCard(
+    model_name="HealthcareGPT",
+    model_version="1.0.0",
+    model_type="text-generation",
+    organization="Health AI Inc.",
+    primary_uses=["Medical diagnosis assistance", "Healthcare information"],
+    out_of_scope_uses=["Direct medical diagnosis without human review"],
+    description="Large language model fine-tuned for healthcare domain.",
+    model_architecture="Transformer-based with 1B parameters",
+    input_format="Natural language text queries",
+    output_format="Natural language text responses",
+    performance_metrics={
+        "accuracy": 0.92,
+        "f1_score": 0.89
+    },
+    ethical_considerations=[
+        "Data privacy concerns",
+        "Potential biases in medical training data"
+    ],
+    limitations=[
+        "Limited knowledge cutoff",
+        "Not a replacement for medical professionals"
+    ],
+    mitigation_strategies=[
+        "Human oversight required for all diagnoses",
+        "Clear confidence levels provided with responses"
+    ],
+    risk_category="high",
+    relevant_articles=["Article 10", "Article 14"]
+)
+```
+
+### Simplified Evaluation for EU AI Act
+
+For EU AI Act compliance evaluation, we provide a simplified interface that focuses specifically on EU AI Act requirements:
+
+```python
+from aicertify.models.contract_models import create_contract_with_model_card
+from aicertify.api import evaluate_eu_ai_act_compliance
+import asyncio
+
+# Create a contract with a model card
+contract = create_contract_with_model_card(
+    application_name="Healthcare Assistant",
+    model_card=model_card,
+    interactions=[
+        {
+            "input_text": "What are the symptoms of pneumonia?",
+            "output_text": "Pneumonia symptoms include chest pain, cough, fatigue, fever, and shortness of breath.",
+            "metadata": {"topic": "medical_information"}
+        }
+    ]
+)
+
+# Evaluate EU AI Act compliance
+result = asyncio.run(evaluate_eu_ai_act_compliance(
+    contract=contract,
+    focus_areas=["prohibited_practices", "documentation"],
+    generate_report=True,
+    report_format="pdf",
+    output_dir="reports"
+))
+
+# Print the compliance result
+print(f"Overall compliance: {result.get('overall_compliant', False)}")
+print(f"Model card compliance level: {result.get('model_card_compliance_level', 'N/A')}")
+print(f"Report path: {result.get('report_path', 'No report generated')}")
+```
+
+### Focus Areas for EU AI Act Compliance
+
+When using `evaluate_eu_ai_act_compliance`, you can specify focus areas to target specific aspects of EU AI Act compliance:
+
+- `"prohibited_practices"`: Evaluates for manipulative techniques, vulnerability exploitation, social scoring, and emotion recognition
+- `"documentation"`: Assesses technical documentation via model card evaluation
+- `"technical_robustness"`: Checks accuracy and factual consistency
+- `"fairness"`: Evaluates for bias and discriminatory practices
+- `"content_safety"`: Assesses content toxicity and safety
+- `"risk_management"`: Evaluates risk management measures
+- `"biometric"`: Checks biometric categorization compliance
+
+### EU AI Act Risk Categories
+
+The EU AI Act defines different risk categories for AI systems:
+
+- `"minimal"`: AI systems with minimal or no risk
+- `"limited"`: AI systems with limited risk
+- `"high"`: High-risk AI systems subject to strict requirements
+- `"unacceptable"`: AI systems with unacceptable risk, which are prohibited
+
+You can specify the risk category in your model card:
+
+```python
+model_card = create_model_card(
+    # ... other fields ...
+    risk_category="high",
+    relevant_articles=["Article 10", "Article 14"]
+)
+```
+
+This information will be used in the evaluation to apply the appropriate level of scrutiny based on the risk category.
 
 ---
 
