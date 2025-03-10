@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines a detailed implementation plan for incorporating the AICertify Phase 1 evaluators into the Medical-Diagnosis-MultiSpecialist-Agents.py and Loan-Application-Evaluator.py examples. The implementation will follow the architecture specified in MILESTONE_EXPANDED_EVALS.md, specifically focusing on:
+This document outlines a detailed implementation plan for incorporating the AICertify Phase 1 evaluators into the Medical-Diagnosis-MultiSpecialist-Agents.py and Loan-Application-Evaluator.py examples. The implementation will follow the architecture specified in `MILESTONE_EXPANDED_EVALS.md`, specifically focusing on:
 
 1. Separating evaluator measurements from policy-based compliance determination
 2. Enhancing contract creation with domain-specific context
