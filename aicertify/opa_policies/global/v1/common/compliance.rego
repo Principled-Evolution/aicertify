@@ -1,3 +1,9 @@
+# RequiredMetrics:
+#   - compliance.score
+#
+# RequiredParams:
+#   - compliance_threshold (default 0.8)
+#
 package global.v1.common.compliance
 
 import rego.v1
@@ -7,6 +13,11 @@ import rego.v1
 # Check if compliance score exceeds threshold
 meets_compliance_requirements(metrics, threshold) if {
 	compliance_score(metrics) >= threshold
+}
+
+# Parameterized version that reads from input.params
+meets_compliance_requirements_param(metrics, input_params) if {
+	compliance_score(metrics) >= object.get(input_params, "compliance_threshold", 0.8)
 }
 
 # Get compliance score with reasonable default

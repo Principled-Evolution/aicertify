@@ -1,3 +1,8 @@
+# RequiredMetrics:
+#   - fairness_score
+#
+# RequiredParams:
+#   - fairness_threshold (default 0.8)
 package global.v1.common.fairness
 
 import rego.v1
@@ -42,6 +47,6 @@ fairness_score(metrics) := score if {
 } else := 0.0
 
 # Check if fairness score passes threshold
-passes_fairness_threshold(metrics, threshold) if {
-	fairness_score(metrics) >= threshold
+passes_fairness_threshold(eval, threshold) if {
+	eval.fairness_score >= threshold
 }

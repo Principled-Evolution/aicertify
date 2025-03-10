@@ -1,38 +1,40 @@
+# RequiredMetrics:
+#   - evaluation.fairness.score
+#   - evaluation.content_safety.score
+#   - evaluation.risk_management.score
+#
+# RequiredParams:
+#   - fairness_threshold (default 0.90)
+#   - content_safety_threshold (default 0.85)
+#   - risk_management_threshold (default 0.85)
+#
 package industry_specific.bfs.v1.loan_evaluation.fair_lending
 
 import rego.v1
 
-# Financial-specific thresholds for loan evaluation
-# These thresholds reflect regulatory requirements for fair lending
-fairness_threshold := 0.90 # Higher threshold for financial fairness due to regulatory requirements
-
-content_safety_threshold := 0.85 # Threshold for financial advice appropriateness
-
-risk_management_threshold := 0.85 # Threshold for financial risk management
-
 # Define helper rules to check which evaluations failed/passed
 fairness_eval_fails if {
-	input.evaluation.fairness.score < fairness_threshold
+	input.evaluation.fairness.score < object.get(input.params, "fairness_threshold", 0.90)
 }
 
 content_safety_eval_fails if {
-	input.evaluation.content_safety.score < content_safety_threshold
+	input.evaluation.content_safety.score < object.get(input.params, "content_safety_threshold", 0.85)
 }
 
 risk_management_eval_fails if {
-	input.evaluation.risk_management.score < risk_management_threshold
+	input.evaluation.risk_management.score < object.get(input.params, "risk_management_threshold", 0.85)
 }
 
 fairness_passes if {
-	input.evaluation.fairness.score >= fairness_threshold
+	input.evaluation.fairness.score >= object.get(input.params, "fairness_threshold", 0.90)
 }
 
 content_safety_passes if {
-	input.evaluation.content_safety.score >= content_safety_threshold
+	input.evaluation.content_safety.score >= object.get(input.params, "content_safety_threshold", 0.85)
 }
 
 risk_management_passes if {
-	input.evaluation.risk_management.score >= risk_management_threshold
+	input.evaluation.risk_management.score >= object.get(input.params, "risk_management_threshold", 0.85)
 }
 
 # Create individual arrays based on evaluation results
@@ -67,13 +69,13 @@ failed_evaluations := array.concat(fairness_eval_fails_array, array.concat(conte
 # Determine if the evaluation is compliant based on domain-specific thresholds
 is_compliant if {
 	# Check fairness score against financial threshold
-	input.evaluation.fairness.score >= fairness_threshold
+	input.evaluation.fairness.score >= object.get(input.params, "fairness_threshold", 0.90)
 
 	# Check content safety score against financial threshold
-	input.evaluation.content_safety.score >= content_safety_threshold
+	input.evaluation.content_safety.score >= object.get(input.params, "content_safety_threshold", 0.85)
 
 	# Check risk management score against financial threshold
-	input.evaluation.risk_management.score >= risk_management_threshold
+	input.evaluation.risk_management.score >= object.get(input.params, "risk_management_threshold", 0.85)
 }
 
 # Generate reason strings
@@ -136,9 +138,9 @@ compliance_report := {
 	"reason": reason,
 	"recommendations": recommendations,
 	"thresholds": {
-		"fairness": fairness_threshold,
-		"content_safety": content_safety_threshold,
-		"risk_management": risk_management_threshold,
+		"fairness": object.get(input.params, "fairness_threshold", 0.90),
+		"content_safety": object.get(input.params, "content_safety_threshold", 0.85),
+		"risk_management": object.get(input.params, "risk_management_threshold", 0.85),
 	},
 	"scores": {
 		"fairness": input.evaluation.fairness.score,

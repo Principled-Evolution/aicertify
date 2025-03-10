@@ -1,3 +1,13 @@
+# RequiredMetrics:
+#   - evaluation.model_risk.score
+#   - evaluation.documentation.score
+#   - evaluation.validation.score
+#
+# RequiredParams:
+#   - model_risk_threshold (default 0.85)
+#   - documentation_threshold (default 0.90)
+#   - validation_threshold (default 0.85)
+#
 package industry_specific.bfs.v1.model_risk
 
 import rego.v1
@@ -36,6 +46,11 @@ compliance_report := {
 		"This is a placeholder that will be replaced with ",
 		"actual compliance checks in a future release.",
 	])},
+	"thresholds": {
+		"model_risk": object.get(input.params, "model_risk_threshold", 0.85),
+		"documentation": object.get(input.params, "documentation_threshold", 0.90),
+		"validation": object.get(input.params, "validation_threshold", 0.85),
+	},
 	"recommendations": [
 		"Check back for future releases with BFS-specific evaluations",
 		"Consider using global compliance policies in the meantime",
