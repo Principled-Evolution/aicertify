@@ -6,7 +6,7 @@ import rego.v1
 
 # Check if risk score exceeds threshold (higher is better for risk management)
 has_adequate_risk_management(metrics, threshold) if {
-	get_risk_score(metrics) >= threshold
+	risk_score(metrics) >= threshold
 }
 
 # Get risk management score with reasonable default
@@ -18,7 +18,7 @@ risk_score(metrics) := score if {
 
 # Check if risk management score passes threshold
 passes_risk_threshold(metrics, threshold) if {
-	get_risk_score(metrics) >= threshold
+	risk_score(metrics) >= threshold
 }
 
 # Check if risk documentation is present and adequate

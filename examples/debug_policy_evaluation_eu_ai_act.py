@@ -259,67 +259,6 @@ async def evaluate_contract_only(contract_path: str, output_dir: str, report_for
 
         # Add detailed logging for OPA policy loading
         logger.info(f"Using policy_folder: {policy_folder}")
-        if opa_evaluator is not None:
-            # Use the correct method to get policy files
-            policy_dir = opa_evaluator.policy_loader.get_policy_dir()
-            logger.info(f"Policy directory: {policy_dir}")
-            
-            # Get matching policy folders with improved logging
-            logger.info(f"Searching for policy folders matching '{policy_folder}'...")
-            matching_folders = opa_evaluator.find_matching_policy_folders(policy_folder)
-            if matching_folders:
-                logger.info(f"Found {len(matching_folders)} matching policy folders:")
-                for folder in matching_folders:
-                    # Also log the relative path to make it clearer
-                    rel_path = Path(folder).relative_to(Path(policy_dir))
-                    logger.info(f"  - {folder} (relative: {rel_path})")
-                    
-                # If more than one folder is found, be explicit about which one is being used
-                if len(matching_folders) > 1:
-                    logger.info(f"Using the first match: {matching_folders[0]}")
-                    
-                # Try to show which .rego files would be evaluated
-                target_folder = matching_folders[0]
-                rego_files = list(Path(target_folder).rglob("*.rego"))
-                if rego_files:
-                    logger.info(f"Found {len(rego_files)} .rego files in {target_folder}:")
-                    for rego_file in rego_files[:5]:  # Show first 5 to avoid log spam
-                        logger.info(f"  - {rego_file.name}")
-                    if len(rego_files) > 5:
-                        logger.info(f"  ... and {len(rego_files) - 5} more")
-                else:
-                    logger.warning(f"No .rego files found in {target_folder}")
-                
-                # Try to construct the query that would be used
-                try:
-                    rel_path = Path(target_folder).relative_to(Path(policy_dir))
-                    package_path = str(rel_path).replace(os.sep, '.')
-                    query = f"data.{package_path}"
-                    logger.info(f"Query that would be used: {query}")
-                except Exception as e:
-                    logger.error(f"Error constructing query: {e}")
-                
-                # Note: We'll let the actual evaluation happen through the API function below
-                # We're not going to call evaluate_by_folder_name directly
-                logger.info("We will use the api.py's evaluate_contract_by_folder function for evaluation")
-            else:
-                logger.warning(f"No matching policy folders found for {policy_folder}")
-                logger.info(f"Searched in: {policy_dir}")
-                
-                # Let's list the available folders to help with debugging
-                available_folders = []
-                for item in Path(policy_dir).rglob("*"):
-                    if item.is_dir():
-                        available_folders.append(str(item.relative_to(Path(policy_dir))))
-                        
-                if available_folders:
-                    logger.info("Available policy folders:")
-                    for folder in sorted(available_folders)[:20]:  # Show first 20 to avoid log spam
-                        logger.info(f"  - {folder}")
-                    if len(available_folders) > 20:
-                        logger.info(f"  ... and {len(available_folders) - 20} more")
-        
-        # Use a single call to evaluate_contract_by_folder which handles both
         # Phase 1 evaluators and OPA policy evaluation
         logger.info("Starting contract evaluation with EU AI Act policies and Phase 1 evaluators...")
         
@@ -337,8 +276,44 @@ async def evaluate_contract_only(contract_path: str, output_dir: str, report_for
             timeout=120
         )
         
+        logger.info("Contract evaluation complete")
+        logger.debug(f"Evaluation result keys: {eval_result.keys()}")
+        
         # Debug the evaluation metrics
         await debug_evaluation_metrics(eval_result)
+        
+        # Add debug statement to check what policies are being extracted
+        if "opa_results" in eval_result and "result" in eval_result["opa_results"] and isinstance(eval_result["opa_results"]["result"], list) and len(eval_result["opa_results"]["result"]) > 0:
+            first_result = eval_result["opa_results"]["result"][0]
+            if "expressions" in first_result and len(first_result["expressions"]) > 0:
+                first_expr = first_result["expressions"][0]
+                if "value" in first_expr:
+                    logger.info("Policies in OPA results:")
+                    for version_key, version_data in first_expr["value"].items():
+                        if isinstance(version_data, dict):
+                            logger.info(f"  Version: {version_key}")
+                            for policy_name, policy_data in version_data.items():
+                                has_compliance_report = "compliance_report" in policy_data
+                                logger.info(f"    Policy: {policy_name} (has compliance report: {has_compliance_report})")
+        
+        # After evaluating all policies, add this debug code
+        logger.info("=== OPA Results Structure ===")
+        if "opa_results" in eval_result and "result" in eval_result["opa_results"] and isinstance(eval_result["opa_results"]["result"], list) and len(eval_result["opa_results"]["result"]) > 0:
+            first_result = eval_result["opa_results"]["result"][0]
+            if "expressions" in first_result and len(first_result["expressions"]) > 0:
+                first_expr = first_result["expressions"][0]
+                if "value" in first_expr:
+                    logger.info(f"OPA results value keys: {list(first_expr['value'].keys())}")
+                    
+                    # Log all policies in each version
+                    for version_key, version_data in first_expr["value"].items():
+                        if isinstance(version_data, dict):
+                            logger.info(f"  Version: {version_key}, Policies: {list(version_data.keys())}")
+                            
+                            # Check if policies have compliance_report
+                            for policy_name, policy_data in version_data.items():
+                                has_compliance_report = "compliance_report" in policy_data
+                                logger.info(f"    Policy: {policy_name}, Has compliance_report: {has_compliance_report}")
         
         # Dump the raw evaluation results to a file for inspection
         dump_path = os.path.join(output_dir, "raw_evaluation_results.json")
@@ -346,9 +321,27 @@ async def evaluate_contract_only(contract_path: str, output_dir: str, report_for
             json.dump(eval_result, f, indent=2, cls=CustomJSONEncoder)
         logger.info(f"Dumped raw evaluation results to {dump_path}")
         
+        if eval_result.get('report_path'):
+            logger.info(f"Evaluation report saved to: {eval_result.get('report_path')}")
+        else:
+            logger.warning("No report path returned, checking for report content...")
+            
+            if eval_result.get('report'):
+                report_content = eval_result.get('report')
+                from datetime import datetime
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                fallback_path = os.path.join(output_dir, f"report_{timestamp}.md")
+                with open(fallback_path, "w") as f:
+                    f.write(report_content)
+                logger.info(f"Report content saved to fallback location: {fallback_path}")
+            else:
+                logger.error("No report content available in evaluation result")
+
+    except asyncio.TimeoutError:
+        logger.error("Evaluation timed out after 120 seconds")
     except Exception as e:
         logger.error(f"Error during evaluation: {str(e)}")
-        logger.error(traceback.format_exc())
+        logger.error(traceback.format_exc()) 
 
 def main() -> None:
     """Main function to run the EU AI Act policy evaluation."""

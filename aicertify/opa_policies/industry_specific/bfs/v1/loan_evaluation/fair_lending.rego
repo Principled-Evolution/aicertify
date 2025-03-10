@@ -62,7 +62,7 @@ risk_management_eval_fails_array := [] if {
 }
 
 # Combine failed evaluations
-failed_evaluations := array.concat(fairness_failed, array.concat(content_safety_failed, risk_management_failed))
+failed_evaluations := array.concat(fairness_eval_fails_array, array.concat(content_safety_eval_fails_array, risk_management_eval_fails_array))
 
 # Determine if the evaluation is compliant based on domain-specific thresholds
 is_compliant if {

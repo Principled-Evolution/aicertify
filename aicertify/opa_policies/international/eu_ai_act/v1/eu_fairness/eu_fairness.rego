@@ -85,8 +85,8 @@ compliance_report := {
 	"reason": reason,
 	"recommendations": recommendations,
 	"scores": {
-		"fairness": common_fairness.get_fairness_score(input.metrics),
-		"toxicity": content_safety.get_toxicity_score(input.metrics),
+		"fairness": common_fairness.fairness_score(input.metrics),
+		"toxicity": content_safety.toxicity_score(input.metrics),
 	},
 }
 
