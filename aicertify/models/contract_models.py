@@ -4,21 +4,25 @@ This module contains the contract input models intended for developers and exter
 It includes the core models: ModelInfo, Interaction, and AiCertifyContract, as well as helper methods for creating, validating, and aggregating contracts.
 '''
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, ClassVar
 from uuid import UUID, uuid4
 from datetime import datetime
 import json
 import logging
 from pathlib import Path
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+# Import the ModelCard class
+from aicertify.models.model_card import ModelCard, create_model_card
 
 
 class ModelInfo(BaseModel):
     """Model information for the AI system."""
     model_name: str
     model_version: Optional[str] = None
-    additional_info: Dict[str, Any] = Field(default_factory=dict)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    model_card: Optional[ModelCard] = None  # Added ModelCard support
 
 
 class Interaction(BaseModel):
@@ -37,7 +41,54 @@ class AiCertifyContract(BaseModel):
     model_info: ModelInfo
     interactions: List[Interaction]
     final_output: Optional[str] = None
+    
+    # Enhanced context fields for Phase 1
     context: Dict[str, Any] = Field(default_factory=dict)
+    compliance_context: Dict[str, Any] = Field(default_factory=dict)
+    
+    def get(self, key, default=None):
+        """
+        Get a value from the contract by key, similar to dictionary access.
+        
+        Args:
+            key: The key to retrieve
+            default: Default value to return if key is not found
+            
+        Returns:
+            The value associated with the key or default if not found
+        """
+        if hasattr(self, key):
+            return getattr(self, key)
+        
+        # Check in context and compliance_context
+        if key in self.context:
+            return self.context[key]
+        if key in self.compliance_context:
+            return self.compliance_context[key]
+            
+        return default
+    
+    @model_validator(mode='after')
+    def validate_domain_specific(self):
+        """Validate domain-specific requirements if domain is provided."""
+        context = self.context
+        domain = context.get("domain")
+        
+        if domain == "healthcare":
+            # Validate healthcare-specific requirements
+            if "risk_documentation" not in context:
+                raise ValueError("Healthcare contracts must include risk documentation")
+            if "patient_data" not in context:
+                raise ValueError("Healthcare contracts must include patient data")
+        
+        elif domain == "finance":
+            # Validate finance-specific requirements
+            if "risk_documentation" not in context:
+                raise ValueError("Financial contracts must include risk documentation")
+            if "customer_data" not in context:
+                raise ValueError("Financial contracts must include customer data")
+        
+        return self
 
 
 def create_contract(
@@ -45,31 +96,121 @@ def create_contract(
     model_info: Dict[str, Any],
     interactions: List[Dict[str, Any]],
     final_output: Optional[str] = None,
-    context: Optional[Dict[str, Any]] = None
+    context: Optional[Dict[str, Any]] = None,
+    compliance_context: Optional[Dict[str, Any]] = None,
+    model_card: Optional[ModelCard] = None
 ) -> AiCertifyContract:
     """
     Create and return an AiCertifyContract instance.
 
-    Parameters:
-        application_name (str): Name of the application.
-        model_info (Dict[str, Any]): A dictionary containing model information.
-        interactions (List[Dict[str, Any]]): A list of dictionaries with keys 'input_text' and 'output_text'.
-        final_output (Optional[str], optional): Final output or summary of the evaluation.
-        context (Optional[Dict[str, Any]], optional): Additional context or metadata.
+    Args:
+        application_name: Name of the application
+        model_info: Dictionary containing model information
+        interactions: List of interaction dictionaries
+        final_output: Optional final output text
+        context: Optional context information
+        compliance_context: Optional compliance context information
+        model_card: Optional ModelCard instance for detailed model documentation
 
     Returns:
-        AiCertifyContract: The constructed contract.
+        An AiCertifyContract instance
     """
-    interactions_objs = [Interaction(**data) for data in interactions]
-    contract = AiCertifyContract(
+    # Handle model_card integration with model_info
+    if model_card is not None:
+        # If model_card is provided, ensure model_info has the key information
+        model_info['model_name'] = model_info.get('model_name', model_card.model_name)
+        model_info['model_version'] = model_info.get('model_version', model_card.model_version)
+        
+        # Create ModelInfo with model_card
+        model_info_obj = ModelInfo(
+            model_name=model_info['model_name'],
+            model_version=model_info.get('model_version'),
+            metadata=model_info.get('metadata', {}),
+            model_card=model_card
+        )
+    else:
+        # Create ModelInfo without model_card
+        model_info_obj = ModelInfo(**model_info)
+
+    # Create Interaction objects
+    interaction_objects = []
+    for interaction in interactions:
+        if isinstance(interaction, Interaction):
+            interaction_objects.append(interaction)
+        else:
+            interaction_objects.append(Interaction(**interaction))
+
+    # Create contract
+    return AiCertifyContract(
         application_name=application_name,
-        model_info=ModelInfo(**model_info),
-        interactions=interactions_objs,
+        model_info=model_info_obj,
+        interactions=interaction_objects,
         final_output=final_output,
-        context=context or {}
+        context=context or {},
+        compliance_context=compliance_context or {}
     )
-    logging.info("Contract created successfully.")
-    return contract
+
+
+def create_contract_with_model_card(
+    application_name: str,
+    model_card: ModelCard,
+    interactions: List[Dict[str, Any]],
+    final_output: Optional[str] = None,
+    context: Optional[Dict[str, Any]] = None,
+    compliance_context: Optional[Dict[str, Any]] = None
+) -> AiCertifyContract:
+    """
+    Create a contract with a detailed model card.
+    
+    This is a specialized version of create_contract that puts model_card front and center,
+    making it easier for developers to provide detailed model information for EU AI Act compliance.
+
+    Args:
+        application_name: Name of the application
+        model_card: ModelCard instance with detailed model information
+        interactions: List of interaction dictionaries
+        final_output: Optional final output text
+        context: Optional context information
+        compliance_context: Optional compliance context information
+
+    Returns:
+        An AiCertifyContract instance
+    """
+    # Create minimal model_info from model_card
+    model_info = {
+        'model_name': model_card.model_name,
+        'model_version': model_card.model_version,
+        'metadata': {
+            'model_type': model_card.model_type,
+            'organization': model_card.organization
+        }
+    }
+    
+    # If context doesn't exist, initialize it
+    if context is None:
+        context = {}
+    
+    # Add model card information to context
+    if 'eu_ai_act' not in context:
+        context['eu_ai_act'] = {}
+    
+    # Include risk_category in context if available
+    if model_card.risk_category:
+        context['eu_ai_act']['risk_category'] = model_card.risk_category
+    
+    # Include relevant_articles in context if available
+    if model_card.relevant_articles:
+        context['eu_ai_act']['relevant_articles'] = model_card.relevant_articles
+    
+    return create_contract(
+        application_name=application_name,
+        model_info=model_info,
+        interactions=interactions,
+        final_output=final_output,
+        context=context,
+        compliance_context=compliance_context,
+        model_card=model_card
+    )
 
 
 def validate_contract(contract: AiCertifyContract) -> bool:
@@ -88,6 +229,25 @@ def validate_contract(contract: AiCertifyContract) -> bool:
     if not contract.interactions:
         logging.error("Validation failed: No interactions provided.")
         return False
+    
+    # Check for domain-specific requirements
+    if "domain" in contract.context:
+        domain = contract.context["domain"]
+        if domain == "healthcare":
+            if "risk_documentation" not in contract.context:
+                logging.error("Validation failed: Healthcare contract missing risk documentation.")
+                return False
+            if "patient_data" not in contract.context:
+                logging.error("Validation failed: Healthcare contract missing patient data.")
+                return False
+        elif domain == "finance":
+            if "risk_documentation" not in contract.context:
+                logging.error("Validation failed: Financial contract missing risk documentation.")
+                return False
+            if "customer_data" not in contract.context:
+                logging.error("Validation failed: Financial contract missing customer data.")
+                return False
+    
     logging.info("Contract validated successfully.")
     return True
 

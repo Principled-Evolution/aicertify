@@ -1,0 +1,13 @@
+COMMAND: /usr/local/bin/opa eval data.international.eu_ai_act --bundle /home/kapil/Projects/AICertify/aicertify/opa_policies --explain full --format pretty --stdin-input
+
+STDOUT:
+4 errors occurred:
+/home/kapil/Projects/AICertify/aicertify/opa_policies/global/v1/common/risk_management.rego:9: rego_type_error: undefined function get_risk_score
+/home/kapil/Projects/AICertify/aicertify/opa_policies/global/v1/common/risk_management.rego:21: rego_type_error: undefined function get_risk_score
+/home/kapil/Projects/AICertify/aicertify/opa_policies/international/eu_ai_act/v1/eu_fairness/eu_fairness.rego:88: rego_type_error: undefined function data.global.v1.common.fairness.get_fairness_score
+/home/kapil/Projects/AICertify/aicertify/opa_policies/international/eu_ai_act/v1/eu_fairness/eu_fairness.rego:89: rego_type_error: undefined function data.global.v1.common.content_safety.get_toxicity_score
+
+
+STDERR:
+
+

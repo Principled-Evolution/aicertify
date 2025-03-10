@@ -23,7 +23,21 @@ try:
         evaluate_contract,
         evaluate_contract_object,
         evaluate_conversations,
+        evaluate_contract_with_phase1_evaluators,
+        evaluate_contract_comprehensive,
         generate_report
+    )
+    
+    # Phase 1 Evaluators
+    from aicertify.evaluators import (
+        BaseEvaluator,
+        EvaluationResult,
+        Report,
+        FairnessEvaluator,
+        ContentSafetyEvaluator,
+        RiskManagementEvaluator,
+        ComplianceEvaluator,
+        EvaluatorConfig
     )
     
     # Set a flag to indicate successful imports

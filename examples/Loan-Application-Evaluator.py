@@ -4,6 +4,12 @@ Loan Application Evaluator Example
 This example demonstrates a simple loan approval AI agent with AICertify integration.
 It showcases PDF report generation and use of the AICertify API for compliance verification.
 
+Key features demonstrated:
+1. Creating a domain-specific context for financial AI evaluation
+2. Capturing interactions from a loan approval agent
+3. Using Phase 1 evaluators with appropriate financial OPA policies
+4. Generating comprehensive PDF reports
+
 All outputs (contracts, reports) will be generated in the examples/outputs/loan_evaluation directory.
 """
 
@@ -94,14 +100,25 @@ async def get_customer_risk_profile(ctx: RunContext[Deps]) -> str:
     logger.info(f"Customer risk profile: {result.data}")
     return f"The customer risk profile is: {result.data}"
 
+# Import AICertify modules needed for contract creation and evaluation
+from aicertify.models.contract_models import create_contract, validate_contract, save_contract
+from aicertify.context_helpers import create_financial_context
+from aicertify.evaluators import ComplianceEvaluator
+
+# Import API module for evaluation if needed
+try:
+    from aicertify.api import evaluate_contract_comprehensive
+except ImportError:
+    from aicertify.api import evaluate_contract_object as evaluate_contract_comprehensive
 
 def run_session(capture_contract: bool, contract_storage: str, report_format: str = "pdf") -> None:
-    """Run the loan evaluation session and optionally generate and save a contract with evaluation report.
+    """
+    Run a loan application evaluation session with the AI agent.
     
     Args:
-        capture_contract: Whether to capture contract and evaluate
-        contract_storage: Directory to store contract files
-        report_format: Format for generated reports ("pdf" or "markdown")
+        capture_contract: Whether to capture and evaluate the contract
+        contract_storage: Directory to store the contract
+        report_format: Format for the evaluation report
     """
     logger.info("Starting loan evaluation session.")
     logger.info(f"Session started at {datetime.now().isoformat()}")
@@ -157,48 +174,47 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
         logger.exception("An error occurred during the loan evaluation session")
 
     if capture_contract:
-        logger.info("Contract capture enabled. Generating contract...")
-        try:
-            # Import contract models
-            try:
-                from aicertify.models.contract_models import create_contract, validate_contract, save_contract
-            except ImportError:
-                logger.error("Failed to import AICertify contract models. Make sure AICertify is installed.")
-                return
-
-            # Create a contract
-            application_name = "Loan Application Evaluation"
-            model_info = {
+        logger.info('Contract capture enabled. Generating contract...')
+        
+        # Create financial domain-specific context
+        financial_context = create_financial_context(
+            customer_data=customer,
+            loan_type="personal_loan"
+        )
+        
+        # Create compliance context
+        compliance_context = {
+            "jurisdictions": ["us", "eu"],
+            "frameworks": ["fair_lending", "eu_ai_act", "financial"]
+        }
+        
+        # Create contract with enhanced context
+        contract = create_contract(
+            application_name="Loan Application Evaluator",
+            model_info={
                 "model_name": agent.model.model_name,
                 "model_version": "N/A",
                 "additional_info": {
                     "provider": "OpenAI",
                     "temperature": "default"
                 }
-            }
-            
-            contract = create_contract(application_name, model_info, captured_interactions)
-            if validate_contract(contract):
-                logger.info("Contract successfully validated.")
-            else:
-                logger.error("Contract validation failed.")
-                return
-
+            },
+            interactions=captured_interactions,
+            final_output=result.data.response,
+            context=financial_context,
+            compliance_context=compliance_context
+        )
+        
+        if validate_contract(contract):
             # Save the contract
-            file_path = save_contract(contract, storage_dir=contract_storage)
-            logger.info(f"Contract saved to {file_path}")
+            contract_path = save_contract(contract, contract_storage)
+            logger.info(f"Contract saved to: {contract_path}")
             
-            # Simple AICertify API integration for evaluation and reporting
-            logger.info("Evaluating contract with AICertify API...")
+            # Evaluate using Phase 1 evaluators with comprehensive approach
             try:
-                # Import AICertify evaluation API
-                from aicertify.api import evaluate_contract_object
-                import asyncio
-                
-                # Run the async evaluation function using asyncio
-                eval_result = asyncio.run(evaluate_contract_object(
+                eval_result = asyncio.run(evaluate_contract_comprehensive(
                     contract=contract,
-                    policy_category='eu_ai_act',
+                    policy_categories=["financial", "eu_ai_act"],
                     generate_report=True,
                     report_format=report_format,
                     output_dir=contract_storage
@@ -207,54 +223,37 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
                 # Log evaluation results
                 logger.info("Contract evaluation complete")
                 if eval_result.get('report_path'):
-                    logger.info(f"Evaluation report saved to: {eval_result.get('report_path')}")
+                    logger.info(f"Comprehensive evaluation report saved to: {eval_result.get('report_path')}")
+                    
+                    # Add code to open the PDF report for viewing if desired
+                    if report_format.lower() == 'pdf' and os.path.exists(eval_result.get('report_path')):
+                        try:
+                            # On Windows
+                            os.startfile(eval_result.get('report_path'))
+                        except AttributeError:
+                            # On Linux/Mac
+                            import subprocess
+                            subprocess.call(['open', eval_result.get('report_path')])
                 else:
-                    # For PDF files, check the standard locations
-                    if report_format.lower() == 'pdf':
-                        import glob
-                        from pathlib import Path
-                        import os
-                        import shutil
-                        
-                        # Check the temp_reports directory for PDF files
-                        temp_dir = Path('temp_reports')
-                        if temp_dir.exists():
-                            pdf_files = list(temp_dir.glob('*.pdf'))
-                            if pdf_files:
-                                # Find the most recently created PDF file
-                                latest_pdf = max(pdf_files, key=lambda x: x.stat().st_mtime)
-                                logger.info(f"PDF report found at: {latest_pdf}")
-                                
-                                # Copy it to the contract storage directory with a better name
-                                try:
-                                    # Make sure output directory exists
-                                    out_dir = Path(contract_storage)
-                                    out_dir.mkdir(exist_ok=True, parents=True)
-                                    
-                                    # Create a better filename with timestamp
-                                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                                    new_pdf_path = out_dir / f"report_Loan_Application_{timestamp}.pdf"
-                                    
-                                    # Copy the file - if it exists
-                                    if latest_pdf.exists():
-                                        shutil.copy2(latest_pdf, new_pdf_path)
-                                        logger.info(f"PDF report copied to: {new_pdf_path}")
-                                    else:
-                                        logger.error(f"PDF file {latest_pdf} doesn't exist")
-                                except Exception as e:
-                                    logger.error(f"Failed to copy PDF report: {e}")
-                            else:
-                                logger.warning("No PDF files found in temp_reports directory")
-                        else:
-                            logger.warning(f"temp_reports directory not found at {temp_dir.absolute()}")
-                    else:
-                        logger.info("Report generated but path not returned")
+                    logger.warning("No report path returned, checking for report content...")
+                    
+                    # Check if report content is available directly
+                    if eval_result.get('report'):
+                        report_content = eval_result.get('report')
+                        # Save report content to a file
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        fallback_path = os.path.join(contract_storage, f"report_{timestamp}.md")
+                        with open(fallback_path, "w") as f:
+                            f.write(report_content)
+                        logger.info(f"Report content saved to fallback location: {fallback_path}")
                 
-            except Exception as ex:
-                logger.exception(f"Error during contract evaluation: {ex}")
+            except Exception as e:
+                logger.error(f"Error during evaluation: {str(e)}")
                 
-        except Exception as ex:
-            logger.exception(f"Error creating contract: {ex}")
+        else:
+            logger.error("Contract validation failed")
+    else:
+        logger.info("Contract capture disabled. No contract saved or evaluated.")
 
 
 def main() -> None:

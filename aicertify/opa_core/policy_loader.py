@@ -2,8 +2,13 @@ import os
 import logging
 import sys
 import re
-from typing import Dict, List, Optional, Tuple, Set
+from typing import Dict, List, Optional, Tuple, Set, NamedTuple
 from pathlib import Path
+
+class Policy(NamedTuple):
+    """Represents a loaded policy with its path and content."""
+    path: str
+    content: str
 
 class PolicyLoader:
     """
@@ -22,7 +27,7 @@ class PolicyLoader:
             self.policies_dir = aicertify_dir / "opa_policies"
             
             # Log diagnostic info about the path we're using
-            logging.info(f"Using policies directory from module path: {self.policies_dir}")
+            logging.debug(f"Using policies directory from module path: {self.policies_dir}")
             
             # If path doesn't exist, try additional search paths
             if not self.policies_dir.exists():
@@ -32,7 +37,7 @@ class PolicyLoader:
                 cwd_path = Path.cwd() / "opa_policies"
                 if cwd_path.exists():
                     self.policies_dir = cwd_path
-                    logging.info(f"Found policies in current working directory: {self.policies_dir}")
+                    logging.debug(f"Found policies in current working directory: {self.policies_dir}")
                 
                 # Try to find relative to the main script
                 elif '__main__' in sys.modules:
@@ -48,45 +53,39 @@ class PolicyLoader:
                         for path in possible_paths:
                             if path.exists():
                                 self.policies_dir = path
-                                logging.info(f"Found policies relative to main script: {self.policies_dir}")
+                                logging.debug(f"Found policies relative to main script: {self.policies_dir}")
                                 break
                 
-                # Try absolute known paths as last resort
+                # If we still haven't found it, try some known install locations
                 if not self.policies_dir.exists():
-                    known_paths = [
-                        Path("C:/Projects/AICertify/aicertify/opa_policies"),
-                        Path("/aicertify/opa_policies")
-                    ]
-                    for path in known_paths:
-                        if path.exists():
-                            self.policies_dir = path
-                            logging.info(f"Found policies at known path: {self.policies_dir}")
-                            break
+                    # Check site-packages
+                    for path in sys.path:
+                        if "site-packages" in path:
+                            site_path = Path(path) / "aicertify" / "opa_policies"
+                            if site_path.exists():
+                                self.policies_dir = site_path
+                                logging.debug(f"Found policies at known path: {self.policies_dir}")
+                                break
         else:
             self.policies_dir = Path(policies_dir)
-            
-        # Log the final chosen path
-        logging.info(f"Using policies directory: {self.policies_dir}")
         
-        # Check if the directory actually exists and has .rego files
-        if not self.policies_dir.exists():
-            logging.error(f"Policies directory does not exist: {self.policies_dir}")
-        else:
-            rego_files = list(self.policies_dir.rglob("*.rego"))
-            if not rego_files:
-                logging.warning(f"No .rego files found in policies directory: {self.policies_dir}")
-                # Try to help diagnose the issue by listing the contents
-                try:
-                    top_level_items = list(self.policies_dir.iterdir())
-                    logging.info(f"Contents of policies directory ({len(top_level_items)} items):")
-                    for item in top_level_items:
-                        if item.is_dir():
-                            subdir_items = list(item.iterdir())
-                            logging.info(f"  - {item.name}/ ({len(subdir_items)} items)")
-                        else:
-                            logging.info(f"  - {item.name}")
-                except Exception as e:
-                    logging.error(f"Error listing policies directory contents: {e}")
+        logging.debug(f"Using policies directory: {self.policies_dir}")
+        
+        # Verify it's a directory
+        if not self.policies_dir.exists() or not self.policies_dir.is_dir():
+            err_msg = f"Policies directory not found or not a directory: {self.policies_dir}"
+            logging.critical(err_msg)
+            raise ValueError(err_msg)
+        
+        # Debug log directory contents
+        top_level_items = list(self.policies_dir.iterdir())
+        logging.debug(f"Contents of policies directory ({len(top_level_items)} items):")
+        for item in top_level_items:
+            if item.is_dir():
+                subdir_items = list(item.iterdir())
+                logging.debug(f"  - {item.name}/ ({len(subdir_items)} items)")
+            else:
+                logging.debug(f"  - {item.name}")
         
         # Load policies categorized by their structure
         self.policies_by_category = self._load_policies()
@@ -132,7 +131,7 @@ class PolicyLoader:
             
         # Log all .rego files found for diagnostic purposes
         all_rego_files = list(self.policies_dir.rglob("*.rego"))
-        logging.info(f"Found {len(all_rego_files)} .rego files in {self.policies_dir}")
+        logging.debug(f"Found {len(all_rego_files)} .rego files in {self.policies_dir}")
         
         for policy_file in all_rego_files:
             try:
@@ -184,7 +183,7 @@ class PolicyLoader:
                 
                 # Add the policy file path
                 policies[category][subcategory][version].append(str(policy_file))
-                logging.info(f"Added policy file: {policy_file} to {category}/{subcategory}/{version}")
+                logging.debug(f"Added policy file: {policy_file} to {category}/{subcategory}/{version}")
                 
             except Exception as e:
                 logging.error(f"Error processing policy file {policy_file}: {e}")
@@ -193,7 +192,7 @@ class PolicyLoader:
         for category, subcategories in policies.items():
             for subcategory, versions in subcategories.items():
                 for version, files in versions.items():
-                    logging.info(f"Category: {category}, Subcategory: {subcategory or 'None'}, Version: {version}, Files: {len(files)}")
+                    logging.debug(f"Category: {category}, Subcategory: {subcategory or 'None'}, Version: {version}, Files: {len(files)}")
         
         return policies
     
@@ -219,7 +218,7 @@ class PolicyLoader:
                                 if match:
                                     package_name = match.group(1)
                                     package_mappings[package_name] = policy_file
-                                    logging.info(f"Mapped package '{package_name}' to file: {policy_file}")
+                                    logging.debug(f"Mapped package '{package_name}' to file: {policy_file}")
                         except Exception as e:
                             logging.error(f"Error extracting package from {policy_file}: {e}")
         
@@ -295,7 +294,7 @@ class PolicyLoader:
             if version is None:
                 logging.error(f"No versions found for category '{category}', subcategory '{subcategory}'")
                 return None
-            logging.info(f"Using latest version: {version}")
+            logging.debug(f"Using latest version: {version}")
         
         # Check if version exists
         if version not in self.policies_by_category[category][subcategory]:
@@ -306,7 +305,7 @@ class PolicyLoader:
             
         policies = self.policies_by_category[category][subcategory][version]
         if policies:
-            logging.info(f"Found {len(policies)} policies for {category}/{subcategory}/{version}")
+            logging.debug(f"Found {len(policies)} policies for {category}/{subcategory}/{version}")
         else:
             logging.warning(f"No policies found for {category}/{subcategory}/{version}")
             
@@ -341,7 +340,11 @@ class PolicyLoader:
             Set of policy file paths for dependencies
         """
         dependencies = set()
-        import_pattern = re.compile(r'import\s+data\.([a-zA-Z0-9_\.]+)')
+        # Updated pattern to capture both standard imports and aliased imports
+        import_pattern = re.compile(r'import\s+data\.([a-zA-Z0-9_\.]+)(?:\s+as\s+([a-zA-Z0-9_]+))?')
+        
+        # Also look for our v1 specific common modules
+        v1_import_pattern = re.compile(r'import\s+data\.common\.([a-zA-Z0-9_\.]+)\.v1(?:\s+as\s+([a-zA-Z0-9_]+))?')
         
         for policy_file in policy_files:
             try:
@@ -356,11 +359,53 @@ class PolicyLoader:
                         if imported_package in self.package_mappings:
                             dependency_file = self.package_mappings[imported_package]
                             dependencies.add(dependency_file)
-                            logging.info(f"Found dependency: {imported_package} -> {dependency_file}")
+                            logging.debug(f"Found dependency: {imported_package} -> {dependency_file}")
                         else:
                             logging.warning(f"Could not resolve import for package: {imported_package}")
+                            
+                            # Special handling for common module imports
+                            if "common." in imported_package:
+                                # Try to find common modules in global/v1/common
+                                common_module = imported_package.split(".")[-1]
+                                common_path = os.path.join(
+                                    self.policies_dir, 
+                                    "global", 
+                                    "v1", 
+                                    "common", 
+                                    f"{common_module}.rego"
+                                )
+                                if os.path.exists(common_path):
+                                    dependencies.add(common_path)
+                                    logging.debug(f"Found common module dependency: {imported_package} -> {common_path}")
+                    
+                    # Find v1-specific common module imports 
+                    for match in v1_import_pattern.finditer(content):
+                        common_module = match.group(1)
+                        
+                        # Look for the common module in global/v1/common
+                        common_path = os.path.join(
+                            self.policies_dir, 
+                            "global", 
+                            "v1", 
+                            "common", 
+                            f"{common_module}.rego"
+                        )
+                        if os.path.exists(common_path):
+                            dependencies.add(common_path)
+                            logging.debug(f"Found v1 common module dependency: common.{common_module}.v1 -> {common_path}")
+                        else:
+                            logging.warning(f"Could not find v1 common module: common.{common_module}.v1")
+                            
             except Exception as e:
                 logging.error(f"Error finding dependencies in {policy_file}: {e}")
+                
+        # Log all found dependencies
+        if dependencies:
+            logging.info(f"Found {len(dependencies)} policy dependencies")
+            for dependency in dependencies:
+                logging.debug(f"  Dependency: {dependency}")
+        else:
+            logging.warning("No policy dependencies found")
                 
         return dependencies
     
@@ -504,6 +549,50 @@ class PolicyLoader:
         # No matches found
         logging.warning(f"No policies found for category path: {policy_category}")
         return []
+
+    def load_policies(self, policy_dir: Optional[str] = None) -> List[Policy]:
+        """
+        Load all policies from the specified directory or the default policies directory.
+        
+        Args:
+            policy_dir: Directory containing policy files
+            
+        Returns:
+            List[Policy]: List of Policy objects with path and content
+        """
+        # Use the policies directory if not specified
+        if policy_dir is None:
+            policy_dir = str(self.policies_dir)
+            
+        # Ensure the policies are loaded
+        if not hasattr(self, 'policies_by_category'):
+            self.policies_by_category = self._load_policies()
+            
+        # Collect all policy files
+        all_policies = []
+        
+        # Walk the category structure and load each policy
+        for category, subcategories in self.policies_by_category.items():
+            for subcategory, versions in subcategories.items():
+                for version, policy_files in versions.items():
+                    for policy_file in policy_files:
+                        try:
+                            with open(policy_file, 'r') as f:
+                                content = f.read()
+                                all_policies.append(Policy(path=policy_file, content=content))
+                        except Exception as e:
+                            logging.error(f"Error loading policy {policy_file}: {str(e)}")
+                            
+        return all_policies
+
+    def get_policy_dir(self) -> str:
+        """Get the base directory for OPA policies.
+        
+        Returns:
+            str: The absolute path to the policy directory
+        """
+        # Default to the opa_policies directory in the aicertify package
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "opa_policies"))
 
 # Standalone test
 if __name__ == "__main__":

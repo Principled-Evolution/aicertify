@@ -16,7 +16,21 @@
         "aicertify/opa_core/__init__.py": true,
         "aicertify/cli/__pycache__": true,
         "aicertify/examples/pydanticai/__pycache__": true,
-        "aicertify/examples/__pycache__": true
+        "aicertify/examples/__pycache__": true,
+        "CODE_OF_CONDUCT.md": true,
+        "CONTRIBUTING.md": true,
+        "LICENSE": true,
+        "poetry.lock": true,
+        "poetry.toml": true,
+        ".pytest_cache": true
     },
-    "hide-files.files": []
+    "hide-files.files": [
+        "CODE_OF_CONDUCT.md",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "poetry.lock",
+        "poetry.toml",
+        ".pytest_cache"
+    ],
+    "terminal.integrated.defaultProfile.linux": "zsh"
 }

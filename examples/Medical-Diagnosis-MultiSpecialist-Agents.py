@@ -4,12 +4,19 @@ Medical Diagnosis Multi-Specialist Agents Example
 This example demonstrates a complex medical diagnostic system with multiple specialized AI agents.
 It showcases how to capture and evaluate interactions across multiple agents with AICertify.
 
+Key features demonstrated:
+1. Creating a domain-specific context for healthcare AI evaluation
+2. Capturing interactions from multiple specialist agents
+3. Using Phase 1 evaluators with appropriate healthcare OPA policies
+4. Generating comprehensive PDF reports
+
 All outputs (contracts, reports) will be generated in the examples/outputs/medical_diagnosis directory.
 """
 
 import os
 import argparse
 import logging
+import asyncio
 from datetime import datetime
 from pathlib import Path
 
@@ -208,9 +215,26 @@ def result_validator_deps(ctx: RunContext[Deps], data: Diagnosis) -> Diagnosis:
         raise ModelRetry('Patient ID or Patient name mismatch.')
     return data
 
+# Import AICertify modules needed for contract creation and evaluation
+from aicertify.models.contract_models import create_contract, validate_contract, save_contract
+from aicertify.context_helpers import create_medical_context
+from aicertify.evaluators import ComplianceEvaluator
 
-def run_session(capture_contract: bool, contract_storage: str) -> None:
-    """Run the multi-agent diagnosis session, capture outputs, and optionally generate and save a contract."""
+# Import API module for evaluation if needed
+try:
+    from aicertify.api import evaluate_contract_comprehensive
+except ImportError:
+    from aicertify.api import evaluate_contract_object as evaluate_contract_comprehensive
+
+def run_session(capture_contract: bool, contract_storage: str, report_format: str = "pdf") -> None:
+    """
+    Run a medical diagnosis session with multiple specialist agents.
+    
+    Args:
+        capture_contract: Whether to capture and evaluate the contract
+        contract_storage: Directory to store the contract
+        report_format: Format for the evaluation report
+    """
     logger.info('Starting multi-agent diagnosis session.')
     logger.info(f'Session started at {datetime.now().isoformat()}')
 
@@ -266,20 +290,28 @@ def run_session(capture_contract: bool, contract_storage: str) -> None:
         })
 
         logger.info('Running Primary Care Agent...')
-        result = primary_care_agent.run_sync(question, deps=deps)
-        logger.info(f'Primary Care Agent result: {result.data.diagnosis}')
-        message = ModelResponse(parts=[TextPart(content=result.data.diagnosis, part_kind='text')], timestamp=datetime.now().isoformat(), kind='response')
+        primary_care_result = primary_care_agent.run_sync(question, deps=deps)
+        logger.info(f'Primary Care Agent result: {primary_care_result.data.diagnosis}')
+        message = ModelResponse(parts=[TextPart(content=primary_care_result.data.diagnosis, part_kind='text')], timestamp=datetime.now().isoformat(), kind='response')
         message_history.append(message)
         captured_interactions.append({
             "input_text": question,
-            "output_text": result.data.diagnosis,
+            "output_text": primary_care_result.data.diagnosis,
             "metadata": {"agent": "Primary Care"}
         })
+        
+        # Store the primary care result as final diagnosis
+        final_diagnosis = primary_care_result.data.diagnosis
 
         logger.info('Running Reasoning Agent for final integration...')
         try:
             result = reasoning_agent.run_sync(question, deps=deps, message_history=message_history)
             logger.info(f'Reasoning Agent final report: {result.data}')
+            
+            # If reasoning agent returns a diagnosis, use it as the final diagnosis
+            if hasattr(result.data, 'diagnosis'):
+                final_diagnosis = result.data.diagnosis
+            
             captured_interactions.append({
                 "input_text": question,
                 "output_text": str(result.data),
@@ -298,86 +330,99 @@ def run_session(capture_contract: bool, contract_storage: str) -> None:
     if capture_contract:
         logger.info('Contract capture enabled. Generating contract...')
         try:
-            try:
-                from aicertify.models.contract_models import create_contract, validate_contract
-            except ImportError:
-                from contract_models import create_contract, validate_contract
-
-            application_name = "Medical Diagnosis Session"
+            # Create model info
             model_info = {
-                "model_name": neurology_agent.model.model_name,
+                "model_name": neurology_agent.model.model_name,  # Using the neurology agent's model as reference
                 "model_version": "N/A",
                 "additional_info": {
                     "provider": "OpenAI",
-                    "temperature": "default"
+                    "temperature": "default",
+                    "specialists": ["Neurology", "Cardiology", "Gastroenterology", "Primary Care"]
                 }
             }
-            contract = create_contract(application_name, model_info, captured_interactions)
-            if validate_contract(contract):
-                logger.info('Contract successfully validated.')
-            else:
-                logger.error('Contract validation failed.')
-
-            try:
-                from aicertify.models.contract_models import save_contract
-            except ImportError:
-                from contract_models import save_contract
-            file_path = save_contract(contract, storage_dir=contract_storage)
-            logger.info(f'Contract saved to {file_path}')
             
-            # Simple AICertify API integration for evaluation and reporting
-            logger.info('Evaluating contract with AICertify API...')
-            try:
-                # Import AICertify evaluation API
-                from aicertify.api import evaluate_contract_object
-                import asyncio
+            application_name = "Medical Diagnosis Multi-Specialist"
+            
+            # Extract specialists involved
+            specialists_involved = ["Neurology", "Cardiology", "Gastroenterology", "Primary Care"]
+            
+            # Create domain-specific context
+            medical_context = create_medical_context(case_description, specialists_involved)
+            
+            # Create compliance context
+            compliance_context = {
+                "jurisdictions": ["us", "eu"],
+                "frameworks": ["hipaa", "eu_ai_act", "healthcare"]
+            }
+            
+            # Create contract with enhanced context
+            contract = create_contract(
+                application_name=application_name,
+                model_info=model_info,
+                interactions=captured_interactions,
+                final_output=final_diagnosis,
+                context=medical_context,
+                compliance_context=compliance_context
+            )
+            
+            if validate_contract(contract):
+                # Save the contract
+                contract_path = save_contract(contract, contract_storage)
+                logger.info(f"Contract saved to: {contract_path}")
                 
-                # Add debug info to understand the issue
-                logger.info('Debugging imports and paths:')
+                # Evaluate using Phase 1 evaluators with comprehensive approach
                 try:
-                    from aicertify.opa_core.policy_loader import PolicyLoader
-                    loader = PolicyLoader()
-                    logger.info(f'PolicyLoader successfully imported from aicertify.opa_core.policy_loader')
-                    logger.info(f'PolicyLoader methods: {[method for method in dir(loader) if not method.startswith("_")]}')
-                    logger.info(f'get_policies_by_category exists: {"get_policies_by_category" in dir(loader)}')
+                    eval_result = asyncio.run(evaluate_contract_comprehensive(
+                        contract=contract,
+                        policy_categories=["healthcare", "eu_ai_act"],
+                        generate_report=True,
+                        report_format=report_format,
+                        output_dir=contract_storage
+                    ))
                     
-                    # Check if the file exists and the right version is loaded
-                    import inspect
-                    loader_source = inspect.getfile(PolicyLoader)
-                    logger.info(f'PolicyLoader source file: {loader_source}')
+                    # Log evaluation results
+                    logger.info("Contract evaluation complete")
+                    if eval_result.get('report_path'):
+                        logger.info(f"Comprehensive evaluation report saved to: {eval_result.get('report_path')}")
+                        
+                        # Add code to open the PDF report for viewing if desired
+                        if report_format.lower() == 'pdf' and os.path.exists(eval_result.get('report_path')):
+                            try:
+                                # On Windows
+                                os.startfile(eval_result.get('report_path'))
+                            except AttributeError:
+                                # On Linux/Mac
+                                import subprocess
+                                subprocess.call(['open', eval_result.get('report_path')])
+                    else:
+                        logger.warning("No report path returned, checking for report content...")
+                        
+                        # Check if report content is available directly
+                        if eval_result.get('report'):
+                            report_content = eval_result.get('report')
+                            # Save report content to a file
+                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                            fallback_path = os.path.join(contract_storage, f"report_{timestamp}.md")
+                            with open(fallback_path, "w") as f:
+                                f.write(report_content)
+                            logger.info(f"Report content saved to fallback location: {fallback_path}")
+                
                 except Exception as e:
-                    logger.error(f'Error checking PolicyLoader: {str(e)}')
-                    import traceback
-                    logger.error(traceback.format_exc())
+                    logger.error(f"Error during evaluation: {str(e)}")
                 
-                # Run the async evaluation function using asyncio
-                eval_result = asyncio.run(evaluate_contract_object(
-                    contract=contract,
-                    policy_category='eu_ai_act',
-                    generate_report=True,
-                    report_format='markdown',
-                    output_dir=contract_storage
-                ))
-                
-                # Log evaluation results
-                logger.info(f'Contract evaluation complete')
-                if eval_result.get('report_path'):
-                    logger.info(f'Evaluation report saved to: {eval_result.get("report_path")}')
-                else:
-                    logger.info('Report generated but path not returned')
-            except Exception as e:
-                logger.error(f'Error during contract evaluation: {str(e)}')
-                import traceback
-                logger.error(traceback.format_exc())
-                
+            else:
+                logger.error("Contract validation failed")
         except Exception as ex:
             logger.exception(f'Error creating contract: {ex}')
+    else:
+        logger.info("Contract capture disabled. No contract saved or evaluated.")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Demo for Medical Diagnosis Session with Contract Capture")
     parser.add_argument('--capture-contract', action='store_true', help="Capture outputs to generate a contract for evaluation")
     parser.add_argument('--contract-storage', type=str, default=None, help="Directory to store generated contract files")
+    parser.add_argument('--report-format', type=str, default='pdf', choices=['pdf', 'markdown'], help="Format for generated reports")
     args = parser.parse_args()
 
     # Get the directory where this script is located
@@ -405,7 +450,7 @@ def main() -> None:
     logger.info(f"Script directory: {script_dir}")
     logger.info(f"Contract storage directory: {contract_storage}")
 
-    run_session(capture_contract=args.capture_contract, contract_storage=str(contract_storage))
+    run_session(capture_contract=args.capture_contract, contract_storage=str(contract_storage), report_format=args.report_format)
 
 
 if __name__ == "__main__":

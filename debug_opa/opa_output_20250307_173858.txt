@@ -1,0 +1,1054 @@
+query:1                                                              Enter data.international.eu_ai_act = _
+query:1                                                              | Eval data.international.eu_ai_act = _
+query:1                                                              | Index data.international.eu_ai_act.v1.compliance.ce_marking.deny (matched 1 rule)
+/home/...compliance/ce_marking.rego:4                                | Enter data.international.eu_ai_act.v1.compliance.ce_marking.deny
+/home/...compliance/ce_marking.rego:5                                | | Eval msg = "CE Marking policy placeholder: This policy is not yet implemented."
+/home/...compliance/ce_marking.rego:4                                | | Exit data.international.eu_ai_act.v1.compliance.ce_marking.deny
+/home/...compliance/ce_marking.rego:4                                | Redo data.international.eu_ai_act.v1.compliance.ce_marking.deny
+/home/...compliance/ce_marking.rego:5                                | | Redo msg = "CE Marking policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.compliance.conformity_assessment.deny (matched 1 rule)
+/home/...compliance/conformity_assessment.rego:4                     | Enter data.international.eu_ai_act.v1.compliance.conformity_assessment.deny
+/home/...compliance/conformity_assessment.rego:5                     | | Eval msg = "Conformity Assessment policy placeholder: This policy is not yet implemented."
+/home/...compliance/conformity_assessment.rego:4                     | | Exit data.international.eu_ai_act.v1.compliance.conformity_assessment.deny
+/home/...compliance/conformity_assessment.rego:4                     | Redo data.international.eu_ai_act.v1.compliance.conformity_assessment.deny
+/home/...compliance/conformity_assessment.rego:5                     | | Redo msg = "Conformity Assessment policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.compliance.declaration_conformity.deny (matched 1 rule)
+/home/...compliance/declaration_conformity.rego:4                    | Enter data.international.eu_ai_act.v1.compliance.declaration_conformity.deny
+/home/...compliance/declaration_conformity.rego:5                    | | Eval msg = "EU Declaration of Conformity policy placeholder: This policy is not yet implemented."
+/home/...compliance/declaration_conformity.rego:4                    | | Exit data.international.eu_ai_act.v1.compliance.declaration_conformity.deny
+/home/...compliance/declaration_conformity.rego:4                    | Redo data.international.eu_ai_act.v1.compliance.declaration_conformity.deny
+/home/...compliance/declaration_conformity.rego:5                    | | Redo msg = "EU Declaration of Conformity policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.compliance.registration.deny (matched 1 rule)
+/home/...compliance/registration.rego:4                              | Enter data.international.eu_ai_act.v1.compliance.registration.deny
+/home/...compliance/registration.rego:5                              | | Eval msg = "Registration policy placeholder: This policy is not yet implemented."
+/home/...compliance/registration.rego:4                              | | Exit data.international.eu_ai_act.v1.compliance.registration.deny
+/home/...compliance/registration.rego:4                              | Redo data.international.eu_ai_act.v1.compliance.registration.deny
+/home/...compliance/registration.rego:5                              | | Redo msg = "Registration policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.data_governance.data_quality.deny (matched 1 rule)
+/home/...data_governance/data_quality.rego:4                         | Enter data.international.eu_ai_act.v1.data_governance.data_quality.deny
+/home/...data_governance/data_quality.rego:5                         | | Eval msg = "Data Quality policy placeholder: This policy is not yet implemented."
+/home/...data_governance/data_quality.rego:4                         | | Exit data.international.eu_ai_act.v1.data_governance.data_quality.deny
+/home/...data_governance/data_quality.rego:4                         | Redo data.international.eu_ai_act.v1.data_governance.data_quality.deny
+/home/...data_governance/data_quality.rego:5                         | | Redo msg = "Data Quality policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.data_governance.training_data.deny (matched 1 rule)
+/home/...data_governance/training_data.rego:4                        | Enter data.international.eu_ai_act.v1.data_governance.training_data.deny
+/home/...data_governance/training_data.rego:5                        | | Eval msg = "Training Data policy placeholder: This policy is not yet implemented."
+/home/...data_governance/training_data.rego:4                        | | Exit data.international.eu_ai_act.v1.data_governance.training_data.deny
+/home/...data_governance/training_data.rego:4                        | Redo data.international.eu_ai_act.v1.data_governance.training_data.deny
+/home/...data_governance/training_data.rego:5                        | | Redo msg = "Training Data policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.documentation.automated_logs.deny (matched 1 rule)
+/home/...documentation/automated_logs.rego:4                         | Enter data.international.eu_ai_act.v1.documentation.automated_logs.deny
+/home/...documentation/automated_logs.rego:5                         | | Eval msg = "Automated Logs policy placeholder: This policy is not yet implemented."
+/home/...documentation/automated_logs.rego:4                         | | Exit data.international.eu_ai_act.v1.documentation.automated_logs.deny
+/home/...documentation/automated_logs.rego:4                         | Redo data.international.eu_ai_act.v1.documentation.automated_logs.deny
+/home/...documentation/automated_logs.rego:5                         | | Redo msg = "Automated Logs policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.documentation.record_keeping.deny (matched 1 rule)
+/home/...documentation/record_keeping.rego:4                         | Enter data.international.eu_ai_act.v1.documentation.record_keeping.deny
+/home/...documentation/record_keeping.rego:5                         | | Eval msg = "Record-Keeping policy placeholder: This policy is not yet implemented."
+/home/...documentation/record_keeping.rego:4                         | | Exit data.international.eu_ai_act.v1.documentation.record_keeping.deny
+/home/...documentation/record_keeping.rego:4                         | Redo data.international.eu_ai_act.v1.documentation.record_keeping.deny
+/home/...documentation/record_keeping.rego:5                         | | Redo msg = "Record-Keeping policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.documentation.technical_documentation.deny (matched 1 rule)
+/home/...documentation/technical_documentation.rego:4                | Enter data.international.eu_ai_act.v1.documentation.technical_documentation.deny
+/home/...documentation/technical_documentation.rego:5                | | Eval msg = "Technical Documentation policy placeholder: This policy is not yet implemented."
+/home/...documentation/technical_documentation.rego:4                | | Exit data.international.eu_ai_act.v1.documentation.technical_documentation.deny
+/home/...documentation/technical_documentation.rego:4                | Redo data.international.eu_ai_act.v1.documentation.technical_documentation.deny
+/home/...documentation/technical_documentation.rego:5                | | Redo msg = "Technical Documentation policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.allow (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:29                             | Enter data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:30                             | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:30                             | | Enter data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:30                             | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:30                             | | | Index data.international.eu_ai_act.v1.eu_fairness.has_gender_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:30                             | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:31                             | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:31                             | | Enter data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:31                             | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:31                             | | | Index data.international.eu_ai_act.v1.eu_fairness.has_racial_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:31                             | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:32                             | | Eval data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:32                             | | Index data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:32                             | | Fail data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:26                             | Enter data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:26                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:26                             | | Exit data.international.eu_ai_act.v1.eu_fairness.allow early
+/home/...eu_fairness/eu_fairness.rego:26                             | Redo data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:26                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.compliance_report (matched 0 rules, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.fairness_threshold (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:21                             | Enter data.international.eu_ai_act.v1.eu_fairness.fairness_threshold
+/home/...eu_fairness/eu_fairness.rego:21                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:21                             | | Exit data.international.eu_ai_act.v1.eu_fairness.fairness_threshold early
+/home/...eu_fairness/eu_fairness.rego:21                             | Redo data.international.eu_ai_act.v1.eu_fairness.fairness_threshold
+/home/...eu_fairness/eu_fairness.rego:21                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.has_gender_bias (matched 0 rules, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.has_racial_bias (matched 0 rules, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.metadata (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:8                              | Enter data.international.eu_ai_act.v1.eu_fairness.metadata
+/home/...eu_fairness/eu_fairness.rego:8                              | | Eval true
+/home/...eu_fairness/eu_fairness.rego:8                              | | Exit data.international.eu_ai_act.v1.eu_fairness.metadata early
+/home/...eu_fairness/eu_fairness.rego:8                              | Redo data.international.eu_ai_act.v1.eu_fairness.metadata
+/home/...eu_fairness/eu_fairness.rego:8                              | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.reason (matched 5 rules)
+/home/...eu_fairness/eu_fairness.rego:94                             | Enter data.international.eu_ai_act.v1.eu_fairness.reason
+/home/...eu_fairness/eu_fairness.rego:95                             | | Eval data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:95                             | | Index data.international.eu_ai_act.v1.eu_fairness.allow (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:95                             | | Fail data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:98                             | Enter data.international.eu_ai_act.v1.eu_fairness.reason
+/home/...eu_fairness/eu_fairness.rego:99                             | | Eval data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:99                             | | Index data.international.eu_ai_act.v1.eu_fairness.has_gender_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:99                             | | Fail data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:102                            | Enter data.international.eu_ai_act.v1.eu_fairness.reason
+/home/...eu_fairness/eu_fairness.rego:103                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:103                            | | Enter data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:103                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:103                            | | | Index data.international.eu_ai_act.v1.eu_fairness.has_gender_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:103                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:104                            | | Eval data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:104                            | | Index data.international.eu_ai_act.v1.eu_fairness.has_racial_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:104                            | | Fail data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:107                            | Enter data.international.eu_ai_act.v1.eu_fairness.reason
+/home/...eu_fairness/eu_fairness.rego:108                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:108                            | | Enter data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:108                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:108                            | | | Index data.international.eu_ai_act.v1.eu_fairness.has_gender_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:108                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:109                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:109                            | | Enter data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:109                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:109                            | | | Index data.international.eu_ai_act.v1.eu_fairness.has_racial_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:109                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:110                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:110                            | | Enter data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:110                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:110                            | | | Index data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:110                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:107                            | | Eval __local250__ = data.international.eu_ai_act.v1.eu_fairness.reason_toxicity
+/home/...eu_fairness/eu_fairness.rego:107                            | | Index data.international.eu_ai_act.v1.eu_fairness.reason_toxicity (matched 1 rule)
+/home/...eu_fairness/eu_fairness.rego:65                             | | Enter data.international.eu_ai_act.v1.eu_fairness.reason_toxicity
+/home/...eu_fairness/eu_fairness.rego:65                             | | | Eval true
+/home/...eu_fairness/eu_fairness.rego:65                             | | | Eval concat(" ", ["The system's content has toxicity levels above acceptable thresholds", "which violates EU AI Act fairness requirements"], __local172__)
+/home/...eu_fairness/eu_fairness.rego:65                             | | | Exit data.international.eu_ai_act.v1.eu_fairness.reason_toxicity
+/home/...eu_fairness/eu_fairness.rego:107                            | | Exit data.international.eu_ai_act.v1.eu_fairness.reason
+/home/...eu_fairness/eu_fairness.rego:107                            | Redo data.international.eu_ai_act.v1.eu_fairness.reason
+/home/...eu_fairness/eu_fairness.rego:107                            | | Redo __local250__ = data.international.eu_ai_act.v1.eu_fairness.reason_toxicity
+/home/...eu_fairness/eu_fairness.rego:65                             | | Redo data.international.eu_ai_act.v1.eu_fairness.reason_toxicity
+/home/...eu_fairness/eu_fairness.rego:65                             | | | Redo concat(" ", ["The system's content has toxicity levels above acceptable thresholds", "which violates EU AI Act fairness requirements"], __local172__)
+/home/...eu_fairness/eu_fairness.rego:65                             | | | Redo true
+/home/...eu_fairness/eu_fairness.rego:113                            | Enter data.international.eu_ai_act.v1.eu_fairness.reason
+/home/...eu_fairness/eu_fairness.rego:114                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:114                            | | Enter data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:114                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:114                            | | | Index data.international.eu_ai_act.v1.eu_fairness.allow (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:114                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:115                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:115                            | | Enter data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:115                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:115                            | | | Index data.international.eu_ai_act.v1.eu_fairness.has_gender_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:115                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:116                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:116                            | | Enter data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:116                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:116                            | | | Index data.international.eu_ai_act.v1.eu_fairness.has_racial_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:116                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:117                            | | Eval data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:117                            | | Index data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:117                            | | Fail data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.reason_compliant (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:59                             | Enter data.international.eu_ai_act.v1.eu_fairness.reason_compliant
+/home/...eu_fairness/eu_fairness.rego:59                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:59                             | | Exit data.international.eu_ai_act.v1.eu_fairness.reason_compliant early
+/home/...eu_fairness/eu_fairness.rego:59                             | Redo data.international.eu_ai_act.v1.eu_fairness.reason_compliant
+/home/...eu_fairness/eu_fairness.rego:59                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.reason_gender_bias (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:61                             | Enter data.international.eu_ai_act.v1.eu_fairness.reason_gender_bias
+/home/...eu_fairness/eu_fairness.rego:61                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:61                             | | Exit data.international.eu_ai_act.v1.eu_fairness.reason_gender_bias early
+/home/...eu_fairness/eu_fairness.rego:61                             | Redo data.international.eu_ai_act.v1.eu_fairness.reason_gender_bias
+/home/...eu_fairness/eu_fairness.rego:61                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.reason_racial_bias (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:63                             | Enter data.international.eu_ai_act.v1.eu_fairness.reason_racial_bias
+/home/...eu_fairness/eu_fairness.rego:63                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:63                             | | Exit data.international.eu_ai_act.v1.eu_fairness.reason_racial_bias early
+/home/...eu_fairness/eu_fairness.rego:63                             | Redo data.international.eu_ai_act.v1.eu_fairness.reason_racial_bias
+/home/...eu_fairness/eu_fairness.rego:63                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.reason_toxicity (matched 1 rule)
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.reason_unknown (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:70                             | Enter data.international.eu_ai_act.v1.eu_fairness.reason_unknown
+/home/...eu_fairness/eu_fairness.rego:70                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:70                             | | Exit data.international.eu_ai_act.v1.eu_fairness.reason_unknown early
+/home/...eu_fairness/eu_fairness.rego:70                             | Redo data.international.eu_ai_act.v1.eu_fairness.reason_unknown
+/home/...eu_fairness/eu_fairness.rego:70                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.rec_gender_bias (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:73                             | Enter data.international.eu_ai_act.v1.eu_fairness.rec_gender_bias
+/home/...eu_fairness/eu_fairness.rego:73                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:73                             | | Exit data.international.eu_ai_act.v1.eu_fairness.rec_gender_bias early
+/home/...eu_fairness/eu_fairness.rego:73                             | Redo data.international.eu_ai_act.v1.eu_fairness.rec_gender_bias
+/home/...eu_fairness/eu_fairness.rego:73                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.rec_racial_bias (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:75                             | Enter data.international.eu_ai_act.v1.eu_fairness.rec_racial_bias
+/home/...eu_fairness/eu_fairness.rego:75                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:75                             | | Exit data.international.eu_ai_act.v1.eu_fairness.rec_racial_bias early
+/home/...eu_fairness/eu_fairness.rego:75                             | Redo data.international.eu_ai_act.v1.eu_fairness.rec_racial_bias
+/home/...eu_fairness/eu_fairness.rego:75                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.rec_toxicity (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:77                             | Enter data.international.eu_ai_act.v1.eu_fairness.rec_toxicity
+/home/...eu_fairness/eu_fairness.rego:77                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:77                             | | Exit data.international.eu_ai_act.v1.eu_fairness.rec_toxicity early
+/home/...eu_fairness/eu_fairness.rego:77                             | Redo data.international.eu_ai_act.v1.eu_fairness.rec_toxicity
+/home/...eu_fairness/eu_fairness.rego:77                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.rec_unknown (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:79                             | Enter data.international.eu_ai_act.v1.eu_fairness.rec_unknown
+/home/...eu_fairness/eu_fairness.rego:79                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:79                             | | Exit data.international.eu_ai_act.v1.eu_fairness.rec_unknown early
+/home/...eu_fairness/eu_fairness.rego:79                             | Redo data.international.eu_ai_act.v1.eu_fairness.rec_unknown
+/home/...eu_fairness/eu_fairness.rego:79                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.recommendations (matched 5 rules)
+/home/...eu_fairness/eu_fairness.rego:121                            | Enter data.international.eu_ai_act.v1.eu_fairness.recommendations
+/home/...eu_fairness/eu_fairness.rego:122                            | | Eval data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:122                            | | Index data.international.eu_ai_act.v1.eu_fairness.allow (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:122                            | | Fail data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:125                            | Enter data.international.eu_ai_act.v1.eu_fairness.recommendations
+/home/...eu_fairness/eu_fairness.rego:126                            | | Eval data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:126                            | | Index data.international.eu_ai_act.v1.eu_fairness.has_gender_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:126                            | | Fail data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:129                            | Enter data.international.eu_ai_act.v1.eu_fairness.recommendations
+/home/...eu_fairness/eu_fairness.rego:130                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:130                            | | Enter data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:130                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:130                            | | | Index data.international.eu_ai_act.v1.eu_fairness.has_gender_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:130                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:131                            | | Eval data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:131                            | | Index data.international.eu_ai_act.v1.eu_fairness.has_racial_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:131                            | | Fail data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:134                            | Enter data.international.eu_ai_act.v1.eu_fairness.recommendations
+/home/...eu_fairness/eu_fairness.rego:135                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:135                            | | Enter data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:135                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:135                            | | | Index data.international.eu_ai_act.v1.eu_fairness.has_gender_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:135                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:136                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:136                            | | Enter data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:136                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:136                            | | | Index data.international.eu_ai_act.v1.eu_fairness.has_racial_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:136                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:137                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:137                            | | Enter data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:137                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:137                            | | | Index data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:137                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:134                            | | Eval __local254__ = data.international.eu_ai_act.v1.eu_fairness.rec_toxicity
+/home/...eu_fairness/eu_fairness.rego:134                            | | Index data.international.eu_ai_act.v1.eu_fairness.rec_toxicity (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:134                            | | Exit data.international.eu_ai_act.v1.eu_fairness.recommendations
+/home/...eu_fairness/eu_fairness.rego:134                            | Redo data.international.eu_ai_act.v1.eu_fairness.recommendations
+/home/...eu_fairness/eu_fairness.rego:134                            | | Redo __local254__ = data.international.eu_ai_act.v1.eu_fairness.rec_toxicity
+/home/...eu_fairness/eu_fairness.rego:140                            | Enter data.international.eu_ai_act.v1.eu_fairness.recommendations
+/home/...eu_fairness/eu_fairness.rego:141                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:141                            | | Enter data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:141                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:141                            | | | Index data.international.eu_ai_act.v1.eu_fairness.allow (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:141                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.allow
+/home/...eu_fairness/eu_fairness.rego:142                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:142                            | | Enter data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:142                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:142                            | | | Index data.international.eu_ai_act.v1.eu_fairness.has_gender_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:142                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_gender_bias
+/home/...eu_fairness/eu_fairness.rego:143                            | | Eval not data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:143                            | | Enter data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:143                            | | | Eval data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:143                            | | | Index data.international.eu_ai_act.v1.eu_fairness.has_racial_bias (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:143                            | | | Fail data.international.eu_ai_act.v1.eu_fairness.has_racial_bias
+/home/...eu_fairness/eu_fairness.rego:144                            | | Eval data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+/home/...eu_fairness/eu_fairness.rego:144                            | | Index data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold (matched 0 rules, early exit)
+/home/...eu_fairness/eu_fairness.rego:144                            | | Fail data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.toxicity_below_threshold (matched 0 rules, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.eu_fairness.toxicity_threshold (matched 1 rule, early exit)
+/home/...eu_fairness/eu_fairness.rego:23                             | Enter data.international.eu_ai_act.v1.eu_fairness.toxicity_threshold
+/home/...eu_fairness/eu_fairness.rego:23                             | | Eval true
+/home/...eu_fairness/eu_fairness.rego:23                             | | Exit data.international.eu_ai_act.v1.eu_fairness.toxicity_threshold early
+/home/...eu_fairness/eu_fairness.rego:23                             | Redo data.international.eu_ai_act.v1.eu_fairness.toxicity_threshold
+/home/...eu_fairness/eu_fairness.rego:23                             | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.gpai.downstream_transparency.deny (matched 1 rule)
+/home/...gpai/downstream_transparency.rego:4                         | Enter data.international.eu_ai_act.v1.gpai.downstream_transparency.deny
+/home/...gpai/downstream_transparency.rego:5                         | | Eval msg = "GPAI Downstream Transparency policy placeholder: This policy is not yet implemented."
+/home/...gpai/downstream_transparency.rego:4                         | | Exit data.international.eu_ai_act.v1.gpai.downstream_transparency.deny
+/home/...gpai/downstream_transparency.rego:4                         | Redo data.international.eu_ai_act.v1.gpai.downstream_transparency.deny
+/home/...gpai/downstream_transparency.rego:5                         | | Redo msg = "GPAI Downstream Transparency policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.gpai.systemic_risk_classification.deny (matched 1 rule)
+/home/...gpai/systemic_risk_classification.rego:4                    | Enter data.international.eu_ai_act.v1.gpai.systemic_risk_classification.deny
+/home/...gpai/systemic_risk_classification.rego:5                    | | Eval msg = "GPAI Systemic Risk Classification policy placeholder: This policy is not yet implemented."
+/home/...gpai/systemic_risk_classification.rego:4                    | | Exit data.international.eu_ai_act.v1.gpai.systemic_risk_classification.deny
+/home/...gpai/systemic_risk_classification.rego:4                    | Redo data.international.eu_ai_act.v1.gpai.systemic_risk_classification.deny
+/home/...gpai/systemic_risk_classification.rego:5                    | | Redo msg = "GPAI Systemic Risk Classification policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.gpai.technical_documentation.deny (matched 1 rule)
+/home/...gpai/technical_documentation.rego:4                         | Enter data.international.eu_ai_act.v1.gpai.technical_documentation.deny
+/home/...gpai/technical_documentation.rego:5                         | | Eval msg = "GPAI Technical Documentation policy placeholder: This policy is not yet implemented."
+/home/...gpai/technical_documentation.rego:4                         | | Exit data.international.eu_ai_act.v1.gpai.technical_documentation.deny
+/home/...gpai/technical_documentation.rego:4                         | Redo data.international.eu_ai_act.v1.gpai.technical_documentation.deny
+/home/...gpai/technical_documentation.rego:5                         | | Redo msg = "GPAI Technical Documentation policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.human_oversight.human_oversight.deny (matched 1 rule)
+/home/...human_oversight/human_oversight.rego:4                      | Enter data.international.eu_ai_act.v1.human_oversight.human_oversight.deny
+/home/...human_oversight/human_oversight.rego:5                      | | Eval msg = "Human Oversight policy placeholder: This policy is not yet implemented."
+/home/...human_oversight/human_oversight.rego:4                      | | Exit data.international.eu_ai_act.v1.human_oversight.human_oversight.deny
+/home/...human_oversight/human_oversight.rego:4                      | Redo data.international.eu_ai_act.v1.human_oversight.human_oversight.deny
+/home/...human_oversight/human_oversight.rego:5                      | | Redo msg = "Human Oversight policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.obligations.deployer_obligations.deny (matched 1 rule)
+/home/...obligations/deployer_obligations.rego:4                     | Enter data.international.eu_ai_act.v1.obligations.deployer_obligations.deny
+/home/...obligations/deployer_obligations.rego:5                     | | Eval msg = "Deployer Obligations policy placeholder: This policy is not yet implemented."
+/home/...obligations/deployer_obligations.rego:4                     | | Exit data.international.eu_ai_act.v1.obligations.deployer_obligations.deny
+/home/...obligations/deployer_obligations.rego:4                     | Redo data.international.eu_ai_act.v1.obligations.deployer_obligations.deny
+/home/...obligations/deployer_obligations.rego:5                     | | Redo msg = "Deployer Obligations policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.obligations.distributor_obligations.deny (matched 1 rule)
+/home/...obligations/distributor_obligations.rego:4                  | Enter data.international.eu_ai_act.v1.obligations.distributor_obligations.deny
+/home/...obligations/distributor_obligations.rego:5                  | | Eval msg = "Distributor Obligations policy placeholder: This policy is not yet implemented."
+/home/...obligations/distributor_obligations.rego:4                  | | Exit data.international.eu_ai_act.v1.obligations.distributor_obligations.deny
+/home/...obligations/distributor_obligations.rego:4                  | Redo data.international.eu_ai_act.v1.obligations.distributor_obligations.deny
+/home/...obligations/distributor_obligations.rego:5                  | | Redo msg = "Distributor Obligations policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.obligations.importer_obligations.deny (matched 1 rule)
+/home/...obligations/importer_obligations.rego:4                     | Enter data.international.eu_ai_act.v1.obligations.importer_obligations.deny
+/home/...obligations/importer_obligations.rego:5                     | | Eval msg = "Importer Obligations policy placeholder: This policy is not yet implemented."
+/home/...obligations/importer_obligations.rego:4                     | | Exit data.international.eu_ai_act.v1.obligations.importer_obligations.deny
+/home/...obligations/importer_obligations.rego:4                     | Redo data.international.eu_ai_act.v1.obligations.importer_obligations.deny
+/home/...obligations/importer_obligations.rego:5                     | | Redo msg = "Importer Obligations policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.obligations.provider_obligations.deny (matched 1 rule)
+/home/...obligations/provider_obligations.rego:4                     | Enter data.international.eu_ai_act.v1.obligations.provider_obligations.deny
+/home/...obligations/provider_obligations.rego:5                     | | Eval msg = "Provider Obligations policy placeholder: This policy is not yet implemented."
+/home/...obligations/provider_obligations.rego:4                     | | Exit data.international.eu_ai_act.v1.obligations.provider_obligations.deny
+/home/...obligations/provider_obligations.rego:4                     | Redo data.international.eu_ai_act.v1.obligations.provider_obligations.deny
+/home/...obligations/provider_obligations.rego:5                     | | Redo msg = "Provider Obligations policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.biometric_categorization.deny (matched 1 rule)
+/home/...prohibited_practices/biometric_categorization.rego:4        | Enter data.international.eu_ai_act.v1.prohibited_practices.biometric_categorization.deny
+/home/...prohibited_practices/biometric_categorization.rego:5        | | Eval msg = "Biometric Categorization policy placeholder: This policy is not yet implemented."
+/home/...prohibited_practices/biometric_categorization.rego:4        | | Exit data.international.eu_ai_act.v1.prohibited_practices.biometric_categorization.deny
+/home/...prohibited_practices/biometric_categorization.rego:4        | Redo data.international.eu_ai_act.v1.prohibited_practices.biometric_categorization.deny
+/home/...prohibited_practices/biometric_categorization.rego:5        | | Redo msg = "Biometric Categorization policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.biometric_identification.deny (matched 1 rule)
+/home/...prohibited_practices/biometric_identification.rego:4        | Enter data.international.eu_ai_act.v1.prohibited_practices.biometric_identification.deny
+/home/...prohibited_practices/biometric_identification.rego:5        | | Eval msg = "Biometric Identification policy placeholder: This policy is not yet implemented."
+/home/...prohibited_practices/biometric_identification.rego:4        | | Exit data.international.eu_ai_act.v1.prohibited_practices.biometric_identification.deny
+/home/...prohibited_practices/biometric_identification.rego:4        | Redo data.international.eu_ai_act.v1.prohibited_practices.biometric_identification.deny
+/home/...prohibited_practices/biometric_identification.rego:5        | | Redo msg = "Biometric Identification policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.criminal_profiling.deny (matched 1 rule)
+/home/...prohibited_practices/criminal_profiling.rego:4              | Enter data.international.eu_ai_act.v1.prohibited_practices.criminal_profiling.deny
+/home/...prohibited_practices/criminal_profiling.rego:5              | | Eval msg = "Criminal Profiling policy placeholder: This policy is not yet implemented."
+/home/...prohibited_practices/criminal_profiling.rego:4              | | Exit data.international.eu_ai_act.v1.prohibited_practices.criminal_profiling.deny
+/home/...prohibited_practices/criminal_profiling.rego:4              | Redo data.international.eu_ai_act.v1.prohibited_practices.criminal_profiling.deny
+/home/...prohibited_practices/criminal_profiling.rego:5              | | Redo msg = "Criminal Profiling policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.emotion_recognition.deny (matched 1 rule)
+/home/...prohibited_practices/emotion_recognition.rego:4             | Enter data.international.eu_ai_act.v1.prohibited_practices.emotion_recognition.deny
+/home/...prohibited_practices/emotion_recognition.rego:5             | | Eval msg = "Emotion Recognition policy placeholder: This policy is not yet implemented."
+/home/...prohibited_practices/emotion_recognition.rego:4             | | Exit data.international.eu_ai_act.v1.prohibited_practices.emotion_recognition.deny
+/home/...prohibited_practices/emotion_recognition.rego:4             | Redo data.international.eu_ai_act.v1.prohibited_practices.emotion_recognition.deny
+/home/...prohibited_practices/emotion_recognition.rego:5             | | Redo msg = "Emotion Recognition policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.facial_recognition_scraping.deny (matched 1 rule)
+/home/...prohibited_practices/facial_recognition_scraping.rego:4     | Enter data.international.eu_ai_act.v1.prohibited_practices.facial_recognition_scraping.deny
+/home/...prohibited_practices/facial_recognition_scraping.rego:5     | | Eval msg = "Facial Recognition Scraping policy placeholder: This policy is not yet implemented."
+/home/...prohibited_practices/facial_recognition_scraping.rego:4     | | Exit data.international.eu_ai_act.v1.prohibited_practices.facial_recognition_scraping.deny
+/home/...prohibited_practices/facial_recognition_scraping.rego:4     | Redo data.international.eu_ai_act.v1.prohibited_practices.facial_recognition_scraping.deny
+/home/...prohibited_practices/facial_recognition_scraping.rego:5     | | Redo msg = "Facial Recognition Scraping policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.manipulation.allow (matched 0 rules, early exit)
+/home/...prohibited_practices/manipulation.rego:20                   | Enter data.international.eu_ai_act.v1.prohibited_practices.manipulation.allow
+/home/...prohibited_practices/manipulation.rego:20                   | | Eval true
+/home/...prohibited_practices/manipulation.rego:20                   | | Exit data.international.eu_ai_act.v1.prohibited_practices.manipulation.allow early
+/home/...prohibited_practices/manipulation.rego:20                   | Redo data.international.eu_ai_act.v1.prohibited_practices.manipulation.allow
+/home/...prohibited_practices/manipulation.rego:20                   | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.manipulation.compliance_report (matched 1 rule)
+/home/...prohibited_practices/manipulation.rego:28                   | Enter data.international.eu_ai_act.v1.prohibited_practices.manipulation.compliance_report
+/home/...prohibited_practices/manipulation.rego:28                   | | Eval true
+/home/...prohibited_practices/manipulation.rego:34                   | | Eval concat(" ", ["This policy evaluates compliance with EU AI Act Article 5(1)(a), which prohibits", "AI systems that deploy subliminal techniques beyond a person's consciousness or", "purposefully manipulative or deceptive techniques, with the objective or effect of", "materially distorting the behavior of a person or group of persons.", "This is a placeholder that will be replaced with actual compliance checks in a future release."], __local175__)
+/home/...prohibited_practices/manipulation.rego:28                   | | Exit data.international.eu_ai_act.v1.prohibited_practices.manipulation.compliance_report
+/home/...prohibited_practices/manipulation.rego:28                   | Redo data.international.eu_ai_act.v1.prohibited_practices.manipulation.compliance_report
+/home/...prohibited_practices/manipulation.rego:34                   | | Redo concat(" ", ["This policy evaluates compliance with EU AI Act Article 5(1)(a), which prohibits", "AI systems that deploy subliminal techniques beyond a person's consciousness or", "purposefully manipulative or deceptive techniques, with the objective or effect of", "materially distorting the behavior of a person or group of persons.", "This is a placeholder that will be replaced with actual compliance checks in a future release."], __local175__)
+/home/...prohibited_practices/manipulation.rego:28                   | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.manipulation.implementation_pending (matched 1 rule, early exit)
+/home/...prohibited_practices/manipulation.rego:25                   | Enter data.international.eu_ai_act.v1.prohibited_practices.manipulation.implementation_pending
+/home/...prohibited_practices/manipulation.rego:25                   | | Eval true
+/home/...prohibited_practices/manipulation.rego:25                   | | Exit data.international.eu_ai_act.v1.prohibited_practices.manipulation.implementation_pending early
+/home/...prohibited_practices/manipulation.rego:25                   | Redo data.international.eu_ai_act.v1.prohibited_practices.manipulation.implementation_pending
+/home/...prohibited_practices/manipulation.rego:25                   | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.manipulation.metadata (matched 1 rule, early exit)
+/home/...prohibited_practices/manipulation.rego:6                    | Enter data.international.eu_ai_act.v1.prohibited_practices.manipulation.metadata
+/home/...prohibited_practices/manipulation.rego:6                    | | Eval true
+/home/...prohibited_practices/manipulation.rego:6                    | | Exit data.international.eu_ai_act.v1.prohibited_practices.manipulation.metadata early
+/home/...prohibited_practices/manipulation.rego:6                    | Redo data.international.eu_ai_act.v1.prohibited_practices.manipulation.metadata
+/home/...prohibited_practices/manipulation.rego:6                    | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.manipulation.non_compliant (matched 1 rule, early exit)
+/home/...prohibited_practices/manipulation.rego:23                   | Enter data.international.eu_ai_act.v1.prohibited_practices.manipulation.non_compliant
+/home/...prohibited_practices/manipulation.rego:23                   | | Eval true
+/home/...prohibited_practices/manipulation.rego:23                   | | Exit data.international.eu_ai_act.v1.prohibited_practices.manipulation.non_compliant early
+/home/...prohibited_practices/manipulation.rego:23                   | Redo data.international.eu_ai_act.v1.prohibited_practices.manipulation.non_compliant
+/home/...prohibited_practices/manipulation.rego:23                   | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.social_scoring.deny (matched 1 rule)
+/home/...prohibited_practices/social_scoring.rego:4                  | Enter data.international.eu_ai_act.v1.prohibited_practices.social_scoring.deny
+/home/...prohibited_practices/social_scoring.rego:5                  | | Eval msg = "Social Scoring policy placeholder: This policy is not yet implemented."
+/home/...prohibited_practices/social_scoring.rego:4                  | | Exit data.international.eu_ai_act.v1.prohibited_practices.social_scoring.deny
+/home/...prohibited_practices/social_scoring.rego:4                  | Redo data.international.eu_ai_act.v1.prohibited_practices.social_scoring.deny
+/home/...prohibited_practices/social_scoring.rego:5                  | | Redo msg = "Social Scoring policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.prohibited_practices.vulnerability_exploitation.deny (matched 1 rule)
+/home/...prohibited_practices/vulnerability_exploitation.rego:5      | Enter data.international.eu_ai_act.v1.prohibited_practices.vulnerability_exploitation.deny
+/home/...prohibited_practices/vulnerability_exploitation.rego:6      | | Eval msg = "Vulnerability exploitation policy placeholder: This policy is not yet implemented."
+/home/...prohibited_practices/vulnerability_exploitation.rego:5      | | Exit data.international.eu_ai_act.v1.prohibited_practices.vulnerability_exploitation.deny
+/home/...prohibited_practices/vulnerability_exploitation.rego:5      | Redo data.international.eu_ai_act.v1.prohibited_practices.vulnerability_exploitation.deny
+/home/...prohibited_practices/vulnerability_exploitation.rego:6      | | Redo msg = "Vulnerability exploitation policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.allow (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:22                     | Enter data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:23                     | | Eval data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:23                     | | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:29                     | | Enter data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:30                     | | | Eval input.risk_management
+/home/...risk_management/risk_management.rego:30                     | | | Fail input.risk_management
+/home/...risk_management/risk_management.rego:23                     | | Fail data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:19                     | Enter data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:19                     | | Eval true
+/home/...risk_management/risk_management.rego:19                     | | Exit data.international.eu_ai_act.v1.risk_management.allow early
+/home/...risk_management/risk_management.rego:19                     | Redo data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:19                     | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.completeness_sufficient (matched 0 rules, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.compliance_report (matched 1 rule)
+/home/...risk_management/risk_management.rego:95                     | Enter data.international.eu_ai_act.v1.risk_management.compliance_report
+/home/...risk_management/risk_management.rego:95                     | | Eval true
+/home/...risk_management/risk_management.rego:97                     | | Eval __local414__ = data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:97                     | | Index data.international.eu_ai_act.v1.risk_management.allow (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:100                    | | Eval __local415__ = data.international.eu_ai_act.v1.risk_management.system_details
+/home/...risk_management/risk_management.rego:100                    | | Index data.international.eu_ai_act.v1.risk_management.system_details (matched 1 rule)
+/home/...risk_management/risk_management.rego:84                     | | Enter data.international.eu_ai_act.v1.risk_management.system_details
+/home/...risk_management/risk_management.rego:84                     | | | Eval true
+/home/...risk_management/risk_management.rego:88                     | | | Eval __local409__ = input
+/home/...risk_management/risk_management.rego:88                     | | | Eval object.get(__local409__, ["risk_management", "mitigation_measures", "completeness"], 0, __local182__)
+/home/...risk_management/risk_management.rego:89                     | | | Eval __local410__ = input
+/home/...risk_management/risk_management.rego:89                     | | | Eval object.get(__local410__, ["risk_management", "monitoring_system", "completeness"], 0, __local183__)
+/home/...risk_management/risk_management.rego:87                     | | | Eval __local411__ = input
+/home/...risk_management/risk_management.rego:87                     | | | Eval object.get(__local411__, ["risk_management", "risk_assessment", "completeness"], 0, __local184__)
+/home/...risk_management/risk_management.rego:91                     | | | Eval __local412__ = input
+/home/...risk_management/risk_management.rego:91                     | | | Eval object.get(__local412__, ["risk_management", "risk_assessment", "overall_risk"], 1, __local185__)
+/home/...risk_management/risk_management.rego:85                     | | | Eval __local413__ = data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:85                     | | | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:85                     | | | Fail __local413__ = data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:91                     | | | Redo object.get(__local412__, ["risk_management", "risk_assessment", "overall_risk"], 1, __local185__)
+/home/...risk_management/risk_management.rego:91                     | | | Redo __local412__ = input
+/home/...risk_management/risk_management.rego:87                     | | | Redo object.get(__local411__, ["risk_management", "risk_assessment", "completeness"], 0, __local184__)
+/home/...risk_management/risk_management.rego:87                     | | | Redo __local411__ = input
+/home/...risk_management/risk_management.rego:89                     | | | Redo object.get(__local410__, ["risk_management", "monitoring_system", "completeness"], 0, __local183__)
+/home/...risk_management/risk_management.rego:89                     | | | Redo __local410__ = input
+/home/...risk_management/risk_management.rego:88                     | | | Redo object.get(__local409__, ["risk_management", "mitigation_measures", "completeness"], 0, __local182__)
+/home/...risk_management/risk_management.rego:88                     | | | Redo __local409__ = input
+/home/...risk_management/risk_management.rego:84                     | | | Redo true
+/home/...risk_management/risk_management.rego:100                    | | Fail __local415__ = data.international.eu_ai_act.v1.risk_management.system_details
+/home/...risk_management/risk_management.rego:97                     | | Redo __local414__ = data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:95                     | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.has_high_risk_level (matched 0 rules, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.metadata (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:6                      | Enter data.international.eu_ai_act.v1.risk_management.metadata
+/home/...risk_management/risk_management.rego:6                      | | Eval true
+/home/...risk_management/risk_management.rego:6                      | | Exit data.international.eu_ai_act.v1.risk_management.metadata early
+/home/...risk_management/risk_management.rego:6                      | Redo data.international.eu_ai_act.v1.risk_management.metadata
+/home/...risk_management/risk_management.rego:6                      | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.reason (matched 5 rules)
+/home/...risk_management/risk_management.rego:104                    | Enter data.international.eu_ai_act.v1.risk_management.reason
+/home/...risk_management/risk_management.rego:105                    | | Eval data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:105                    | | Index data.international.eu_ai_act.v1.risk_management.allow (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:105                    | | Fail data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:108                    | Enter data.international.eu_ai_act.v1.risk_management.reason
+/home/...risk_management/risk_management.rego:109                    | | Eval not data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:109                    | | Enter data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:109                    | | | Eval data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:109                    | | | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:109                    | | | Fail data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:108                    | | Eval __local259__ = data.international.eu_ai_act.v1.risk_management.reason_no_system
+/home/...risk_management/risk_management.rego:108                    | | Index data.international.eu_ai_act.v1.risk_management.reason_no_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:51                     | | Enter data.international.eu_ai_act.v1.risk_management.reason_no_system
+/home/...risk_management/risk_management.rego:51                     | | | Eval true
+/home/...risk_management/risk_management.rego:51                     | | | Exit data.international.eu_ai_act.v1.risk_management.reason_no_system early
+/home/...risk_management/risk_management.rego:108                    | | Exit data.international.eu_ai_act.v1.risk_management.reason
+/home/...risk_management/risk_management.rego:108                    | Redo data.international.eu_ai_act.v1.risk_management.reason
+/home/...risk_management/risk_management.rego:108                    | | Redo __local259__ = data.international.eu_ai_act.v1.risk_management.reason_no_system
+/home/...risk_management/risk_management.rego:51                     | | Redo data.international.eu_ai_act.v1.risk_management.reason_no_system
+/home/...risk_management/risk_management.rego:51                     | | | Redo true
+/home/...risk_management/risk_management.rego:112                    | Enter data.international.eu_ai_act.v1.risk_management.reason
+/home/...risk_management/risk_management.rego:113                    | | Eval data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:113                    | | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:113                    | | Fail data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:117                    | Enter data.international.eu_ai_act.v1.risk_management.reason
+/home/...risk_management/risk_management.rego:118                    | | Eval data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:118                    | | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:118                    | | Fail data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:123                    | Enter data.international.eu_ai_act.v1.risk_management.reason
+/home/...risk_management/risk_management.rego:124                    | | Eval not data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:124                    | | Enter data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:124                    | | | Eval data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:124                    | | | Index data.international.eu_ai_act.v1.risk_management.allow (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:124                    | | | Fail data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:125                    | | Eval data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:125                    | | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:125                    | | Fail data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.reason_compliant (matched 1 rule)
+/home/...risk_management/risk_management.rego:46                     | Enter data.international.eu_ai_act.v1.risk_management.reason_compliant
+/home/...risk_management/risk_management.rego:46                     | | Eval true
+/home/...risk_management/risk_management.rego:46                     | | Eval concat(" ", ["The system meets EU AI Act risk management requirements with sufficient", "risk assessment and mitigation measures"], __local176__)
+/home/...risk_management/risk_management.rego:46                     | | Exit data.international.eu_ai_act.v1.risk_management.reason_compliant
+/home/...risk_management/risk_management.rego:46                     | Redo data.international.eu_ai_act.v1.risk_management.reason_compliant
+/home/...risk_management/risk_management.rego:46                     | | Redo concat(" ", ["The system meets EU AI Act risk management requirements with sufficient", "risk assessment and mitigation measures"], __local176__)
+/home/...risk_management/risk_management.rego:46                     | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.reason_high_risk (matched 1 rule)
+/home/...risk_management/risk_management.rego:58                     | Enter data.international.eu_ai_act.v1.risk_management.reason_high_risk
+/home/...risk_management/risk_management.rego:58                     | | Eval true
+/home/...risk_management/risk_management.rego:58                     | | Eval concat(" ", ["The system has a high risk level which requires additional controls", "under the EU AI Act"], __local178__)
+/home/...risk_management/risk_management.rego:58                     | | Exit data.international.eu_ai_act.v1.risk_management.reason_high_risk
+/home/...risk_management/risk_management.rego:58                     | Redo data.international.eu_ai_act.v1.risk_management.reason_high_risk
+/home/...risk_management/risk_management.rego:58                     | | Redo concat(" ", ["The system has a high risk level which requires additional controls", "under the EU AI Act"], __local178__)
+/home/...risk_management/risk_management.rego:58                     | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.reason_incomplete (matched 1 rule)
+/home/...risk_management/risk_management.rego:53                     | Enter data.international.eu_ai_act.v1.risk_management.reason_incomplete
+/home/...risk_management/risk_management.rego:53                     | | Eval true
+/home/...risk_management/risk_management.rego:53                     | | Eval concat(" ", ["The system's risk management is not sufficiently complete to meet", "EU AI Act requirements"], __local177__)
+/home/...risk_management/risk_management.rego:53                     | | Exit data.international.eu_ai_act.v1.risk_management.reason_incomplete
+/home/...risk_management/risk_management.rego:53                     | Redo data.international.eu_ai_act.v1.risk_management.reason_incomplete
+/home/...risk_management/risk_management.rego:53                     | | Redo concat(" ", ["The system's risk management is not sufficiently complete to meet", "EU AI Act requirements"], __local177__)
+/home/...risk_management/risk_management.rego:53                     | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.reason_no_system (matched 1 rule, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.reason_unknown (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:63                     | Enter data.international.eu_ai_act.v1.risk_management.reason_unknown
+/home/...risk_management/risk_management.rego:63                     | | Eval true
+/home/...risk_management/risk_management.rego:63                     | | Exit data.international.eu_ai_act.v1.risk_management.reason_unknown early
+/home/...risk_management/risk_management.rego:63                     | Redo data.international.eu_ai_act.v1.risk_management.reason_unknown
+/home/...risk_management/risk_management.rego:63                     | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.rec_high_risk (matched 1 rule)
+/home/...risk_management/risk_management.rego:76                     | Enter data.international.eu_ai_act.v1.risk_management.rec_high_risk
+/home/...risk_management/risk_management.rego:76                     | | Eval true
+/home/...risk_management/risk_management.rego:76                     | | Eval concat(" ", ["Implement additional controls and safeguards to reduce", "the overall risk level of the system"], __local181__)
+/home/...risk_management/risk_management.rego:76                     | | Exit data.international.eu_ai_act.v1.risk_management.rec_high_risk
+/home/...risk_management/risk_management.rego:76                     | Redo data.international.eu_ai_act.v1.risk_management.rec_high_risk
+/home/...risk_management/risk_management.rego:76                     | | Redo concat(" ", ["Implement additional controls and safeguards to reduce", "the overall risk level of the system"], __local181__)
+/home/...risk_management/risk_management.rego:76                     | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.rec_incomplete (matched 1 rule)
+/home/...risk_management/risk_management.rego:71                     | Enter data.international.eu_ai_act.v1.risk_management.rec_incomplete
+/home/...risk_management/risk_management.rego:71                     | | Eval true
+/home/...risk_management/risk_management.rego:71                     | | Eval concat(" ", ["Improve the completeness of risk assessment, mitigation measures,", "and monitoring system documentation"], __local180__)
+/home/...risk_management/risk_management.rego:71                     | | Exit data.international.eu_ai_act.v1.risk_management.rec_incomplete
+/home/...risk_management/risk_management.rego:71                     | Redo data.international.eu_ai_act.v1.risk_management.rec_incomplete
+/home/...risk_management/risk_management.rego:71                     | | Redo concat(" ", ["Improve the completeness of risk assessment, mitigation measures,", "and monitoring system documentation"], __local180__)
+/home/...risk_management/risk_management.rego:71                     | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.rec_no_system (matched 1 rule)
+/home/...risk_management/risk_management.rego:66                     | Enter data.international.eu_ai_act.v1.risk_management.rec_no_system
+/home/...risk_management/risk_management.rego:66                     | | Eval true
+/home/...risk_management/risk_management.rego:66                     | | Eval concat(" ", ["Implement a comprehensive risk management system that includes risk assessment,", "mitigation measures, and monitoring"], __local179__)
+/home/...risk_management/risk_management.rego:66                     | | Exit data.international.eu_ai_act.v1.risk_management.rec_no_system
+/home/...risk_management/risk_management.rego:66                     | Redo data.international.eu_ai_act.v1.risk_management.rec_no_system
+/home/...risk_management/risk_management.rego:66                     | | Redo concat(" ", ["Implement a comprehensive risk management system that includes risk assessment,", "mitigation measures, and monitoring"], __local179__)
+/home/...risk_management/risk_management.rego:66                     | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.rec_unknown (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:81                     | Enter data.international.eu_ai_act.v1.risk_management.rec_unknown
+/home/...risk_management/risk_management.rego:81                     | | Eval true
+/home/...risk_management/risk_management.rego:81                     | | Exit data.international.eu_ai_act.v1.risk_management.rec_unknown early
+/home/...risk_management/risk_management.rego:81                     | Redo data.international.eu_ai_act.v1.risk_management.rec_unknown
+/home/...risk_management/risk_management.rego:81                     | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.recommendations (matched 5 rules)
+/home/...risk_management/risk_management.rego:131                    | Enter data.international.eu_ai_act.v1.risk_management.recommendations
+/home/...risk_management/risk_management.rego:132                    | | Eval data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:132                    | | Index data.international.eu_ai_act.v1.risk_management.allow (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:132                    | | Fail data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:135                    | Enter data.international.eu_ai_act.v1.risk_management.recommendations
+/home/...risk_management/risk_management.rego:136                    | | Eval not data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:136                    | | Enter data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:136                    | | | Eval data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:136                    | | | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:136                    | | | Fail data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:135                    | | Eval __local263__ = data.international.eu_ai_act.v1.risk_management.rec_no_system
+/home/...risk_management/risk_management.rego:135                    | | Index data.international.eu_ai_act.v1.risk_management.rec_no_system (matched 1 rule)
+/home/...risk_management/risk_management.rego:135                    | | Exit data.international.eu_ai_act.v1.risk_management.recommendations
+/home/...risk_management/risk_management.rego:135                    | Redo data.international.eu_ai_act.v1.risk_management.recommendations
+/home/...risk_management/risk_management.rego:135                    | | Redo __local263__ = data.international.eu_ai_act.v1.risk_management.rec_no_system
+/home/...risk_management/risk_management.rego:139                    | Enter data.international.eu_ai_act.v1.risk_management.recommendations
+/home/...risk_management/risk_management.rego:140                    | | Eval data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:140                    | | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:140                    | | Fail data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:144                    | Enter data.international.eu_ai_act.v1.risk_management.recommendations
+/home/...risk_management/risk_management.rego:145                    | | Eval data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:145                    | | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:145                    | | Fail data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:150                    | Enter data.international.eu_ai_act.v1.risk_management.recommendations
+/home/...risk_management/risk_management.rego:151                    | | Eval not data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:151                    | | Enter data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:151                    | | | Eval data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:151                    | | | Index data.international.eu_ai_act.v1.risk_management.allow (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:151                    | | | Fail data.international.eu_ai_act.v1.risk_management.allow
+/home/...risk_management/risk_management.rego:152                    | | Eval data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+/home/...risk_management/risk_management.rego:152                    | | Index data.international.eu_ai_act.v1.risk_management.has_risk_management_system (matched 1 rule, early exit)
+/home/...risk_management/risk_management.rego:152                    | | Fail data.international.eu_ai_act.v1.risk_management.has_risk_management_system
+query:1                                                              | Index data.international.eu_ai_act.v1.risk_management.system_details (matched 1 rule)
+query:1                                                              | Index data.international.eu_ai_act.v1.technical_robustness.robustness.deny (matched 1 rule)
+/home/...technical_robustness/robustness.rego:4                      | Enter data.international.eu_ai_act.v1.technical_robustness.robustness.deny
+/home/...technical_robustness/robustness.rego:5                      | | Eval msg = "Technical Robustness policy placeholder: This policy is not yet implemented."
+/home/...technical_robustness/robustness.rego:4                      | | Exit data.international.eu_ai_act.v1.technical_robustness.robustness.deny
+/home/...technical_robustness/robustness.rego:4                      | Redo data.international.eu_ai_act.v1.technical_robustness.robustness.deny
+/home/...technical_robustness/robustness.rego:5                      | | Redo msg = "Technical Robustness policy placeholder: This policy is not yet implemented."
+query:1                                                              | Index data.international.eu_ai_act.v1.transparency.allow (matched 1 rule, early exit)
+/home/...transparency/transparency.rego:22                           | Enter data.international.eu_ai_act.v1.transparency.allow
+/home/...transparency/transparency.rego:23                           | | Eval data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:23                           | | Index data.international.eu_ai_act.v1.transparency.has_documentation (matched 1 rule, early exit)
+/home/...transparency/transparency.rego:45                           | | Enter data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:46                           | | | Eval input.documentation
+/home/...transparency/transparency.rego:46                           | | | Fail input.documentation
+/home/...transparency/transparency.rego:23                           | | Fail data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:19                           | Enter data.international.eu_ai_act.v1.transparency.allow
+/home/...transparency/transparency.rego:19                           | | Eval true
+/home/...transparency/transparency.rego:19                           | | Exit data.international.eu_ai_act.v1.transparency.allow early
+/home/...transparency/transparency.rego:19                           | Redo data.international.eu_ai_act.v1.transparency.allow
+/home/...transparency/transparency.rego:19                           | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.transparency.compliance_reason (matched 1 rule)
+/home/...transparency/transparency.rego:64                           | Enter data.international.eu_ai_act.v1.transparency.compliance_reason
+/home/...transparency/transparency.rego:65                           | | Eval data.international.eu_ai_act.v1.transparency.allow
+/home/...transparency/transparency.rego:65                           | | Index data.international.eu_ai_act.v1.transparency.allow (matched 1 rule, early exit)
+/home/...transparency/transparency.rego:65                           | | Fail data.international.eu_ai_act.v1.transparency.allow
+/home/...transparency/transparency.rego:70                           | Enter data.international.eu_ai_act.v1.transparency.compliance_reason
+/home/...transparency/transparency.rego:71                           | | Eval not data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:71                           | | Enter data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:71                           | | | Eval data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:71                           | | | Index data.international.eu_ai_act.v1.transparency.has_documentation (matched 1 rule, early exit)
+/home/...transparency/transparency.rego:71                           | | | Fail data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:72                           | | Eval reason = "The system does not meet EU AI Act transparency requirements due to missing documentation"
+/home/...transparency/transparency.rego:70                           | | Exit data.international.eu_ai_act.v1.transparency.compliance_reason
+/home/...transparency/transparency.rego:70                           | Redo data.international.eu_ai_act.v1.transparency.compliance_reason
+/home/...transparency/transparency.rego:72                           | | Redo reason = "The system does not meet EU AI Act transparency requirements due to missing documentation"
+query:1                                                              | Index data.international.eu_ai_act.v1.transparency.compliance_recommendations (matched 1 rule)
+/home/...transparency/transparency.rego:101                          | Enter data.international.eu_ai_act.v1.transparency.compliance_recommendations
+/home/...transparency/transparency.rego:102                          | | Eval data.international.eu_ai_act.v1.transparency.allow
+/home/...transparency/transparency.rego:102                          | | Index data.international.eu_ai_act.v1.transparency.allow (matched 1 rule, early exit)
+/home/...transparency/transparency.rego:102                          | | Fail data.international.eu_ai_act.v1.transparency.allow
+/home/...transparency/transparency.rego:103                          | Enter data.international.eu_ai_act.v1.transparency.compliance_recommendations
+/home/...transparency/transparency.rego:104                          | | Eval not data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:104                          | | Enter data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:104                          | | | Eval data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:104                          | | | Index data.international.eu_ai_act.v1.transparency.has_documentation (matched 1 rule, early exit)
+/home/...transparency/transparency.rego:104                          | | | Fail data.international.eu_ai_act.v1.transparency.has_documentation
+/home/...transparency/transparency.rego:105                          | | Eval concat(" ", ["Provide comprehensive technical documentation, model cards,", "and explainability information"], __local190__)
+/home/...transparency/transparency.rego:105                          | | Eval recommendations = [__local190__]
+/home/...transparency/transparency.rego:103                          | | Exit data.international.eu_ai_act.v1.transparency.compliance_recommendations
+/home/...transparency/transparency.rego:103                          | Redo data.international.eu_ai_act.v1.transparency.compliance_recommendations
+/home/...transparency/transparency.rego:105                          | | Redo recommendations = [__local190__]
+/home/...transparency/transparency.rego:105                          | | Redo concat(" ", ["Provide comprehensive technical documentation, model cards,", "and explainability information"], __local190__)
+query:1                                                              | Index data.international.eu_ai_act.v1.transparency.compliance_report (matched 1 rule)
+/home/...transparency/transparency.rego:37                           | Enter data.international.eu_ai_act.v1.transparency.compliance_report
+/home/...transparency/transparency.rego:37                           | | Eval true
+/home/...transparency/transparency.rego:39                           | | Eval __local418__ = data.international.eu_ai_act.v1.transparency.allow
+/home/...transparency/transparency.rego:39                           | | Index data.international.eu_ai_act.v1.transparency.allow (matched 1 rule, early exit)
+/home/...transparency/transparency.rego:40                           | | Eval __local419__ = data.international.eu_ai_act.v1.transparency.compliance_reason
+/home/...transparency/transparency.rego:40                           | | Index data.international.eu_ai_act.v1.transparency.compliance_reason (matched 1 rule)
+/home/...transparency/transparency.rego:41                           | | Eval __local420__ = data.international.eu_ai_act.v1.transparency.compliance_recommendations
+/home/...transparency/transparency.rego:41                           | | Index data.international.eu_ai_act.v1.transparency.compliance_recommendations (matched 1 rule)
+/home/...transparency/transparency.rego:37                           | | Eval __local267__ = {"compliant": __local418__, "policy_name": "EU AI Act Transparency Requirements", "reason": __local419__, "recommendations": __local420__}
+/home/...transparency/transparency.rego:37                           | | Exit data.international.eu_ai_act.v1.transparency.compliance_report
+/home/...transparency/transparency.rego:37                           | Redo data.international.eu_ai_act.v1.transparency.compliance_report
+/home/...transparency/transparency.rego:37                           | | Redo __local267__ = {"compliant": __local418__, "policy_name": "EU AI Act Transparency Requirements", "reason": __local419__, "recommendations": __local420__}
+/home/...transparency/transparency.rego:41                           | | Redo __local420__ = data.international.eu_ai_act.v1.transparency.compliance_recommendations
+/home/...transparency/transparency.rego:40                           | | Redo __local419__ = data.international.eu_ai_act.v1.transparency.compliance_reason
+/home/...transparency/transparency.rego:39                           | | Redo __local418__ = data.international.eu_ai_act.v1.transparency.allow
+/home/...transparency/transparency.rego:37                           | | Redo true
+query:1                                                              | Index data.international.eu_ai_act.v1.transparency.documentation_completeness_sufficient (matched 0 rules, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.transparency.has_documentation (matched 1 rule, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.transparency.has_high_toxicity (matched 0 rules, early exit)
+query:1                                                              | Index data.international.eu_ai_act.v1.transparency.metadata (matched 1 rule, early exit)
+/home/...transparency/transparency.rego:6                            | Enter data.international.eu_ai_act.v1.transparency.metadata
+/home/...transparency/transparency.rego:6                            | | Eval true
+/home/...transparency/transparency.rego:6                            | | Exit data.international.eu_ai_act.v1.transparency.metadata early
+/home/...transparency/transparency.rego:6                            | Redo data.international.eu_ai_act.v1.transparency.metadata
+/home/...transparency/transparency.rego:6                            | | Redo true
+query:1                                                              | Exit data.international.eu_ai_act = _
+query:1                                                              Redo data.international.eu_ai_act = _
+query:1                                                              | Redo data.international.eu_ai_act = _
+{
+  "v1": {
+    "compliance": {
+      "ce_marking": {
+        "deny": {
+          "CE Marking policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "conformity_assessment": {
+        "deny": {
+          "Conformity Assessment policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "declaration_conformity": {
+        "deny": {
+          "EU Declaration of Conformity policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "registration": {
+        "deny": {
+          "Registration policy placeholder: This policy is not yet implemented.": true
+        }
+      }
+    },
+    "data_governance": {
+      "data_quality": {
+        "deny": {
+          "Data Quality policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "training_data": {
+        "deny": {
+          "Training Data policy placeholder: This policy is not yet implemented.": true
+        }
+      }
+    },
+    "documentation": {
+      "automated_logs": {
+        "deny": {
+          "Automated Logs policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "record_keeping": {
+        "deny": {
+          "Record-Keeping policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "technical_documentation": {
+        "deny": {
+          "Technical Documentation policy placeholder: This policy is not yet implemented.": true
+        }
+      }
+    },
+    "eu_fairness": {
+      "allow": false,
+      "fairness_threshold": 0.8,
+      "metadata": {
+        "category": "international/eu_ai_act",
+        "description": "Policy to evaluate compliance with EU AI Act fairness requirements",
+        "import_path": "international.eu_ai_act.v1.fairness",
+        "references": [
+          "Article 10 of the EU AI Act - Data and data governance",
+          "Article 15 of the EU AI Act - Accuracy, robustness and cybersecurity"
+        ],
+        "title": "EU AI Act Fairness Requirements",
+        "version": "1.0.0"
+      },
+      "reason": "The system's content has toxicity levels above acceptable thresholds which violates EU AI Act fairness requirements",
+      "reason_compliant": "The system meets EU AI Act fairness requirements with no detected bias and low toxicity levels",
+      "reason_gender_bias": "The system shows gender bias which violates EU AI Act fairness requirements",
+      "reason_racial_bias": "The system shows racial bias which violates EU AI Act fairness requirements",
+      "reason_toxicity": "The system's content has toxicity levels above acceptable thresholds which violates EU AI Act fairness requirements",
+      "reason_unknown": "The system does not meet EU AI Act fairness requirements for unknown reasons",
+      "rec_gender_bias": [
+        "Implement measures to reduce gender bias in the system outputs"
+      ],
+      "rec_racial_bias": [
+        "Implement measures to reduce racial bias in the system outputs"
+      ],
+      "rec_toxicity": [
+        "Reduce toxicity levels in system outputs to comply with EU AI Act requirements"
+      ],
+      "rec_unknown": [
+        "Review all fairness requirements in the EU AI Act and ensure compliance"
+      ],
+      "recommendations": [
+        "Reduce toxicity levels in system outputs to comply with EU AI Act requirements"
+      ],
+      "toxicity_threshold": 0.7
+    },
+    "gpai": {
+      "downstream_transparency": {
+        "deny": {
+          "GPAI Downstream Transparency policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "systemic_risk_classification": {
+        "deny": {
+          "GPAI Systemic Risk Classification policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "technical_documentation": {
+        "deny": {
+          "GPAI Technical Documentation policy placeholder: This policy is not yet implemented.": true
+        }
+      }
+    },
+    "human_oversight": {
+      "human_oversight": {
+        "deny": {
+          "Human Oversight policy placeholder: This policy is not yet implemented.": true
+        }
+      }
+    },
+    "obligations": {
+      "deployer_obligations": {
+        "deny": {
+          "Deployer Obligations policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "distributor_obligations": {
+        "deny": {
+          "Distributor Obligations policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "importer_obligations": {
+        "deny": {
+          "Importer Obligations policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "provider_obligations": {
+        "deny": {
+          "Provider Obligations policy placeholder: This policy is not yet implemented.": true
+        }
+      }
+    },
+    "prohibited_practices": {
+      "biometric_categorization": {
+        "deny": {
+          "Biometric Categorization policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "biometric_identification": {
+        "deny": {
+          "Biometric Identification policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "criminal_profiling": {
+        "deny": {
+          "Criminal Profiling policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "emotion_recognition": {
+        "deny": {
+          "Emotion Recognition policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "facial_recognition_scraping": {
+        "deny": {
+          "Facial Recognition Scraping policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "manipulation": {
+        "allow": false,
+        "compliance_report": {
+          "compliant": false,
+          "details": {
+            "message": "This policy evaluates compliance with EU AI Act Article 5(1)(a), which prohibits AI systems that deploy subliminal techniques beyond a person's consciousness or purposefully manipulative or deceptive techniques, with the objective or effect of materially distorting the behavior of a person or group of persons. This is a placeholder that will be replaced with actual compliance checks in a future release.",
+            "recommendations": [
+              "Ensure AI systems do not use subliminal techniques beyond a person's consciousness",
+              "Avoid implementing manipulative or deceptive techniques that could distort user behavior",
+              "Implement transparency measures to clearly disclose AI system capabilities and limitations",
+              "Conduct regular audits to detect potential manipulative patterns in AI outputs",
+              "Consider integrating with DeepEval's toxicity and bias metrics for automated assessment"
+            ]
+          },
+          "overall_result": false,
+          "policy": "EU AI Act Prohibition of Manipulative Techniques",
+          "version": "0.0.1"
+        },
+        "implementation_pending": true,
+        "metadata": {
+          "category": "International/EU AI Act",
+          "description": "Policy to evaluate compliance with EU AI Act Article 5(1)(a) prohibition of manipulative or deceptive AI techniques",
+          "references": [
+            "Article 5(1)(a) of the EU AI Act - Prohibited AI practices",
+            "Recital 29 of the EU AI Act",
+            "EU AI Act (Regulation (EU) 2024/1689)"
+          ],
+          "status": "PLACEHOLDER - Pending detailed implementation",
+          "title": "EU AI Act Prohibition of Manipulative Techniques",
+          "version": "1.0.0"
+        },
+        "non_compliant": true
+      },
+      "social_scoring": {
+        "deny": {
+          "Social Scoring policy placeholder: This policy is not yet implemented.": true
+        }
+      },
+      "vulnerability_exploitation": {
+        "deny": {
+          "Vulnerability exploitation policy placeholder: This policy is not yet implemented.": true
+        }
+      }
+    },
+    "risk_management": {
+      "allow": false,
+      "metadata": {
+        "category": "international/eu_ai_act",
+        "description": "Policy to evaluate compliance with EU AI Act risk management requirements",
+        "import_path": "international.eu_ai_act.v1.risk_management",
+        "references": [
+          "Article 9 of the EU AI Act - Risk management system",
+          "Article 15 of the EU AI Act - Accuracy, robustness and cybersecurity"
+        ],
+        "title": "EU AI Act Risk Management Requirements",
+        "version": "1.0.0"
+      },
+      "reason": "The system does not have a risk management system in place",
+      "reason_compliant": "The system meets EU AI Act risk management requirements with sufficient risk assessment and mitigation measures",
+      "reason_high_risk": "The system has a high risk level which requires additional controls under the EU AI Act",
+      "reason_incomplete": "The system's risk management is not sufficiently complete to meet EU AI Act requirements",
+      "reason_no_system": "The system does not have a risk management system in place",
+      "reason_unknown": "The system does not meet EU AI Act risk management requirements for unknown reasons",
+      "rec_high_risk": [
+        "Implement additional controls and safeguards to reduce the overall risk level of the system"
+      ],
+      "rec_incomplete": [
+        "Improve the completeness of risk assessment, mitigation measures, and monitoring system documentation"
+      ],
+      "rec_no_system": [
+        "Implement a comprehensive risk management system that includes risk assessment, mitigation measures, and monitoring"
+      ],
+      "rec_unknown": [
+        "Review all risk management requirements in the EU AI Act and ensure compliance"
+      ],
+      "recommendations": [
+        "Implement a comprehensive risk management system that includes risk assessment, mitigation measures, and monitoring"
+      ]
+    },
+    "technical_robustness": {
+      "robustness": {
+        "deny": {
+          "Technical Robustness policy placeholder: This policy is not yet implemented.": true
+        }
+      }
+    },
+    "transparency": {
+      "allow": false,
+      "compliance_reason": "The system does not meet EU AI Act transparency requirements due to missing documentation",
+      "compliance_recommendations": [
+        "Provide comprehensive technical documentation, model cards, and explainability information"
+      ],
+      "compliance_report": {
+        "compliant": false,
+        "policy_name": "EU AI Act Transparency Requirements",
+        "reason": "The system does not meet EU AI Act transparency requirements due to missing documentation",
+        "recommendations": [
+          "Provide comprehensive technical documentation, model cards, and explainability information"
+        ]
+      },
+      "metadata": {
+        "category": "international/eu_ai_act",
+        "description": "Policy to evaluate compliance with EU AI Act transparency requirements",
+        "import_path": "international.eu_ai_act.v1.transparency",
+        "references": [
+          "Article 13 of the EU AI Act - Transparency and provision of information to users",
+          "Article 52 of the EU AI Act - Transparency obligations for certain AI systems"
+        ],
+        "title": "EU AI Act Transparency Requirements",
+        "version": "1.0.0"
+      }
+    }
+  }
+}
++----------------------------------------------------------+--------------------+
+|                          METRIC                          |       VALUE        |
++----------------------------------------------------------+--------------------+
+| counter_compile_stage_comprehension_index_build          | 0                  |
+| counter_eval_op_base_cache_miss                          | 1                  |
+| counter_eval_op_virtual_cache_hit                        | 32                 |
+| counter_eval_op_virtual_cache_miss                       | 67                 |
+| histogram_eval_op_builtin_call_75%                       | 1225               |
+| histogram_eval_op_builtin_call_90%                       | 3010.0000000000005 |
+| histogram_eval_op_builtin_call_95%                       | 43085.649999999914 |
+| histogram_eval_op_builtin_call_99%                       | 64401              |
+| histogram_eval_op_builtin_call_99.9%                     | 64401              |
+| histogram_eval_op_builtin_call_99.99%                    | 64401              |
+| histogram_eval_op_builtin_call_count                     | 26                 |
+| histogram_eval_op_builtin_call_max                       | 64401              |
+| histogram_eval_op_builtin_call_mean                      | 3300.0384615384614 |
+| histogram_eval_op_builtin_call_median                    | 700                |
+| histogram_eval_op_builtin_call_min                       | 100                |
+| histogram_eval_op_builtin_call_stddev                    | 12254.23349290035  |
+| histogram_eval_op_plug_75%                               | 100                |
+| histogram_eval_op_plug_90%                               | 200                |
+| histogram_eval_op_plug_95%                               | 300                |
+| histogram_eval_op_plug_99%                               | 700                |
+| histogram_eval_op_plug_99.9%                             | 21373.80000000003  |
+| histogram_eval_op_plug_99.99%                            | 21600              |
+| histogram_eval_op_plug_count                             | 1422               |
+| histogram_eval_op_plug_max                               | 21600              |
+| histogram_eval_op_plug_mean                              | 170.3317120622568  |
+| histogram_eval_op_plug_median                            | 100                |
+| histogram_eval_op_plug_min                               | 0                  |
+| histogram_eval_op_plug_stddev                            | 819.310322502132   |
+| histogram_eval_op_resolve_75%                            | 300                |
+| histogram_eval_op_resolve_90%                            | 589.9999999999999  |
+| histogram_eval_op_resolve_95%                            | 1194.9999999999955 |
+| histogram_eval_op_resolve_99%                            | 21500              |
+| histogram_eval_op_resolve_99.9%                          | 21500              |
+| histogram_eval_op_resolve_99.99%                         | 21500              |
+| histogram_eval_op_resolve_count                          | 50                 |
+| histogram_eval_op_resolve_max                            | 21500              |
+| histogram_eval_op_resolve_mean                           | 666                |
+| histogram_eval_op_resolve_median                         | 100                |
+| histogram_eval_op_resolve_min                            | 100                |
+| histogram_eval_op_resolve_stddev                         | 2988.752917188037  |
+| histogram_eval_op_rule_index_75%                         | 3375               |
+| histogram_eval_op_rule_index_90%                         | 5330.000000000003  |
+| histogram_eval_op_rule_index_95%                         | 8384.999999999998  |
+| histogram_eval_op_rule_index_99%                         | 27316.99999999998  |
+| histogram_eval_op_rule_index_99.9%                       | 28100              |
+| histogram_eval_op_rule_index_99.99%                      | 28100              |
+| histogram_eval_op_rule_index_count                       | 128                |
+| histogram_eval_op_rule_index_max                         | 28100              |
+| histogram_eval_op_rule_index_mean                        | 3505.4765625       |
+| histogram_eval_op_rule_index_median                      | 2400               |
+| histogram_eval_op_rule_index_min                         | 1600               |
+| histogram_eval_op_rule_index_stddev                      | 3610.8603133568713 |
+| timer_compile_stage_build_required_capabilities_ns       | 17001              |
+| timer_compile_stage_check_imports_ns                     | 7000               |
+| timer_compile_stage_check_keyword_overrides_ns           | 314802             |
+| timer_compile_stage_check_recursion_ns                   | 430402             |
+| timer_compile_stage_check_rule_conflicts_ns              | 1127307            |
+| timer_compile_stage_check_safety_rule_bodies_ns          | 4549529            |
+| timer_compile_stage_check_safety_rule_heads_ns           | 456603             |
+| timer_compile_stage_check_types_ns                       | 2641617            |
+| timer_compile_stage_check_undefined_funcs_ns             | 250802             |
+| timer_compile_stage_check_void_calls_ns                  | 243802             |
+| timer_compile_stage_init_local_var_gen_ns                | 341002             |
+| timer_compile_stage_parse_metadata_blocks_ns             | 155101             |
+| timer_compile_stage_rebuild_comprehension_indices_ns     | 666004             |
+| timer_compile_stage_rebuild_indices_ns                   | 600404             |
+| timer_compile_stage_remove_imports_ns                    | 6500               |
+| timer_compile_stage_resolve_refs_ns                      | 748805             |
+| timer_compile_stage_rewrite_comprehension_terms_ns       | 474603             |
+| timer_compile_stage_rewrite_dynamic_terms_ns             | 2279715            |
+| timer_compile_stage_rewrite_equals_ns                    | 524603             |
+| timer_compile_stage_rewrite_expr_terms_ns                | 368302             |
+| timer_compile_stage_rewrite_local_vars_ns                | 4177926            |
+| timer_compile_stage_rewrite_print_calls_ns               | 303702             |
+| timer_compile_stage_rewrite_refs_in_head_ns              | 125001             |
+| timer_compile_stage_rewrite_rego_metadata_calls_ns       | 177701             |
+| timer_compile_stage_rewrite_rule_head_refs_ns            | 29500              |
+| timer_compile_stage_rewrite_test_rules_for_tracing_ns    | 300                |
+| timer_compile_stage_rewrite_with_values_ns               | 497303             |
+| timer_compile_stage_set_annotationset_ns                 | 3400               |
+| timer_compile_stage_set_graph_ns                         | 467703             |
+| timer_compile_stage_set_module_tree_ns                   | 35600              |
+| timer_compile_stage_set_rule_tree_ns                     | 366703             |
+| timer_compile_state_check_deprecated_builtins_ns         | 1000               |
+| timer_compile_state_check_unsafe_builtins_ns             | 300                |
+| timer_eval_op_builtin_call_ns                            | 85801              |
+| timer_eval_op_plug_ns                                    | 222301             |
+| timer_eval_op_resolve_ns                                 | 33300              |
+| timer_eval_op_rule_index_ns                              | 448701             |
+| timer_query_compile_stage_build_comprehension_index_ns   | 1600               |
+| timer_query_compile_stage_check_deprecated_builtins_ns   | 100                |
+| timer_query_compile_stage_check_keyword_overrides_ns     | 16400              |
+| timer_query_compile_stage_check_safety_ns                | 8900               |
+| timer_query_compile_stage_check_types_ns                 | 88201              |
+| timer_query_compile_stage_check_undefined_funcs_ns       | 1200               |
+| timer_query_compile_stage_check_unsafe_builtins_ns       | 900                |
+| timer_query_compile_stage_check_void_calls_ns            | 900                |
+| timer_query_compile_stage_resolve_refs_ns                | 3000               |
+| timer_query_compile_stage_rewrite_comprehension_terms_ns | 2800               |
+| timer_query_compile_stage_rewrite_dynamic_terms_ns       | 1300               |
+| timer_query_compile_stage_rewrite_expr_terms_ns          | 2700               |
+| timer_query_compile_stage_rewrite_local_vars_ns          | 7900               |
+| timer_query_compile_stage_rewrite_print_calls_ns         | 1300               |
+| timer_query_compile_stage_rewrite_to_capture_value_ns    | 43400              |
+| timer_query_compile_stage_rewrite_with_values_ns         | 900                |
+| timer_rego_external_resolve_ns                           | 400                |
+| timer_rego_load_bundles_ns                               | 17126409           |
+| timer_rego_module_compile_ns                             | 23751552           |
+| timer_rego_module_parse_ns                               | 10846270           |
+| timer_rego_query_compile_ns                              | 227801             |
+| timer_rego_query_eval_ns                                 | 10369766           |
+| timer_rego_query_parse_ns                                | 40601              |
++----------------------------------------------------------+--------------------+
++------------------+-------+
+| Overall Coverage | 22.19 |
++------------------+-------+

@@ -1,78 +1,108 @@
-# AICertify
+# AICertify: Systematic Evaluation Framework
 
-AICertify is an open-source framework for validating and certifying AI applications against regulatory, compliance, and operational requirements. It provides a simple yet powerful way to evaluate AI interactions and generate detailed reports.
+## Phase 1 Implementation
 
-## Supported Integration Methods (Updated)
+AICertify is a comprehensive framework for evaluating AI systems for compliance with various regulations and standards. This repository contains the implementation of Phase 1 of the AICertify Systematic Evaluation Framework.
 
-AICertify supports two main integration methods, each designed for ease-of-use and quick time-to-value:
+### Phase 1 Core Components
 
-### 1. File-Based Evaluation (CLI)
+1. **Core Evaluator Framework**
+   - Standardized evaluator interface (`BaseEvaluator`)
+   - Contract parsing and validation
+   - Report generation capabilities
 
-Developers can generate interaction files in JSON format and use the CLI for evaluation and report generation. This approach is ideal for file-based workflows. For more details, see the [Developer Guide](docs/developer_guide.md).
+2. **Essential Evaluators**
+   - `FairnessEvaluator`: Integrates with LangFair for bias and fairness assessment
+   - `ContentSafetyEvaluator`: Integrates with DeepEval for toxicity and content safety
+   - `RiskManagementEvaluator`: Evaluates risk documentation completeness and quality
+   - `ComplianceEvaluator`: Orchestrates multiple evaluators for comprehensive assessment
 
-#### Example Command:
+3. **Developer Experience**
+   - Unified API for contract evaluation
+   - Support for both synchronous and asynchronous evaluation
+   - Multiple report formats (JSON, Markdown, PDF)
+
+### Getting Started
+
+#### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/aicertify.git
+cd aicertify
+
+# Install the package
+pip install -e .
 ```
-python -m aicertify.cli.evaluate --contract examples/sample_contract.json --policy-category eu_ai_act
-```
 
-### 2. Python API Integration
+#### Basic Usage
 
-For programmatic integration, use the AICertify Python API to create contracts, evaluate them, and generate reports directly from your application. This method ensures integration with advanced OPA policies for compliance verification. Detailed instructions and examples are available in the [Developer Guide](docs/developer_guide.md).
-
-#### Example Code:
 ```python
-from aicertify.models.contract_models import AiCertifyContract
-from aicertify.api import evaluate_contract_object
+import asyncio
+from aicertify.models.contract_models import create_contract
+from aicertify.api import evaluate_contract_with_phase1_evaluators
 
-# Create a sample contract
-contract = AiCertifyContract(
-    contract_id='12345',
-    application_name='MyApp',
-    interactions=[{
-        'input_text': 'User prompt',
-        'output_text': 'AI response',
-        'metadata': {}
-    }]
+# Create a contract with your AI system's interactions
+contract = create_contract(
+    application_name="YourAIApp",
+    model_info={"model_name": "GPT-4", "model_version": "latest"},
+    interactions=[
+        {"input_text": "User question", "output_text": "AI response"},
+        # Add more interactions...
+    ],
+    context={"risk_documentation": "Your risk documentation..."}
 )
 
-# Evaluate the contract (asynchronously)
-result = await evaluate_contract_object(contract, policy_category='eu_ai_act')
-print(result)
+# Evaluate the contract
+async def evaluate():
+    results = await evaluate_contract_with_phase1_evaluators(
+        contract=contract,
+        generate_report=True,
+        report_format="markdown",
+        output_dir="./reports"
+    )
+    print(f"Report saved to: {results.get('report_path')}")
+
+asyncio.run(evaluate())
 ```
 
-### Advanced OPA Policy Integration & Real-World Example
+### Examples
 
-AICertify leverages Open Policy Agent (OPA) to validate AI interactions against industry-standard policies (e.g., EU AI Act). For advanced users, our API integration supports detailed logging and error reporting to help identify policy issues. 
+Check out the example scripts in the `aicertify/examples/` directory:
 
-Our examples showcase different integration patterns for various use cases:
+- `evaluator_example.py`: Demonstrates how to use individual evaluators and the ComplianceEvaluator
 
-- [Medical Diagnosis MultiSpecialist Agents](examples/Medical-Diagnosis-MultiSpecialist-Agents.py): A complex example showing how multiple specialized agents can be orchestrated and evaluated.
-- [Loan Application Evaluator](examples/Loan-Application-Evaluator.py): A simpler example demonstrating PDF report generation for financial compliance use cases.
+Run an example:
 
-All example scripts generate their outputs (contracts, reports, etc.) in an organized folder structure within the `examples/outputs/` directory for easy access.
-
----
-
-## Roadmap & Future Work
-
-- **Future Integrations:** Additional integration methods (e.g., uvicorn API support) are planned for future releases.
-- **Enhanced Reporting:** Further customization of report formats and content.
-- **Extended Policy Library:** Integration with additional compliance frameworks and evaluation strategies.
-
-For more details and advanced configuration options, please refer to the [Developer Guide](docs/developer_guide.md).
-
-## Installation
-
-This project requires Python 3.12 and Poetry. To install the dependencies, run:
-
-```
-poetry install
+```bash
+python -m aicertify.examples.evaluator_example
 ```
 
-## Getting Started
+### Architecture
 
-1. Clone the repository.
-2. Install dependencies via Poetry.
-3. Choose your integration method and follow the examples above to get started.
+The AICertify framework is built with modularity and extensibility in mind:
 
-For more detailed instructions, please refer to the developer guide in `docs/developer_guide.md`. 
+1. **BaseEvaluator Interface**: All evaluators implement a common interface with `evaluate()` and `evaluate_async()` methods.
+
+2. **Evaluation Flow**:
+   - Each evaluator processes a contract object containing interactions and metadata
+   - Evaluators analyze interactions against domain-specific criteria
+   - Results include compliance status, score, and detailed feedback
+
+3. **ComplianceEvaluator**: Acts as an orchestrator for multiple domain-specific evaluators, producing a comprehensive compliance assessment.
+
+### Dependencies
+
+- LangFair: For fairness evaluations
+- DeepEval: For toxicity and content safety evaluations
+- PyPDF2 (optional): For PDF report generation
+
+### Future Work (Upcoming Phases)
+
+- Extended evaluator suite for additional compliance domains
+- Interactive dashboard for visualizing evaluation results
+- Integration with CI/CD pipelines for automated compliance checks
+
+## License
+
+[License details here] 

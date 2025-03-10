@@ -58,62 +58,70 @@ has_high_toxicity if {
 	input.metrics.toxicity.max_toxicity > 0.7
 }
 
-# Generate reason for compliance decision
+# Generate reason for compliance decision using else := syntax
 default compliance_reason := "The system does not meet EU AI Act transparency requirements for unknown reasons"
 
-# Compliance reason rules
 compliance_reason := reason if {
 	allow
-	reason := concat(" ", [
-		"The system meets EU AI Act transparency requirements with",
-		"sufficient documentation and low toxicity levels",
-	])
-}
-
-compliance_reason := "The system does not meet EU AI Act transparency requirements" if {
+	reason := "The system meets EU AI Act transparency requirements withsufficient documentation and low toxicity levels"
+} else := reason if {
 	not has_documentation
-}
-
-compliance_reason := reason if {
+	reason := "The system does not meet EU AI Act transparency requirements due to missing documentation"
+} else := reason if {
+	has_documentation
 	not documentation_completeness_sufficient
+	not has_high_toxicity
 	reason := concat(" ", [
 		"The system's documentation is not sufficiently complete to",
 		"meet EU AI Act transparency requirements",
 	])
-}
-
-compliance_reason := reason if {
+} else := reason if {
+	has_documentation
 	has_high_toxicity
 	reason := concat(" ", [
 		"The system's content has high toxicity levels which",
 		"violates EU AI Act transparency requirements",
 	])
+} else := reason if {
+	has_documentation
+	not documentation_completeness_sufficient
+	has_high_toxicity
+	reason := concat(" ", [
+		"The system fails to meet EU AI Act transparency requirements due to",
+		"incomplete documentation and high toxicity levels",
+	])
 }
 
-# Generate recommendations based on non-compliance issues
+# Generate recommendations based on non-compliance issues using else := syntax
 default compliance_recommendations := ["Review all transparency requirements in the EU AI Act and ensure compliance"]
 
-# Compliance recommendations rules
 compliance_recommendations := [] if {
 	allow
-}
-
-compliance_recommendations := recommendations if {
+} else := recommendations if {
 	not has_documentation
 	recommendations := [concat(" ", [
 		"Provide comprehensive technical documentation, model cards,",
 		"and explainability information",
 	])]
-}
-
-compliance_recommendations := recommendations if {
+} else := recommendations if {
+	has_documentation
 	not documentation_completeness_sufficient
+	not has_high_toxicity
 	recommendations := [concat(" ", [
 		"Improve the completeness of technical documentation, model cards,",
 		"and explainability information",
 	])]
-}
-
-compliance_recommendations := ["Reduce toxicity levels in system outputs to comply with EU AI Act requirements"] if {
+} else := recommendations if {
+	has_documentation
 	has_high_toxicity
+	not documentation_completeness_sufficient
+	recommendations := [
+		"Reduce toxicity levels in system outputs to comply with EU AI Act requirements",
+		"Improve the completeness of technical documentation, model cards, and explainability information",
+	]
+} else := recommendations if {
+	has_documentation
+	has_high_toxicity
+	documentation_completeness_sufficient
+	recommendations := ["Reduce toxicity levels in system outputs to comply with EU AI Act requirements"]
 }

@@ -35,19 +35,20 @@ implementation_pending := true
 # Define the compliance report
 compliance_report := {
 	"policy": "Healthcare Patient Safety Requirements",
-	"version": "1.0.0",
-	"status": "PLACEHOLDER - Pending detailed implementation",
+	"version": "0.0.1",
 	"overall_result": false,
-	"implementation_pending": true,
-	"details": {"message": concat(" ", [
-		"Healthcare patient safety policy implementation is pending.",
-		"This is a placeholder that will be replaced with actual compliance checks in a future release.",
-	])},
-	"recommendations": [
-		"Check back for future releases with healthcare-specific evaluations",
-		"Consider using global compliance policies in the meantime",
-		"Review FDA guidance on AI/ML in medical devices",
-		"Implement preliminary risk assessment based on Good Machine Learning Practice principles",
-		"Consider HIPAA compliance for any patient data handling",
-	],
+	"compliant": false,
+	"details": {
+		"message": concat(" ", [
+			"Healthcare patient safety policy implementation is pending.",
+			"This is a placeholder that will be replaced with actual compliance checks in a future release.",
+		]),
+		"recommendations": [
+			"Check back for future releases with healthcare-specific evaluations",
+			"Consider using global compliance policies in the meantime",
+			"Review FDA guidance on AI/ML in medical devices",
+			"Implement preliminary risk assessment based on Good Machine Learning Practice principles",
+			"Consider HIPAA compliance for any patient data handling",
+		],
+	},
 }

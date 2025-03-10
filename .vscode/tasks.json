@@ -4,19 +4,41 @@
         {
             "label": "Regal Lint",
             "type": "shell",
-            "command": "c:\\opa\\regal.exe",
+            "command": "bash",
             "args": [
-                "lint",
-                "${file}"
+                "-c",
+                "/mnt/c/opa/regal.exe lint \"${relativeFile}\""
             ],
-            "problemMatcher": []
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
         },
         {
             "label": "OPA Format",
             "type": "shell",
-            "command": "c:\\opa\\opa.exe",
-            "args": ["fmt", "--write", "${file}"],
-            "problemMatcher": []
+            "command": "bash",
+            "args": [
+                "-c",
+                "/mnt/c/opa/opa.exe fmt --write \"${relativeFile}\""
+            ],
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "OPA Check",
+            "type": "shell",
+            "command": "zsh",
+            "args": [
+                "-c",
+                "opa check \"${relativeFile}\""
+            ],
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
         }
     ]
 }
