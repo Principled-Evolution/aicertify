@@ -14,7 +14,7 @@ from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator
 from langfair.metrics.toxicity import ToxicityMetrics
 from aicertify.report_generation.report_generator import ReportGenerator
-from aicertify.report_generation.report_models import (
+from aicertify.models.report import (
     EvaluationReport, ApplicationDetails,
     MetricGroup, MetricValue, PolicyResult
 )

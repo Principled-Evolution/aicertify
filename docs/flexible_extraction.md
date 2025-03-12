@@ -12,6 +12,8 @@ The Flexible Metric Extraction System is a registry-based approach to extracting
 - **Default configurations**: Default configurations are provided for common metric types.
 - **Feature flags**: The system can be enabled or disabled using feature flags.
 - **Plugin system**: Custom extractors can be registered for new metric types.
+- **Evaluator Registry Integration**: Automatic extraction of metrics based on the evaluator registry.
+- **Policy Parameter Support**: Integration with the policy parameter system.
 
 ## Architecture
 
@@ -23,6 +25,7 @@ The system consists of the following components:
 4. **Configuration system**: Functions for loading and registering metric configurations.
 5. **Feature flags**: Configuration options for enabling or disabling the system.
 6. **Plugin system**: Mechanisms for registering custom extractors.
+7. **Policy Metric Extraction**: Integration with the evaluator registry to support OPA policy metrics.
 
 ## Usage
 
@@ -53,6 +56,59 @@ The system comes with default configurations for common metric types:
 - Accuracy metrics
 
 These configurations are automatically registered when the system is initialized.
+
+## Policy Metric Integration
+
+The system includes integration with the evaluator registry to support OPA policy metrics:
+
+### Automatic Policy Metric Registration
+
+When the application starts, it automatically:
+
+1. Discovers metrics supported by registered evaluators via the evaluator registry
+2. Creates extraction configurations for these metrics
+3. Registers custom extractors for special metrics like compliance decisions
+
+```python
+from aicertify.report_generation.policy_metric_extraction import initialize_metric_extraction
+
+# Call during application startup
+initialize_metric_extraction()
+```
+
+### Combined Registry and Extraction Initialization
+
+For convenience, you can initialize both the evaluator registry and the metric extraction system in one call:
+
+```python
+from aicertify.report_generation.policy_metric_extraction import initialize_registry_and_extraction
+
+# Call during application startup
+initialize_registry_and_extraction()
+```
+
+### Resilient Path-Based Extraction
+
+The system generates multiple extraction paths for each metric to ensure robust extraction regardless of how metrics are structured in the evaluation results:
+
+```
+# Example paths generated for "fairness.score":
+fairness.score
+metrics.fairness.score
+fairness.score
+evaluator_results.fairness.score
+score
+fairness_score
+```
+
+### Custom Extraction for OPA Results
+
+The system includes custom extraction logic for OPA policy results, handling:
+
+- Compliance decisions (allow/deny)
+- Violation counts
+- Violation categories
+- Compliance scores
 
 ### Creating Custom Extractors
 
@@ -166,40 +222,41 @@ Example configuration file:
 When adding a new evaluator to AICertify, follow these steps to integrate it with the flexible extraction system:
 
 1. **Define the metrics**: Identify the metrics that the evaluator will produce.
-2. **Create a configuration**: Create a configuration for the metrics.
-3. **Register the configuration**: Register the configuration with the system.
+2. **Implement the evaluator interface**: Ensure your evaluator either:
+   - Has a `SUPPORTED_METRICS` class attribute that is a list of metric names, or
+   - Implements a `get_supported_metrics()` method that returns a list of metric names
+3. **Register the evaluator**: The evaluator registry will detect your evaluator and register its metrics.
+4. **Initialize the systems**: Call `initialize_registry_and_extraction()` during application startup.
 
-Example:
+Example evaluator implementation:
 
 ```python
-from aicertify.report_generation.flexible_extraction import register_metrics_from_config
+from aicertify.evaluators.base_evaluator import BaseEvaluator
 
-# Define the configuration
-config = {
-    "metric_groups": [
-        {
-            "name": "new_evaluator",
-            "display_name": "New Evaluator Metrics",
-            "metrics": [
-                {
-                    "name": "new_metric",
-                    "display_name": "New Metric",
-                    "paths": [
-                        "metrics.new_evaluator.new_metric",
-                        "new_evaluator_metrics.new_metric",
-                        "new_evaluator.new_metric",
-                        "new_metric"
-                    ],
-                    "default_value": 0.0
-                }
-            ]
-        }
+class MyEvaluator(BaseEvaluator):
+    """My custom evaluator for special metrics."""
+    
+    # Option 1: Define supported metrics as a class attribute
+    SUPPORTED_METRICS = [
+        "my_evaluator.metric1",
+        "my_evaluator.metric2"
     ]
-}
-
-# Register the configuration
-register_metrics_from_config(config)
+    
+    # Option 2: Implement a method to return supported metrics
+    def get_supported_metrics(self) -> List[str]:
+        return [
+            "my_evaluator.metric1",
+            "my_evaluator.metric2"
+        ]
+    
+    # ... rest of the evaluator implementation
 ```
+
+The system will automatically:
+1. Discover your evaluator
+2. Register its metrics
+3. Create extraction paths
+4. Configure the extraction system to find your metrics in evaluation results
 
 ## Best Practices
 
@@ -208,6 +265,7 @@ register_metrics_from_config(config)
 3. **Set default values**: Set appropriate default values for metrics.
 4. **Document metrics**: Document the metrics that your evaluator produces.
 5. **Test extraction**: Test that your metrics can be extracted correctly.
+6. **Follow naming conventions**: Use dot-notation for metrics (e.g., "evaluator.metric").
 
 ## Troubleshooting
 
@@ -217,7 +275,90 @@ If metrics are not being extracted correctly, check the following:
 2. **Registration**: Ensure that the extractor is registered correctly.
 3. **Feature flag**: Ensure that the flexible extraction system is enabled.
 4. **Logging**: Check the logs for any errors or warnings.
+5. **Evaluator registration**: Ensure that your evaluator is properly discovered and registered.
+6. **Initialization order**: Ensure that the evaluator registry is initialized before the extraction system.
+
+## Sequence Diagram
+
+The following sequence diagram illustrates the initialization and extraction process:
+
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant Registry as EvaluatorRegistry
+    participant Extractor as FlexibleExtractor
+    participant Reporter as ReportGenerator
+    
+    App->>Registry: initialize_evaluator_registry()
+    Registry->>Registry: discover_evaluator_classes()
+    Registry->>Registry: register_evaluator(evaluator_class)
+    
+    App->>Extractor: initialize_metric_extraction()
+    Extractor->>Registry: get_all_metrics()
+    Registry-->>Extractor: metrics
+    Extractor->>Extractor: register_policy_metrics_with_extraction_system()
+    Extractor->>Extractor: register_policy_metrics_extractor()
+    
+    App->>Registry: discover_evaluators_for_metrics(required_metrics)
+    Registry-->>App: evaluator_classes
+    
+    App->>App: run_evaluators(evaluator_classes)
+    
+    App->>Extractor: extract_metrics(evaluation_results)
+    Extractor->>Extractor: apply_path_extractors()
+    Extractor->>Extractor: apply_custom_extractors()
+    Extractor-->>App: metrics
+    
+    App->>Reporter: generate_report(metrics)
+    Reporter-->>App: report
+```
+
+## Component Diagram
+
+The following component diagram illustrates the system architecture:
+
+```mermaid
+classDiagram
+    class EvaluatorRegistry {
+        +register_evaluator(evaluator_class, metrics)
+        +discover_evaluators(required_metrics)
+        +get_all_metrics()
+    }
+    
+    class BaseEvaluator {
+        +SUPPORTED_METRICS
+        +get_supported_metrics()
+    }
+    
+    class MetricExtractor {
+        +register_extractor(metric_type, extractor)
+        +extract_metrics(evaluation_result)
+    }
+    
+    class MetricGroup {
+        +name
+        +display_name
+        +metrics_config
+        +extract_metrics(evaluation_result)
+    }
+    
+    class PolicyMetricExtraction {
+        +register_policy_metrics_with_extraction_system()
+        +initialize_metric_extraction()
+    }
+    
+    class ReportGenerator {
+        +generate_report(metrics)
+    }
+    
+    EvaluatorRegistry "1" *-- "*" BaseEvaluator : registers
+    BaseEvaluator <|-- CustomEvaluator
+    MetricExtractor "1" *-- "*" MetricGroup : contains
+    PolicyMetricExtraction --> EvaluatorRegistry : uses
+    PolicyMetricExtraction --> MetricExtractor : configures
+    ReportGenerator --> MetricExtractor : uses
+```
 
 ## Conclusion
 
-The Flexible Metric Extraction System provides a flexible and extensible way to extract metrics from evaluation results in AICertify. By decoupling metric extraction from specific data structures, it makes it easier to add new evaluators and metrics without modifying code in multiple places. 
+The Flexible Metric Extraction System provides a flexible and extensible way to extract metrics from evaluation results in AICertify. By decoupling metric extraction from specific data structures, it makes it easier to add new evaluators and metrics without modifying code in multiple places. The integration with the evaluator registry provides automatic support for policy-required metrics, ensuring comprehensive reporting. 

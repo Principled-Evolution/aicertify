@@ -143,7 +143,7 @@ class ModelCard(BaseModel):
     
     class Config:
         """Pydantic configuration."""
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "model_name": "HealthcareGPT",
                 "model_version": "1.0.0",

@@ -2,8 +2,12 @@ import os
 import logging
 import sys
 import re
-from typing import Dict, List, Optional, Tuple, Set, NamedTuple
+import traceback
+from typing import Dict, List, Optional, Tuple, Set, NamedTuple, Any
 from pathlib import Path
+from unicodedata import combining
+
+from .rego_parser import parse_rego_file_metadata, RegoMetadata
 
 class Policy(NamedTuple):
     """Represents a loaded policy with its path and content."""
@@ -469,6 +473,19 @@ class PolicyLoader:
                 
         return result
 
+    def get_policies_by_folder(self, policy_folder: str) -> List[str]:
+        """
+        Get all policies for a specified folder path, excluding test files.
+        
+        Args:
+            policy_folder: Path to the folder combining policy files
+            
+        Returns:
+            List of policy file paths
+        """
+        policies = [p for p in Path(policy_folder).rglob("*.rego") if not p.name.endswith("_test.rego")]
+        return list(policies)
+    
     def get_policies_by_category(self, policy_category: str) -> List[str]:
         """
         Get all policies for a specified category path, which can be a complex path like "eu_ai_act".
@@ -593,6 +610,98 @@ class PolicyLoader:
         """
         # Default to the opa_policies directory in the aicertify package
         return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "opa_policies"))
+
+    def get_required_metrics_for_folder(self, folder_path: str) -> Set[str]:
+        """
+        Get all required metrics for policies in a folder.
+        
+        This function recursively scans all Rego files in the specified folder,
+        extracts required metrics from each file's metadata, and returns a
+        consolidated set of unique metric names.
+        
+        Args:
+            folder_path: Path to policy folder
+            
+        Returns:
+            Set of required metric names that can be used to determine which
+            evaluators need to be run for the policies in this folder
+        """
+        metrics = set()
+        folder_path = Path(folder_path)
+        
+        # Validate the folder path
+        if not folder_path.exists():
+            logging.warning(f"Policy folder does not exist: {folder_path}")
+            return metrics
+        
+        if not folder_path.is_dir():
+            logging.warning(f"Path is not a directory: {folder_path}")
+            return metrics
+        
+        # Process each Rego file in the folder and its subfolders
+        for rego_file in self.get_policies_by_folder(folder_path):
+            try:
+                # Extract metadata from the Rego file
+                metadata = parse_rego_file_metadata(str(rego_file))
+                
+                # Add all required metrics to the set
+                metrics.update(metadata.required_metrics)
+                
+            except FileNotFoundError:
+                logging.warning(f"Policy file not found: {rego_file}")
+            except Exception as e:
+                # Log detailed exception information for debugging
+                logging.exception(f"Error parsing {rego_file}: {str(e)}")
+        
+        return metrics
+    
+    def get_required_params_for_folder(self, folder_path: str) -> Dict[str, Any]:
+        """
+        Get all required parameters with default values for policies in a folder.
+        
+        This function recursively scans all Rego files in the specified folder,
+        extracts required parameters with their default values from each file's metadata,
+        and returns a consolidated dictionary of parameter names to default values.
+        If a parameter appears in multiple files, the first occurrence's default value
+        is retained.
+        
+        Args:
+            folder_path: Path to policy folder
+            
+        Returns:
+            Dictionary mapping parameter names to their default values, which can
+            be used to construct the 'params' object for OPA input
+        """
+        params = {}
+        folder_path = Path(folder_path)
+        
+        # Validate the folder path
+        if not folder_path.exists():
+            logging.warning(f"Policy folder does not exist: {folder_path}")
+            return params
+        
+        if not folder_path.is_dir():
+            logging.warning(f"Path is not a directory: {folder_path}")
+            return params
+        
+        # Process each Rego file in the folder and its subfolders
+        for rego_file in self.get_policies_by_folder(folder_path):
+            try:
+                # Extract metadata from the Rego file
+                metadata = parse_rego_file_metadata(str(rego_file))
+                
+                # Only add parameters that don't already exist (first occurrence wins)
+                for param_name, default_value in metadata.required_params.items():
+                    if param_name not in params:
+                        params[param_name] = default_value
+                        
+            except FileNotFoundError:
+                logging.warning(f"Policy file not found: {rego_file}")
+            except Exception as e:
+                # Log detailed exception information for debugging
+                logging.exception(f"Error parsing {rego_file}: {str(e)}")
+        
+        return params
 
 # Standalone test
 if __name__ == "__main__":

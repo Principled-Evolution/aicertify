@@ -4,7 +4,8 @@ import shutil
 import sys
 import os
 import json
-from typing import Dict, Any, Optional, List, Union, Literal
+import copy  # Add import for deep copying
+from typing import Dict, Any, Optional, List, Union, Literal, Set, Type
 from pathlib import Path
 from .policy_loader import PolicyLoader, Policy
 from uuid import UUID
@@ -792,4 +793,110 @@ class OpaEvaluator:
                 os.environ.pop("OPA_RETRY_DEBUG", None)
         
         return result
+
+    def evaluate_by_folder_name_with_params(
+        self, 
+        folder_name: str, 
+        input_data: Dict[str, Any], 
+        custom_params: Optional[Dict[str, Any]] = None,
+        mode: ExecutionMode = "debug", 
+        restrict_to_folder: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Find folders matching the name, add parameters, and evaluate policies.
+        
+        This method extends evaluate_by_folder_name by adding support for custom
+        parameters that are passed to the OPA input.
+        
+        Args:
+            folder_name: Name of the folder to search for
+            input_data: Input data for evaluation (without params)
+            custom_params: Custom parameters to override defaults for OPA policies
+            mode: Execution mode (production, development, debug)
+            restrict_to_folder: If True, limit evaluation to the specified folder only
+            
+        Returns:
+            Evaluation results or error
+        """
+        # Validate input types
+        if not isinstance(input_data, dict):
+            logging.error(f"input_data must be a dictionary, got {type(input_data)}")
+            return {"error": "input_data must be a dictionary"}
+        
+        if custom_params is not None and not isinstance(custom_params, dict):
+            logging.error(f"custom_params must be a dictionary, got {type(custom_params)}")
+            return {"error": "custom_params must be a dictionary"}
+        
+        # Get required parameters with default values
+        matching_folders = self.find_matching_policy_folders(folder_name)
+        if not matching_folders:
+            return {
+                "error": f"No policy folders found matching: {folder_name}",
+                "searched_in": self.policy_loader.get_policy_dir()
+            }
+        
+        # Use the first match to get parameters
+        target_folder = matching_folders[0]
+        default_params = self.policy_loader.get_required_params_for_folder(target_folder)
+        logging.debug(f"Found default parameters for {folder_name}: {default_params}")
+        
+        # Create a deep copy of the input data to ensure we don't modify the original
+        # This protects against modifying nested dictionaries
+        enhanced_input = copy.deepcopy(input_data)
+        
+        # Create a new params dictionary with the correct precedence:
+        # 1. Start with default parameters from the policy
+        # 2. Add any existing params from the input
+        # 3. Override with custom params provided to this method
+        params_dict = {
+            **default_params,
+            **(enhanced_input.get("params", {}) if isinstance(enhanced_input.get("params"), dict) else {}),
+            **(custom_params or {})
+        }
+        
+        # Set the params in the enhanced input
+        enhanced_input["params"] = params_dict
+        
+        # Log the parameter merging for debugging
+        logging.debug(f"Using parameters for OPA evaluation: {params_dict}")
+        
+        # Call the original implementation with the enhanced input
+        return self.evaluate_by_folder_name(
+            folder_name=folder_name,
+            input_data=enhanced_input,
+            mode=mode,
+            restrict_to_folder=restrict_to_folder
+        )
+
+    def evaluate_policy_category(
+        self,
+        policy_category: str,
+        input_data: Dict[str, Any],
+        custom_params: Optional[Dict[str, Any]] = None,
+        mode: ExecutionMode = "production"
+    ) -> Dict[str, Any]:
+        """
+        Evaluate policies in a specific category using the folder-based approach.
+        
+        This is a convenience wrapper around evaluate_by_folder_name_with_params
+        that supports the API's evaluate_contract_comprehensive function.
+        
+        Args:
+            policy_category: The category of policies to evaluate (folder name)
+            input_data: Input data for evaluation
+            custom_params: Optional custom parameters to override defaults
+            mode: Execution mode (production, development, debug)
+            
+        Returns:
+            Evaluation results
+        """
+        logging.info(f"Evaluating policies in category: {policy_category}")
+        
+        return self.evaluate_by_folder_name_with_params(
+            folder_name=policy_category,
+            input_data=input_data,
+            custom_params=custom_params,
+            mode=mode,
+            restrict_to_folder=False  # Allow cross-folder dependencies
+        )
 

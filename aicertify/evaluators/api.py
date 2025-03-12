@@ -33,10 +33,11 @@ except ImportError:
 from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator
 from aicertify.report_generation.report_generator import ReportGenerator
-from aicertify.report_generation.report_models import (
+from aicertify.models.report import (
     EvaluationReport, ApplicationDetails,
-    MetricGroup, MetricValue, PolicyResult
+    MetricGroup, PolicyResult
 )
+from aicertify.models.evaluation import MetricValue
 from aicertify.models import Interaction, AiCertifyContract, ModelInfo
 
 

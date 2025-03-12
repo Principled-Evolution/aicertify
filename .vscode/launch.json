@@ -5,11 +5,30 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Debug AICertify CLI",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/aicertify/cli.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--contract",
+                "${workspaceFolder}/examples/outputs/medical_diagnosis/contract_2025-03-03_183048.json",
+                "--policy",
+                "eu_fairness",
+                "--output-dir",
+                "${workspaceFolder}/examples/outputs/medical_diagnosis/reports",
+                "--report-format",
+                "markdown"
+            ]
+        },
+        {
             "name": "Debug LangfairTests with Pytest (Poetry venv)",
             "type": "debugpy",
             "request": "launch",
             "module": "pytest",
-            "args": ["aicertify/tests/langfair-tests/tests/test_autoeval.py"],
+            "args": [
+                "aicertify/tests/langfair-tests/tests/test_autoeval.py"
+            ],
             "cwd": "${workspaceFolder}/aicertify/tests/langfair-tests",
             "console": "integratedTerminal",
             "env": {

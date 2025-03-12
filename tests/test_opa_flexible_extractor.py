@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 import json
 
 from aicertify.opa_core.flexible_extractor import FlexibleExtractor
-from aicertify.report_generation.report_models import PolicyResult
+from aicertify.models.report import PolicyResult
 
 class TestFlexibleExtractor(unittest.TestCase):
     """Tests for the FlexibleExtractor class."""

@@ -12,8 +12,9 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
-# Import models from existing code
-from aicertify.report_generation.report_models import MetricValue, PolicyResult
+# Import models from centralized location
+from aicertify.models.evaluation import MetricValue
+from aicertify.models.report import PolicyResult
 
 # Import default metric configurations
 from aicertify.report_generation.metric_configs import get_default_metric_configs

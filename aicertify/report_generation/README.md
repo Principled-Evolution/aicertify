@@ -61,7 +61,8 @@ DEFAULT_METRIC_CONFIGS["my_custom_group"] = {
 For more complex extraction logic, you can register custom extractors:
 
 ```python
-from aicertify.report_generation.flexible_extraction import register_custom_extractor, MetricValue
+from aicertify.models.evaluation import MetricValue
+from aicertify.report_generation.flexible_extraction import register_custom_extractor
 
 def my_custom_extractor(evaluation_result):
     # Custom extraction logic
