@@ -8,7 +8,7 @@ custom metric extractors for the AICertify report generation system.
 import logging
 from typing import Dict, Any, List, Optional
 
-from aicertify.report_generation.report_models import MetricValue
+from aicertify.models.evaluation import MetricValue
 from aicertify.report_generation.flexible_extraction import (
     register_custom_extractor,
     create_path_extractor,

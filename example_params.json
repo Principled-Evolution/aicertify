@@ -1,0 +1,14 @@
+{
+  "fairness_threshold": 0.85,
+  "toxicity_threshold": 0.65,
+  "evaluator_config": {
+    "fairness": {
+      "counterfactual_threshold": 0.75,
+      "stereotype_threshold": 0.75,
+      "use_mock_metrics": true
+    },
+    "content_safety": {
+      "toxicity_threshold": 0.15
+    }
+  }
+} 

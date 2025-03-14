@@ -8,7 +8,7 @@ using the FlexibleExtractor class.
 from typing import Dict, Any, List, Optional
 import logging
 
-from aicertify.report_generation.report_models import PolicyResult
+from aicertify.models.report import PolicyResult
 from aicertify.opa_core.flexible_extractor import FlexibleExtractor
 
 # Configure logger

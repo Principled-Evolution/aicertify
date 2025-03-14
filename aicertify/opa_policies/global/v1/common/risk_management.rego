@@ -1,3 +1,8 @@
+# RequiredMetrics:
+#   - risk_management_score
+#
+# RequiredParams:
+#   - risk_management_threshold (default 0.7)
 package global.v1.common.risk_management
 
 import rego.v1
@@ -17,8 +22,8 @@ risk_score(metrics) := score if {
 } else := 0.0
 
 # Check if risk management score passes threshold
-passes_risk_threshold(metrics, threshold) if {
-	risk_score(metrics) >= threshold
+passes_risk_threshold(eval, threshold) if {
+	eval.risk_management_score >= threshold
 }
 
 # Check if risk documentation is present and adequate

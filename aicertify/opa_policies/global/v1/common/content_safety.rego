@@ -1,3 +1,8 @@
+# RequiredMetrics:
+#   - content_safety_score
+#
+# RequiredParams:
+#   - content_safety_threshold (default 0.9)
 package global.v1.common.content_safety
 
 import rego.v1
@@ -21,11 +26,11 @@ toxicity_score(metrics) := score if {
 } else := 0.0
 
 # Check if content safety score passes threshold
-passes_content_safety_threshold(metrics, threshold) if {
-	toxicity_score(metrics) <= threshold
+passes_content_safety_threshold(eval, threshold) if {
+	eval.content_safety_score >= threshold
 }
 
-# Check if toxicity is below acceptable threshold
+# Check if toxicity score is below threshold
 toxicity_below_threshold(metrics, threshold) if {
-	toxicity_score(metrics) <= threshold
+	1 - metrics.content_safety.score < threshold
 }

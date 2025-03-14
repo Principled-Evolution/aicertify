@@ -1,6 +1,6 @@
 from typing import Dict, Any, Optional, List
 import logging
-from aicertify.report_generation.report_models import PolicyResult
+from aicertify.models.report import PolicyResult
 
 class FlexibleExtractor:
     def extract_policy_results(self, opa_results: Dict[str, Any], policy_name: str) -> PolicyResult:

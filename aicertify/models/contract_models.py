@@ -1,8 +1,30 @@
-'''Phase 1: AICertify Contract Input Models
-This module contains the contract input models intended for developers and external systems to use as the interface for providing interaction data to the certifier library.
+"""
+AICertify Contract Input Models (Legacy)
 
-It includes the core models: ModelInfo, Interaction, and AiCertifyContract, as well as helper methods for creating, validating, and aggregating contracts.
-'''
+This module is maintained for backward compatibility.
+Please use aicertify.models.contract for new code.
+"""
+
+import warnings
+
+# Emit a deprecation warning when this module is imported
+warnings.warn(
+    "The 'contract_models.py' module is deprecated and will be removed in a future release. "
+    "Please use 'aicertify.models.contract' for new code.",
+    DeprecationWarning, 
+    stacklevel=2
+)
+
+# Re-export models from the centralized location
+from aicertify.models.contract import (
+    ModelInfo,
+    Interaction,
+    AiCertifyContract,
+    create_contract,
+    validate_contract,
+    save_contract,
+    load_contract
+)
 
 from typing import List, Optional, Dict, Any, ClassVar
 from uuid import UUID, uuid4
@@ -15,6 +37,17 @@ from pydantic import BaseModel, Field, model_validator
 
 # Import the ModelCard class
 from aicertify.models.model_card import ModelCard, create_model_card
+
+# Define the public API for this module
+__all__ = [
+    "ModelInfo",
+    "Interaction",
+    "AiCertifyContract",
+    "create_contract",
+    "validate_contract",
+    "save_contract",
+    "load_contract",
+]
 
 
 class ModelInfo(BaseModel):

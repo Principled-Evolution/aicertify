@@ -1,0 +1,15 @@
+{
+     "metrics": {
+       "fairness": {
+         "details": {
+           "gender_bias_detected": false,
+           "racial_bias_detected": false
+         }
+       },
+       "content_safety": {
+         "details": {
+           "toxicity_score": 0
+         }
+       }
+     }
+   }

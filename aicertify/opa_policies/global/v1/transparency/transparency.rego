@@ -1,3 +1,13 @@
+# RequiredMetrics:
+#   - documentation.model_card.exists
+#   - documentation.model_card.completeness_score
+#   - documentation.explainability.provided
+#   - documentation.limitations.documented
+#   - documentation.use_cases.defined
+#
+# RequiredParams:
+#   - model_card_completeness_threshold (default 0.8)
+#
 package global.v1.transparency
 
 import rego.v1
@@ -18,7 +28,7 @@ default allow := false
 allow if {
 	# Check if model cards exist and are complete
 	input.documentation.model_card.exists == true
-	input.documentation.model_card.completeness_score >= 0.8
+	input.documentation.model_card.completeness_score >= object.get(input.params, "model_card_completeness_threshold", 0.8)
 
 	# Check if explainability is provided
 	input.documentation.explainability.provided == true
@@ -37,7 +47,7 @@ non_compliant if {
 
 non_compliant if {
 	input.documentation.model_card.exists == true
-	input.documentation.model_card.completeness_score < 0.8
+	input.documentation.model_card.completeness_score < object.get(input.params, "model_card_completeness_threshold", 0.8)
 }
 
 non_compliant if {
@@ -60,6 +70,7 @@ compliance_report := {
 	"details": {
 		"model_card_exists": object.get(input.documentation, ["model_card", "exists"], false),
 		"model_card_completeness": object.get(input.documentation, ["model_card", "completeness_score"], 0),
+		"model_card_completeness_threshold": object.get(input.params, "model_card_completeness_threshold", 0.8),
 		"explainability_provided": object.get(input.documentation, ["explainability", "provided"], false),
 		"limitations_documented": object.get(input.documentation, ["limitations", "documented"], false),
 		"use_cases_defined": object.get(input.documentation, ["use_cases", "defined"], false),
@@ -74,25 +85,25 @@ recommendations := model_card_recs if {
 
 recommendations := model_card_completeness_recs if {
 	input.documentation.model_card.exists == true
-	input.documentation.model_card.completeness_score < 0.8
+	input.documentation.model_card.completeness_score < object.get(input.params, "model_card_completeness_threshold", 0.8)
 }
 
 recommendations := explainability_recs if {
 	input.documentation.model_card.exists == true
-	input.documentation.model_card.completeness_score >= 0.8
+	input.documentation.model_card.completeness_score >= object.get(input.params, "model_card_completeness_threshold", 0.8)
 	input.documentation.explainability.provided == false
 }
 
 recommendations := limitations_recs if {
 	input.documentation.model_card.exists == true
-	input.documentation.model_card.completeness_score >= 0.8
+	input.documentation.model_card.completeness_score >= object.get(input.params, "model_card_completeness_threshold", 0.8)
 	input.documentation.explainability.provided == true
 	input.documentation.limitations.documented == false
 }
 
 recommendations := use_cases_recs if {
 	input.documentation.model_card.exists == true
-	input.documentation.model_card.completeness_score >= 0.8
+	input.documentation.model_card.completeness_score >= object.get(input.params, "model_card_completeness_threshold", 0.8)
 	input.documentation.explainability.provided == true
 	input.documentation.limitations.documented == true
 	input.documentation.use_cases.defined == false
@@ -100,7 +111,7 @@ recommendations := use_cases_recs if {
 
 recommendations := [] if {
 	input.documentation.model_card.exists == true
-	input.documentation.model_card.completeness_score >= 0.8
+	input.documentation.model_card.completeness_score >= object.get(input.params, "model_card_completeness_threshold", 0.8)
 	input.documentation.explainability.provided == true
 	input.documentation.limitations.documented == true
 	input.documentation.use_cases.defined == true

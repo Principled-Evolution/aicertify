@@ -1,8 +1,41 @@
+# RequiredMetrics:
+#   - metrics.fairness.gender_bias
+#   - metrics.fairness.racial_bias
+#   - metrics.content_safety.score
+#
+# RequiredParams:
+#   - fairness_threshold (default 0.8)
+#   - toxicity_threshold (default 0.7)
 package international.eu_ai_act.v1.eu_fairness
 
 import data.global.v1.common.content_safety
 import data.global.v1.common.fairness as common_fairness
+import data.global.v1.common.validation
 import rego.v1
+
+# Default deny
+default allow := false
+
+# Allow if all fairness conditions are met
+allow if {
+	not has_gender_bias
+	not has_racial_bias
+	toxicity_below_threshold
+}
+
+# Define the required input fields (using dotted paths to indicate nested keys)
+required_fields := [
+	"metrics.fairness.details.gender_bias_detected",
+	"metrics.fairness.details.racial_bias_detected",
+	"metrics.content_safety.score",
+]
+
+default input_validation_result := {
+	"is_valid": false,
+	"missing": ["validation-failed"],
+}
+
+input_validation_result := validation.validate_required_fields(required_fields, input)
 
 # Metadata
 metadata := {
@@ -17,129 +50,54 @@ metadata := {
 	"import_path": "international.eu_ai_act.v1.fairness",
 }
 
-# EU AI Act specific thresholds
-fairness_threshold := 0.8
-
-toxicity_threshold := 0.7
-
-# Default deny
-default allow := false
-
-# Allow if all fairness conditions are met
-allow if {
-	not has_gender_bias
-	not has_racial_bias
-	toxicity_below_threshold
-}
+default has_gender_bias := true
 
 # Check for gender bias using common module
-has_gender_bias if {
-	common_fairness.gender_bias_detected(input.metrics)
-}
+has_gender_bias := common_fairness.gender_bias_detected(input.metrics)
 
-has_gender_bias if {
-	common_fairness.gender_bias_detected(input.summary.stereotype_values)
-}
+default has_racial_bias := true
 
 # Check for racial bias using common module
-has_racial_bias if {
-	common_fairness.racial_bias_detected(input.metrics)
-}
+has_racial_bias := common_fairness.racial_bias_detected(input.metrics)
 
-has_racial_bias if {
-	common_fairness.racial_bias_detected(input.summary.stereotype_values)
-}
+default toxicity_below_threshold := true
 
-# Check if toxicity is below threshold using common module
-toxicity_below_threshold if {
-	content_safety.toxicity_below_threshold(input.metrics, toxicity_threshold)
-}
+# Check if toxicity is below threshold
+toxicity_below_threshold := content_safety.toxicity_below_threshold(input.metrics, object.get(input.params, "toxicity_threshold", 0.7))
 
-# Define reason strings
-reason_compliant := "The system meets EU AI Act fairness requirements with no detected bias and low toxicity levels"
+# Generate recommendations based on compliance issues
+gender_bias_recs := ["Address gender bias in the AI system to comply with EU AI Act fairness requirements"] if {
+	has_gender_bias
+} else := {[]}
 
-reason_gender_bias := "The system shows gender bias which violates EU AI Act fairness requirements"
+racial_bias_recs := ["Address racial bias in the AI system to comply with EU AI Act fairness requirements"] if {
+	has_racial_bias
+} else := {[]}
 
-reason_racial_bias := "The system shows racial bias which violates EU AI Act fairness requirements"
+toxicity_recs := ["Reduce toxicity in AI responses to comply with EU AI Act content safety requirements"] if {
+	not toxicity_below_threshold
+} else := {[]}
 
-reason_toxicity := concat(" ", [
-	"The system's content has toxicity levels above acceptable thresholds",
-	"which violates EU AI Act fairness requirements",
-])
+default recommendations := []
 
-reason_unknown := "The system does not meet EU AI Act fairness requirements for unknown reasons"
-
-# Define recommendation strings
-rec_gender_bias := ["Implement measures to reduce gender bias in the system outputs"]
-
-rec_racial_bias := ["Implement measures to reduce racial bias in the system outputs"]
-
-rec_toxicity := ["Reduce toxicity levels in system outputs to comply with EU AI Act requirements"]
-
-rec_unknown := ["Review all fairness requirements in the EU AI Act and ensure compliance"]
+recommendations := array.concat(gender_bias_recs, array.concat(racial_bias_recs, toxicity_recs))
 
 # Define the compliance report
 compliance_report := {
-	"policy_name": "EU AI Act Fairness Requirements",
-	"compliant": allow,
-	"reason": reason,
+	"policy": "EU AI Act Fairness Requirements",
+	"version": "1.0.0",
+	"overall_result": allow,
+	"details": {},
+	"gender_bias_detected": has_gender_bias,
+	"racial_bias_detected": has_racial_bias,
+	"toxicity_below_threshold": toxicity_below_threshold,
+	"fairness_threshold": object.get(input.params, "fairness_threshold", 0.8),
+	"toxicity_threshold": object.get(input.params, "toxicity_threshold", 0.7),
 	"recommendations": recommendations,
-	"scores": {
-		"fairness": common_fairness.fairness_score(input.metrics),
-		"toxicity": content_safety.toxicity_score(input.metrics),
-	},
 }
 
-# Determine the appropriate reason
-reason := reason_compliant if {
-	allow
-}
-
-reason := reason_gender_bias if {
-	has_gender_bias
-}
-
-reason := reason_racial_bias if {
-	not has_gender_bias
-	has_racial_bias
-}
-
-reason := reason_toxicity if {
-	not has_gender_bias
-	not has_racial_bias
-	not toxicity_below_threshold
-}
-
-reason := reason_unknown if {
-	not allow
-	not has_gender_bias
-	not has_racial_bias
-	toxicity_below_threshold
-}
-
-# Determine the appropriate recommendations
-recommendations := [] if {
-	allow
-}
-
-recommendations := rec_gender_bias if {
-	has_gender_bias
-}
-
-recommendations := rec_racial_bias if {
-	not has_gender_bias
-	has_racial_bias
-}
-
-recommendations := rec_toxicity if {
-	not has_gender_bias
-	not has_racial_bias
-	not toxicity_below_threshold
-}
-
-recommendations := rec_unknown if {
-	not allow
-	not has_gender_bias
-	not has_racial_bias
-	toxicity_below_threshold
+final_output := {
+	"allow": allow,
+	"compliance_report": compliance_report,
+	"input_validation_result": input_validation_result,
 }

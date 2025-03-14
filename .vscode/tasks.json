@@ -7,7 +7,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "/mnt/c/opa/regal.exe lint \"${relativeFile}\""
+                "/mnt/c/opa/regal.exe lint \"${relativeFile}\" --config-file ${workspaceFolder}/.regal/config.yaml"
             ],
             "problemMatcher": [],
             "options": {

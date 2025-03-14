@@ -23,7 +23,7 @@ from aicertify.report_generation.data_extraction import (
     process_extracted_policy_data
 )
 from aicertify.report_generation.report_generator import ReportGenerator
-from aicertify.report_generation.report_models import PolicyResult
+from aicertify.models.report import PolicyResult
 
 # Import flexible extraction system
 from aicertify.report_generation.flexible_extraction import extract_metrics as flexible_extract_metrics

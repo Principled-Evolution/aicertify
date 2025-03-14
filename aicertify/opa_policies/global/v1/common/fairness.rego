@@ -1,3 +1,8 @@
+# RequiredMetrics:
+#   - fairness_score
+#
+# RequiredParams:
+#   - fairness_threshold (default 0.8)
 package global.v1.common.fairness
 
 import rego.v1
@@ -6,11 +11,7 @@ import rego.v1
 
 # Check gender bias in fairness metrics
 gender_bias_detected(metrics) if {
-	metrics.fairness.gender_bias_detected == true
-}
-
-gender_bias_detected(metrics) if {
-	metrics.gender_bias_detected == true
+	metrics.fairness.details.gender_bias_detected == true
 }
 
 gender_bias_detected(metrics) if {
@@ -21,7 +22,7 @@ gender_bias_detected(_) := false
 
 # Check racial bias in fairness metrics
 racial_bias_detected(metrics) if {
-	metrics.fairness.racial_bias_detected == true
+	metrics.fairness.details.racial_bias_detected == true
 }
 
 racial_bias_detected(metrics) if {
@@ -42,6 +43,6 @@ fairness_score(metrics) := score if {
 } else := 0.0
 
 # Check if fairness score passes threshold
-passes_fairness_threshold(metrics, threshold) if {
-	fairness_score(metrics) >= threshold
+passes_fairness_threshold(eval, threshold) if {
+	eval.fairness_score >= threshold
 }

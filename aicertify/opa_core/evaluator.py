@@ -4,7 +4,8 @@ import shutil
 import sys
 import os
 import json
-from typing import Dict, Any, Optional, List, Union, Literal
+import copy  # Add import for deep copying
+from typing import Dict, Any, Optional, List, Union, Literal, Set, Type
 from pathlib import Path
 from .policy_loader import PolicyLoader, Policy
 from uuid import UUID
@@ -456,6 +457,25 @@ class OpaEvaluator:
             
             # Convert input data to JSON
             input_json = json.dumps(input_data, cls=CustomJSONEncoder)
+            # If debug-opa is enabled, log the command and input to a file for later execution
+            if os.environ.get("OPA_DEBUG") == "1":
+                debug_dir = os.path.join(os.getcwd(), "debug-opa")
+                os.makedirs(debug_dir, exist_ok=True)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                
+                # Save command to shell script
+                shell_file = os.path.join(debug_dir, f"opa_cmd_{timestamp}.sh")
+                with open(shell_file, "w") as f:
+                    f.write("#!/bin/bash\n")
+                    f.write(f"echo '{input_json}' | {' '.join(cmd)}\n")
+                os.chmod(shell_file, 0o755)  # Make executable
+                
+                # Save input to JSON file
+                input_file = os.path.join(debug_dir, f"opa_input_{timestamp}.json")
+                with open(input_file, "w") as f:
+                    f.write(input_json)
+                
+                logging.info(f"OPA debug files created: {shell_file} and {input_file}")
             
             # Run the OPA evaluation
             result = subprocess.run(
@@ -465,7 +485,6 @@ class OpaEvaluator:
                 text=True,
                 check=False
             )
-            
             # Check for non-zero exit code
             if result.returncode != 0:
                 error_msg = result.stderr.strip() if result.stderr else "Unknown error during OPA evaluation"
@@ -740,7 +759,7 @@ class OpaEvaluator:
             policy_path=target_folder,
             input_data=input_data,
             query=query,
-            mode="production",  # Force production mode for consistent JSON output
+            mode=original_mode,  # Force production mode for consistent JSON output
             restrict_to_folder=restrict_to_folder,
             retry_count=0 if retry_debug == "1" else 0  # Track retry state
         )
@@ -792,4 +811,135 @@ class OpaEvaluator:
                 os.environ.pop("OPA_RETRY_DEBUG", None)
         
         return result
+
+    def evaluate_by_folder_name_with_params(
+        self, 
+        folder_name: str, 
+        input_data: Dict[str, Any], 
+        custom_params: Optional[Dict[str, Any]] = None,
+        mode: ExecutionMode = "debug", 
+        restrict_to_folder: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Find folders matching the name, add parameters, and evaluate policies.
+        
+        This method extends evaluate_by_folder_name by adding support for custom
+        parameters that are passed to the OPA input.
+        
+        Args:
+            folder_name: Name of the folder to search for
+            input_data: Input data for evaluation (without params)
+            custom_params: Custom parameters to override defaults for OPA policies
+            mode: Execution mode (production, development, debug)
+            restrict_to_folder: If True, limit evaluation to the specified folder only
+            
+        Returns:
+            Evaluation results or error
+        """
+        # Validate input types
+        if not isinstance(input_data, dict):
+            logging.error(f"input_data must be a dictionary, got {type(input_data)}")
+            return {"error": "input_data must be a dictionary"}
+        
+        if custom_params is not None and not isinstance(custom_params, dict):
+            logging.error(f"custom_params must be a dictionary, got {type(custom_params)}")
+            return {"error": "custom_params must be a dictionary"}
+        
+        # Get required parameters with default values
+        matching_folders = self.find_matching_policy_folders(folder_name)
+        if not matching_folders:
+            return {
+                "error": f"No policy folders found matching: {folder_name}",
+                "searched_in": self.policy_loader.get_policy_dir()
+            }
+        
+        # Use the first match to get parameters
+        target_folder = matching_folders[0]
+        default_params = self.policy_loader.get_required_params_for_folder(target_folder)
+        logging.debug(f"Found default parameters for {folder_name}: {default_params}")
+        
+        # Create a deep copy of the input data to ensure we don't modify the original
+        # This protects against modifying nested dictionaries
+        enhanced_input = copy.deepcopy(input_data)
+        
+        # Create a new params dictionary with the correct precedence:
+        # 1. Start with default parameters from the policy
+        # 2. Add any existing params from the input
+        # 3. Override with custom params provided to this method
+        params_dict = {
+            **default_params,
+            **(enhanced_input.get("params", {}) if isinstance(enhanced_input.get("params"), dict) else {}),
+            **(custom_params or {})
+        }
+        
+        # Set the params in the enhanced input
+        enhanced_input["params"] = params_dict
+        
+        # Log the parameter merging for debugging
+        logging.debug(f"Using parameters for OPA evaluation: {params_dict}")
+        
+        # Transform the input structure to match what OPA policies expect
+        enhanced_input = self._transform_input_for_opa(enhanced_input)
+        
+        # Call the original implementation with the enhanced input
+        return self.evaluate_by_folder_name(
+            folder_name=folder_name,
+            input_data=enhanced_input,
+            mode=mode,
+            restrict_to_folder=restrict_to_folder
+        )
+
+    def evaluate_policy_category(
+        self,
+        policy_category: str,
+        input_data: Dict[str, Any],
+        custom_params: Optional[Dict[str, Any]] = None,
+        mode: ExecutionMode = "production"
+    ) -> Dict[str, Any]:
+        """
+        Evaluate policies in a specific category using the folder-based approach.
+        
+        This is a convenience wrapper around evaluate_by_folder_name_with_params
+        that supports the API's evaluate_contract_comprehensive function.
+        
+        Args:
+            policy_category: The category of policies to evaluate (folder name)
+            input_data: Input data for evaluation
+            custom_params: Optional custom parameters to override defaults
+            mode: Execution mode (production, development, debug)
+            
+        Returns:
+            Evaluation results
+        """
+        logging.info(f"Evaluating policies in category: {policy_category}")
+        
+        return self.evaluate_by_folder_name_with_params(
+            folder_name=policy_category,
+            input_data=input_data,
+            custom_params=custom_params,
+            mode=mode,
+            restrict_to_folder=False  # Allow cross-folder dependencies
+        )
+
+    def _transform_input_for_opa(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Transform input data to match OPA policy expectations.
+        
+        Ensures data at 'results.fairness' is also available at 'metrics.fairness'.
+        
+        Args:
+            input_data: Original input data
+            
+        Returns:
+            Transformed input data with proper structure for OPA policies
+        """
+        # Create a deep copy to avoid modifying the original
+        transformed = copy.deepcopy(input_data)
+        
+        # If the results key exists but metrics doesn't, map results to metrics
+        if "results" in transformed and "metrics" not in transformed:
+            transformed["metrics"] = transformed["results"]
+            logging.debug("Transformed input data: mapped 'results' to 'metrics'")
+            
+        return transformed
 

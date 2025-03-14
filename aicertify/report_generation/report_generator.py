@@ -16,6 +16,11 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, 
 from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
+from typing import List, Dict, Any, Optional
+from dataclasses import dataclass
+
+# Import centralized models
+from aicertify.models.evaluation import MetricValue
 
 # Full and short disclaimer texts.
 DISCLAIMER_FULL = (
@@ -236,21 +241,12 @@ class ReportGenerator:
 if __name__ == "__main__":
     from datetime import datetime
     # For demonstration, define dummy report model classes.
-    from dataclasses import dataclass
-    from typing import List, Dict, Any, Optional
-
     @dataclass
     class ApplicationDetails:
         name: str
         evaluation_mode: str
         contract_count: int
         evaluation_date: datetime
-
-    @dataclass
-    class MetricValue:
-        name: str
-        value: Any
-        display_name: str
 
     @dataclass
     class MetricGroup:

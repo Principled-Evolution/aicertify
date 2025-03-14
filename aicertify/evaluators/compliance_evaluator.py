@@ -11,6 +11,7 @@ from typing import Dict, List, Any, Optional, Union, Tuple, Set
 import importlib.util
 import json
 from datetime import datetime
+import inspect
 
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult, Report
 from aicertify.evaluators.fairness_evaluator import FairnessEvaluator
@@ -46,6 +47,10 @@ class EvaluatorConfig:
         self.emotion_recognition = kwargs.get("emotion_recognition", {})
         self.model_card = kwargs.get("model_card", {})
         self.general = kwargs.get("general", {})
+        
+    def _config(self, section_name):
+        """Access configuration section as a dictionary."""
+        return getattr(self, section_name)
 
 class ComplianceEvaluator:
     """
@@ -63,149 +68,119 @@ class ComplianceEvaluator:
     It provides a unified interface for comprehensive compliance evaluation.
     """
     
+    # Mapping of evaluator names to their classes for dynamic initialization
+    EVALUATOR_CLASSES = {
+        "fairness": FairnessEvaluator,
+        "content_safety": ContentSafetyEvaluator,
+        "risk_management": RiskManagementEvaluator,
+        "accuracy": AccuracyEvaluator,
+        "biometric_categorization": BiometricCategorizationEvaluator,
+        "manipulation": ManipulationEvaluator,
+        "vulnerability_exploitation": VulnerabilityExploitationEvaluator,
+        "social_scoring": SocialScoringEvaluator,
+        "emotion_recognition": EmotionRecognitionEvaluator,
+        "model_card": ModelCardEvaluator
+    }
+    
     def __init__(
         self,
         evaluators: Optional[List[str]] = None,
-        config: Optional[EvaluatorConfig] = None,
-        use_mock_if_unavailable: bool = False
+        evaluator_config: Optional[Dict[str, Any]] = None,
+        supported_metrics: Optional[List[str]] = None,
     ):
         """
-        Initialize the compliance evaluator with selected evaluators.
-        
+        Initialize the compliance evaluator.
+
         Args:
-            evaluators: List of evaluator names to use, or None for all available
-            config: Configuration for the evaluators
-            use_mock_if_unavailable: Whether to use mock implementations when real evaluators are unavailable
+            evaluators: List of evaluator names to use. If None, all evaluators will be used.
+            evaluator_config: Configuration for evaluators.
+            supported_metrics: List of supported metrics.
         """
-        self.config = config or EvaluatorConfig()
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info("Initializing ComplianceEvaluator")
         
-        # Add use_mock_if_unavailable to each evaluator's config
-        if "use_mock_if_unavailable" not in self.config.fairness:
-            self.config.fairness["use_mock_if_unavailable"] = use_mock_if_unavailable
-        if "use_mock_if_unavailable" not in self.config.content_safety:
-            self.config.content_safety["use_mock_if_unavailable"] = use_mock_if_unavailable
-        if "use_mock_if_unavailable" not in self.config.risk_management:
-            self.config.risk_management["use_mock_if_unavailable"] = use_mock_if_unavailable
-        if "use_mock_if_unavailable" not in self.config.accuracy:
-            self.config.accuracy["use_mock_if_unavailable"] = use_mock_if_unavailable
-        if "use_mock_if_unavailable" not in self.config.biometric_categorization:
-            self.config.biometric_categorization["use_mock_if_unavailable"] = use_mock_if_unavailable
-        if "use_mock_if_unavailable" not in self.config.manipulation:
-            self.config.manipulation["use_mock_if_unavailable"] = use_mock_if_unavailable
-        if "use_mock_if_unavailable" not in self.config.vulnerability_exploitation:
-            self.config.vulnerability_exploitation["use_mock_if_unavailable"] = use_mock_if_unavailable
-        if "use_mock_if_unavailable" not in self.config.social_scoring:
-            self.config.social_scoring["use_mock_if_unavailable"] = use_mock_if_unavailable
-        if "use_mock_if_unavailable" not in self.config.emotion_recognition:
-            self.config.emotion_recognition["use_mock_if_unavailable"] = use_mock_if_unavailable
-        if "use_mock_if_unavailable" not in self.config.model_card:
-            self.config.model_card["use_mock_if_unavailable"] = use_mock_if_unavailable
+        self.all_evaluators = {}
         
-        # Initialize all evaluators with their configurations
-        try:
-            # Original evaluators
-            self.fairness_evaluator = FairnessEvaluator(config=self.config.fairness)
-            self.content_safety_evaluator = ContentSafetyEvaluator(config=self.config.content_safety)
-            self.risk_management_evaluator = RiskManagementEvaluator(config=self.config.risk_management)
+        # Initialize all evaluator instances with their default configurations
+        for name, evaluator_class in self.EVALUATOR_CLASSES.items():
+            self.logger.info(f"Initializing evaluator: {name} ({evaluator_class.__name__})")
             
-            # New EU AI Act evaluators
-            self.accuracy_evaluator = AccuracyEvaluator(**self.config.accuracy)
-            self.biometric_categorization_evaluator = BiometricCategorizationEvaluator(**self.config.biometric_categorization)
-            self.manipulation_evaluator = ManipulationEvaluator(**self.config.manipulation)
-            self.vulnerability_exploitation_evaluator = VulnerabilityExploitationEvaluator(**self.config.vulnerability_exploitation)
-            self.social_scoring_evaluator = SocialScoringEvaluator(**self.config.social_scoring)
-            self.emotion_recognition_evaluator = EmotionRecognitionEvaluator(**self.config.emotion_recognition)
-            self.model_card_evaluator = ModelCardEvaluator(**self.config.model_card)
+            # Get default configuration from evaluator class if available
+            default_config = getattr(evaluator_class, 'DEFAULT_CONFIG', {})
             
-            # Register all evaluators in the dictionary
-            self.all_evaluators = {
-                # Original evaluators
-                "fairness": self.fairness_evaluator,
-                "content_safety": self.content_safety_evaluator,
-                "risk_management": self.risk_management_evaluator,
-                
-                # New EU AI Act evaluators
-                "accuracy": self.accuracy_evaluator,
-                "biometric_categorization": self.biometric_categorization_evaluator,
-                "manipulation": self.manipulation_evaluator,
-                "vulnerability_exploitation": self.vulnerability_exploitation_evaluator,
-                "social_scoring": self.social_scoring_evaluator,
-                "emotion_recognition": self.emotion_recognition_evaluator,
-                "model_card": self.model_card_evaluator
-            }
+            # Merge with user-provided config if available
+            config = {}
+            if evaluator_config and name in evaluator_config:
+                # Deep merge the configurations
+                config = {**default_config, **(evaluator_config.get(name) or {})}
+            else:
+                config = default_config
             
-            # Log initialization status
-            logger.info("Successfully initialized all evaluators")
+            self.logger.debug(f"Configuration for {name}: {config}")
             
-        except Exception as e:
-            logger.error(f"Error initializing evaluators: {e}")
-            
-            # Fallback initialization with error handling for each evaluator
-            self.all_evaluators = {}
-            
+            # Initialize the evaluator based on its init signature
             try:
-                self.all_evaluators["fairness"] = FairnessEvaluator(config=self.config.fairness)
+                if "config" in inspect.signature(evaluator_class.__init__).parameters:
+                    self.all_evaluators[name] = evaluator_class(config=config)
+                else:
+                    self.all_evaluators[name] = evaluator_class(**config)
+                    
+                self.logger.info(f"Successfully initialized {name}")
             except Exception as e:
-                logger.error(f"Failed to initialize FairnessEvaluator: {e}")
-                
-            try:
-                self.all_evaluators["content_safety"] = ContentSafetyEvaluator(config=self.config.content_safety)
-            except Exception as e:
-                logger.error(f"Failed to initialize ContentSafetyEvaluator: {e}")
-                
-            try:
-                self.all_evaluators["risk_management"] = RiskManagementEvaluator(config=self.config.risk_management)
-            except Exception as e:
-                logger.error(f"Failed to initialize RiskManagementEvaluator: {e}")
-                
-            try:
-                self.all_evaluators["accuracy"] = AccuracyEvaluator(**self.config.accuracy)
-            except Exception as e:
-                logger.error(f"Failed to initialize AccuracyEvaluator: {e}")
-                
-            try:
-                self.all_evaluators["biometric_categorization"] = BiometricCategorizationEvaluator(**self.config.biometric_categorization)
-            except Exception as e:
-                logger.error(f"Failed to initialize BiometricCategorizationEvaluator: {e}")
-                
-            try:
-                self.all_evaluators["manipulation"] = ManipulationEvaluator(**self.config.manipulation)
-            except Exception as e:
-                logger.error(f"Failed to initialize ManipulationEvaluator: {e}")
-                
-            try:
-                self.all_evaluators["vulnerability_exploitation"] = VulnerabilityExploitationEvaluator(**self.config.vulnerability_exploitation)
-            except Exception as e:
-                logger.error(f"Failed to initialize VulnerabilityExploitationEvaluator: {e}")
-                
-            try:
-                self.all_evaluators["social_scoring"] = SocialScoringEvaluator(**self.config.social_scoring)
-            except Exception as e:
-                logger.error(f"Failed to initialize SocialScoringEvaluator: {e}")
-                
-            try:
-                self.all_evaluators["emotion_recognition"] = EmotionRecognitionEvaluator(**self.config.emotion_recognition)
-            except Exception as e:
-                logger.error(f"Failed to initialize EmotionRecognitionEvaluator: {e}")
-                
-            try:
-                self.all_evaluators["model_card"] = ModelCardEvaluator(**self.config.model_card)
-            except Exception as e:
-                logger.error(f"Failed to initialize ModelCardEvaluator: {e}")
+                self.logger.error(f"Failed to initialize {name}: {str(e)}")
+        
+        self.logger.info(f"Available evaluators: {list(self.all_evaluators.keys())}")
         
         # Select which evaluators to use
         if evaluators is None:
+            self.logger.info("No specific evaluators requested, using all available evaluators")
             # Use all available evaluators
             self.active_evaluators = self.all_evaluators
         else:
+            self.logger.info(f"Requested evaluators: {evaluators}")
             # Use only the specified evaluators
             self.active_evaluators = {
                 name: evaluator for name, evaluator in self.all_evaluators.items()
                 if name in evaluators
             }
+            
+            # Log which evaluators were found and which weren't
+            found_evaluators = [name for name in evaluators if name in self.all_evaluators]
+            missing_evaluators = [name for name in evaluators if name not in self.all_evaluators]
+            
+            if found_evaluators:
+                self.logger.info(f"Found evaluators: {found_evaluators}")
+            if missing_evaluators:
+                self.logger.warning(f"Evaluators not found: {missing_evaluators}")
         
-        logger.info(f"Compliance evaluator initialized with {len(self.active_evaluators)} active evaluators")
-        logger.info(f"Active evaluators: {', '.join(self.active_evaluators.keys())}")
+        self.logger.info(f"Active evaluators: {list(self.active_evaluators.keys())}")
+        
+        # If no active evaluators were found by name, try a case-insensitive match or match by class name
+        if not self.active_evaluators and evaluators:
+            self.logger.warning("No active evaluators found by exact name match. Trying fallback matching...")
+            
+            # Try case-insensitive matching
+            lower_case_map = {name.lower(): name for name in self.all_evaluators.keys()}
+            for evaluator_name in evaluators:
+                if evaluator_name.lower() in lower_case_map:
+                    original_name = lower_case_map[evaluator_name.lower()]
+                    self.active_evaluators[original_name] = self.all_evaluators[original_name]
+                    self.logger.info(f"Found case-insensitive match: '{evaluator_name}' -> '{original_name}'")
+            
+            # Try matching by class name
+            if not self.active_evaluators:
+                class_to_name = {cls.__name__: name for name, cls in self.EVALUATOR_CLASSES.items()}
+                for evaluator_name in evaluators:
+                    if evaluator_name in class_to_name:
+                        name = class_to_name[evaluator_name]
+                        self.active_evaluators[name] = self.all_evaluators[name]
+                        self.logger.info(f"Found match by class name: '{evaluator_name}' -> '{name}'")
+        
+        if not self.active_evaluators:
+            self.logger.warning("No active evaluators found after all matching attempts!")
+            
+        # Set supported metrics
+        self.supported_metrics = supported_metrics
         
     def evaluate(self, data: Dict) -> Dict[str, EvaluationResult]:
         """

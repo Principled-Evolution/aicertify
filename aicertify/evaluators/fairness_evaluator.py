@@ -7,12 +7,16 @@ for evaluating AI systems against fairness criteria.
 
 import logging
 import json
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional, Union, Tuple, Set
 import importlib.util
 import random
 import re
+import os
+import time
+from uuid import uuid4
 
-from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
+# Import base evaluator components
+from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult, Report, EvaluatorConfig
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -20,10 +24,9 @@ logger = logging.getLogger(__name__)
 
 # Check if LangFair is available
 try:
+    # Import required metrics from langfair
+    from langfair.metrics.counterfactual.metrics import SentimentBias, BleuSimilarity, RougelSimilarity
     from langfair.metrics.counterfactual import CounterfactualMetrics
-    from langfair.metrics.counterfactual.metrics import (
-        SentimentBias, BleuSimilarity, RougelSimilarity
-    )
     from langfair.metrics.stereotype import StereotypeMetrics
     LANGFAIR_AVAILABLE = True
 except ImportError:
@@ -38,7 +41,52 @@ class FairnessEvaluator(BaseEvaluator):
     1. Counterfactual fairness assessment
     2. Stereotype detection
     3. Bias metrics
+    
+    This evaluator supports various fairness-related metrics which can be 
+    discovered by the evaluator registry through the SUPPORTED_METRICS attribute.
     """
+    
+    # Define the metrics supported by this evaluator
+    # Both legacy naming (fairness.X) and new namespaced naming (metrics.fairness.X)
+    # are included for compatibility with different parts of the system
+    SUPPORTED_METRICS: Tuple[str, ...] = (
+        "fairness.score",
+        "fairness.gender_bias",
+        "fairness.racial_bias",
+        "fairness.counterfactual_score",
+        "fairness.stereotype_score",
+        "fairness.combined_score",
+        "fairness.sentiment_bias",
+        "fairness.race_words_count",
+        "fairness.gender_words_count",
+        "fairness.ftu_satisfied",
+        "metrics.fairness.gender_bias",
+        "metrics.fairness.score"
+    )
+    
+    # Default configuration values
+    DEFAULT_CONFIG = {
+        # Default thresholds
+        "threshold": 0.7,
+        "counterfactual_threshold": 0.7,
+        "stereotype_threshold": 0.7,
+        
+        # Weights for calculation
+        "counterfactual_weight": 0.5,
+        "stereotype_weight": 0.5,
+        
+        # Metrics to use
+        "use_sentiment_bias": True,
+        "use_bleu_similarity": True,
+        "use_rouge_similarity": True,
+        
+        # Never use mock implementations by default
+        "use_mock_if_unavailable": False,
+        
+        # API parameters
+        "api_key": None,
+        "api_base": None
+    }
     
     def _initialize(self) -> None:
         """Initialize the fairness evaluator with LangFair components."""

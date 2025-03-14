@@ -9,9 +9,11 @@ import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from aicertify.report_generation.report_models import (
+# Import from centralized models
+from aicertify.models.evaluation import MetricValue
+from aicertify.models.report import (
     EvaluationReport, ApplicationDetails,
-    MetricGroup, MetricValue, PolicyResult
+    MetricGroup, PolicyResult
 )
 
 # Import feature flag configuration
