@@ -32,5 +32,5 @@ passes_content_safety_threshold(eval, threshold) if {
 
 # Check if toxicity score is below threshold
 toxicity_below_threshold(metrics, threshold) if {
-	metrics.content_safety.score < threshold
+	1 - metrics.content_safety.score < threshold
 }

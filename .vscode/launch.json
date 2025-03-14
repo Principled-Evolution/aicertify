@@ -18,7 +18,7 @@
                 "--output-dir",
                 "${workspaceFolder}/examples/outputs/medical_diagnosis/reports",
                 "--report-format",
-                "markdown"
+                "json"
             ]
         },
         {

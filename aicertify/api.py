@@ -951,42 +951,50 @@ async def aicertify_app_for_policy(
             else:
                 filename = f"folder_report_{contract.application_name}_{timestamp}.txt"
             
-            # Generate report
-            try:
+            # Generate report data based on the requested format
+            if report_format.lower() == "json":
+                # For JSON format, include the complete evaluation results with all metrics
+                report_data = {
+                    "evaluation_result": phase1_results,  # Use the full evaluator results with all metrics
+                    "opa_results": opa_results
+                }
+            else:
                 from aicertify.report_generation.report_generator import ReportGenerator
-    
                 from aicertify.report_generation.data_extraction import create_evaluation_report
-                
-                # Create report generator instance
                 report_gen = ReportGenerator()
-                
                 report_data = create_evaluation_report(
                     evaluation_result=evaluation_result,
                     opa_results=opa_results
                 )
-                
-                # Generate report based on format
-                if report_format == "markdown":
-                    report_content = report_gen.generate_markdown_report(report_data)
-                    # Save report
-                    report_path = os.path.join(output_dir, filename)
-                    with open(report_path, "w") as f:
-                        f.write(report_content)
-                    
-                    logger.info(f"Saved folder-based report to {report_path}")
-                elif report_format == "pdf":
-                    # First generate markdown content
-                    md_content = report_gen.generate_markdown_report(report_data)
-                    # Then convert to PDF
-                    pdf_path = os.path.join(output_dir, f"report_{contract.application_name}_{timestamp}.pdf")
-                    report_gen.generate_pdf_report(md_content, pdf_path)
-                    report_content = f"PDF report generated at {pdf_path}"
-                    report_path = pdf_path
-                else:
-                    report_content = report_gen.generate_markdown_report(report_data)
-                
-            except Exception as e:
-                logger.error(f"Error generating report: {str(e)}")
+            
+            # Generate and write the report file based on the format
+            if report_format.lower() == "markdown":
+                report_content = report_gen.generate_markdown_report(report_data)
+                report_path = os.path.join(output_dir, filename)
+                abs_path = os.path.abspath(report_path)
+                with open(report_path, "w") as f:
+                    f.write(report_content)
+                logger.info(f"\033[32m📄 Report generated at: \033]8;;file://{abs_path}\033\\{abs_path}\033]8;;\033\\\033[0m")
+                logger.info(f"   To open in VS Code: code \"{abs_path}\"")
+                logger.info(f"   To open in nano: nano \"{abs_path}\"")
+            elif report_format.lower() == "pdf":
+                md_content = report_gen.generate_markdown_report(report_data)
+                pdf_path = os.path.join(output_dir, f"report_{contract.application_name}_{timestamp}.pdf")
+                report_gen.generate_pdf_report(md_content, pdf_path)
+                report_path = pdf_path
+                abs_path = os.path.abspath(report_path)
+                logger.info(f"\033[32m📊 PDF Report generated at: \033]8;;file://{abs_path}\033\\{abs_path}\033]8;;\033\\\033[0m")
+            elif report_format.lower() == "json":
+                report_path = os.path.join(output_dir, filename)
+                abs_path = os.path.abspath(report_path)
+                with open(report_path, "w") as f:
+                    json.dump(report_data, f, indent=2, cls=CustomJSONEncoder)
+                logger.info(f"\033[32m🔍 JSON Report generated at: \033]8;;file://{abs_path}\033\\{abs_path}\033]8;;\033\\\033[0m")
+                logger.info(f"   To open in VS Code: code \"{abs_path}\"")
+                logger.info(f"   To open in nano: nano \"{abs_path}\"")
+            else:
+                # Fallback: generate as markdown
+                report_content = report_gen.generate_markdown_report(report_data)
     
     # Return results
     return {

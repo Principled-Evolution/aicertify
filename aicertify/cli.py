@@ -12,12 +12,14 @@ import logging
 import os
 import sys
 from typing import Dict, Any, Optional
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
 
 from aicertify.api import aicertify_app_for_policy
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger("aicertify.cli")

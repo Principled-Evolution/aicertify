@@ -457,6 +457,25 @@ class OpaEvaluator:
             
             # Convert input data to JSON
             input_json = json.dumps(input_data, cls=CustomJSONEncoder)
+            # If debug-opa is enabled, log the command and input to a file for later execution
+            if os.environ.get("OPA_DEBUG") == "1":
+                debug_dir = os.path.join(os.getcwd(), "debug-opa")
+                os.makedirs(debug_dir, exist_ok=True)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                
+                # Save command to shell script
+                shell_file = os.path.join(debug_dir, f"opa_cmd_{timestamp}.sh")
+                with open(shell_file, "w") as f:
+                    f.write("#!/bin/bash\n")
+                    f.write(f"echo '{input_json}' | {' '.join(cmd)}\n")
+                os.chmod(shell_file, 0o755)  # Make executable
+                
+                # Save input to JSON file
+                input_file = os.path.join(debug_dir, f"opa_input_{timestamp}.json")
+                with open(input_file, "w") as f:
+                    f.write(input_json)
+                
+                logging.info(f"OPA debug files created: {shell_file} and {input_file}")
             
             # Run the OPA evaluation
             result = subprocess.run(
@@ -466,7 +485,6 @@ class OpaEvaluator:
                 text=True,
                 check=False
             )
-            
             # Check for non-zero exit code
             if result.returncode != 0:
                 error_msg = result.stderr.strip() if result.stderr else "Unknown error during OPA evaluation"
@@ -741,7 +759,7 @@ class OpaEvaluator:
             policy_path=target_folder,
             input_data=input_data,
             query=query,
-            mode="production",  # Force production mode for consistent JSON output
+            mode=original_mode,  # Force production mode for consistent JSON output
             restrict_to_folder=restrict_to_folder,
             retry_count=0 if retry_debug == "1" else 0  # Track retry state
         )
@@ -860,6 +878,9 @@ class OpaEvaluator:
         # Log the parameter merging for debugging
         logging.debug(f"Using parameters for OPA evaluation: {params_dict}")
         
+        # Transform the input structure to match what OPA policies expect
+        enhanced_input = self._transform_input_for_opa(enhanced_input)
+        
         # Call the original implementation with the enhanced input
         return self.evaluate_by_folder_name(
             folder_name=folder_name,
@@ -899,4 +920,26 @@ class OpaEvaluator:
             mode=mode,
             restrict_to_folder=False  # Allow cross-folder dependencies
         )
+
+    def _transform_input_for_opa(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Transform input data to match OPA policy expectations.
+        
+        Ensures data at 'results.fairness' is also available at 'metrics.fairness'.
+        
+        Args:
+            input_data: Original input data
+            
+        Returns:
+            Transformed input data with proper structure for OPA policies
+        """
+        # Create a deep copy to avoid modifying the original
+        transformed = copy.deepcopy(input_data)
+        
+        # If the results key exists but metrics doesn't, map results to metrics
+        if "results" in transformed and "metrics" not in transformed:
+            transformed["metrics"] = transformed["results"]
+            logging.debug("Transformed input data: mapped 'results' to 'metrics'")
+            
+        return transformed
 

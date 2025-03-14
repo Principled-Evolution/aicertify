@@ -11,11 +11,7 @@ import rego.v1
 
 # Check gender bias in fairness metrics
 gender_bias_detected(metrics) if {
-	metrics.fairness.gender_bias_detected == true
-}
-
-gender_bias_detected(metrics) if {
-	metrics.gender_bias_detected == true
+	metrics.fairness.details.gender_bias_detected == true
 }
 
 gender_bias_detected(metrics) if {
@@ -26,7 +22,7 @@ gender_bias_detected(_) := false
 
 # Check racial bias in fairness metrics
 racial_bias_detected(metrics) if {
-	metrics.fairness.racial_bias_detected == true
+	metrics.fairness.details.racial_bias_detected == true
 }
 
 racial_bias_detected(metrics) if {
