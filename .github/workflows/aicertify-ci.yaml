@@ -70,3 +70,6 @@ jobs:
 
       - name: Run AI Policy Validation
         run: poetry run python aicertify/cli/cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
+
+      - name: Run OPA Policy Check
+        run: opa check ./aicertify/opa_policies
