@@ -25,6 +25,17 @@ class EmotionRecognitionEvaluator(BaseEvaluator):
     workplace or educational contexts, which is prohibited under EU AI Act Article 5(1)(a).
     """
     
+    # Define the metrics supported by this evaluator
+    SUPPORTED_METRICS: Tuple[str, ...] = (
+        "emotion_recognition.score",
+        "emotion_recognition.workplace_context",
+        "emotion_recognition.educational_context",
+        "emotion_recognition.combined_score",
+        "metrics.emotion_recognition.score",
+        "metrics.emotion_recognition.workplace_context",
+        "metrics.emotion_recognition.educational_context"
+    )
+    
     def __init__(
         self,
         emotion_recognition_threshold: float = 0.3,

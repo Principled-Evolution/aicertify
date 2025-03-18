@@ -8,6 +8,7 @@ evaluation results, ensuring reports are complete and accurate.
 import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+import os
 
 # Import from centralized models
 from aicertify.models.evaluation import MetricValue
@@ -798,104 +799,329 @@ def process_extracted_policy_data(extracted_data: Dict[str, Any]) -> List[Policy
 def create_evaluation_report(
     evaluation_result: Dict[str, Any], 
     opa_results: Optional[Dict[str, Any]] = None
-) -> EvaluationReport:
-    """
-    Create a complete evaluation report from evaluation results and OPA results.
+) -> Dict[str, Any]:
+    """Create a report data structure from evaluation results.
     
     Args:
-        evaluation_result: Dictionary containing evaluation metrics
-        opa_results: Dictionary containing OPA policy evaluation results
+        evaluation_result: The evaluation results from Phase 1
+        opa_results: Optional OPA evaluation results
         
     Returns:
-        Complete EvaluationReport object for report generation
+        Dict containing structured report data
     """
-    # Use empty dict if opa_results is None
     if opa_results is None:
         opa_results = {}
     
-    # Extract application details
-    app_details = extract_application_details(evaluation_result)
+    # Extract application name
+    app_name = evaluation_result.get("app_name", evaluation_result.get("application_name", "Unknown Application"))
     
-    # Create metric groups - use flexible extraction if enabled
-    if use_flexible_extraction():
-        logger.info("Using flexible extraction system")
-        all_metrics = flexible_extract_metrics(evaluation_result)
-        
-        metric_groups = []
-        for group_name, metrics in all_metrics.items():
-            if metrics:  # Only include non-empty metric groups
-                # Use display name from configuration if available
-                display_name = group_name.title() + " Metrics"
+    # Initialize counters
+    total_policies = 0
+    passed_policies = 0
+    
+    # Process policy results
+    policy_results = []
+    
+    # First handle any direct metrics in the evaluation result
+    if "metrics" in evaluation_result:
+        metrics_data = evaluation_result["metrics"]
+        if isinstance(metrics_data, dict):
+            policy_result = {
+                "is_nested": False,
+                "policy": "Direct Evaluation",
+                "result": all(m.get("control_passed", False) for m in metrics_data.values()),
+                "metrics": {
+                    key: {
+                        "name": m.get("name", key),
+                        "value": m.get("value"),
+                        "control_passed": m.get("control_passed", False)
+                    }
+                    for key, m in metrics_data.items()
+                }
+            }
+            policy_results.append(policy_result)
+            total_policies += 1
+            if policy_result["result"]:
+                passed_policies += 1
+
+    # Then process nested results in evaluation_result
+    if "result" in evaluation_result:
+        result_data = evaluation_result["result"]
+        if isinstance(result_data, dict):
+            for policy_name, policy_data in result_data.items():
+                if isinstance(policy_data, dict):
+                    # Handle nested policy structure
+                    if "details" in policy_data:
+                        nested_details = {}
+                        nested_passed = 0
+                        nested_total = 0
+                        
+                        for path, details in policy_data["details"].items():
+                            metrics = details.get("metrics", {})
+                            if isinstance(metrics, dict):
+                                nested_details[path] = {
+                                    "name": details.get("name", path),
+                                    "passed": all(m.get("control_passed", False) for m in metrics.values()),
+                                    "metrics": {
+                                        key: {
+                                            "name": m.get("name", key),
+                                            "value": m.get("value"),
+                                            "control_passed": m.get("control_passed", False)
+                                        }
+                                        for key, m in metrics.items()
+                                    }
+                                }
+                                nested_total += 1
+                                if nested_details[path]["passed"]:
+                                    nested_passed += 1
+                        
+                        if nested_total > 0:
+                            success_rate = f"{(nested_passed / nested_total) * 100:.1f}%"
+                            policy_results.append({
+                                "is_nested": True,
+                                "policy": policy_name,
+                                "result": nested_passed == nested_total,
+                                "summary": {
+                                    "success_rate": success_rate,
+                                    "total": nested_total,
+                                    "passed": nested_passed,
+                                    "failed": nested_total - nested_passed
+                                },
+                                "details": nested_details
+                            })
+                            total_policies += nested_total
+                            passed_policies += nested_passed
+                    # Handle flat policy structure
+                    elif "metrics" in policy_data:
+                        metrics = policy_data["metrics"]
+                        if isinstance(metrics, dict):
+                            policy_result = {
+                                "is_nested": False,
+                                "policy": policy_name,
+                                "result": all(m.get("control_passed", False) for m in metrics.values()),
+                                "metrics": {
+                                    key: {
+                                        "name": m.get("name", key),
+                                        "value": m.get("value"),
+                                        "control_passed": m.get("control_passed", False)
+                                    }
+                                    for key, m in metrics.items()
+                                }
+                            }
+                            policy_results.append(policy_result)
+                            total_policies += 1
+                            if policy_result["result"]:
+                                passed_policies += 1
+    
+    # Process OPA results directly
+    if opa_results:
+        # Handle aggregated individual results format
+        if "result" in opa_results:
+            result_data = opa_results["result"]
+            if isinstance(result_data, dict):
+                # Common OPA result structure with policy field
+                if "policy" in result_data:
+                    policy_name = result_data.get("policy", "OPA Policy")
+                    
+                    # Handle aggregated results with a results array
+                    if "results" in result_data and isinstance(result_data["results"], list):
+                        for result in result_data["results"]:
+                            if isinstance(result, dict):
+                                sub_policy_name = result.get("policy", "Unknown Policy")
+                                result_value = result.get("result", {})
+                                
+                                # Extract metrics
+                                metrics = {}
+                                if "metrics" in result_value:
+                                    metrics = result_value["metrics"]
+                                elif "expressions" in result_value and result_value["expressions"]:
+                                    for expr in result_value["expressions"]:
+                                        if "value" in expr and "metrics" in expr["value"]:
+                                            metrics = expr["value"]["metrics"]
+                                            break
+                                
+                                if metrics:
+                                    all_passed = all(m.get("control_passed", False) for m in metrics.values())
+                                    
+                                    policy_result = {
+                                        "is_nested": False,
+                                        "policy": sub_policy_name,
+                                        "result": all_passed,
+                                        "metrics": {
+                                            key: {
+                                                "name": m.get("name", key),
+                                                "value": m.get("value"),
+                                                "control_passed": m.get("control_passed", False)
+                                            }
+                                            for key, m in metrics.items()
+                                        }
+                                    }
+                                    policy_results.append(policy_result)
+                                    total_policies += 1
+                                    if all_passed:
+                                        passed_policies += 1
+                    
+                    # Handle direct result with metrics
+                    elif "metrics" in result_data:
+                        metrics = result_data["metrics"]
+                        if isinstance(metrics, dict):
+                            all_passed = all(m.get("control_passed", False) for m in metrics.values())
+                            
+                            policy_result = {
+                                "is_nested": False,
+                                "policy": policy_name,
+                                "result": all_passed,
+                                "metrics": {
+                                    key: {
+                                        "name": m.get("name", key),
+                                        "value": m.get("value"),
+                                        "control_passed": m.get("control_passed", False)
+                                    }
+                                    for key, m in metrics.items()
+                                }
+                            }
+                            policy_results.append(policy_result)
+                            total_policies += 1
+                            if all_passed:
+                                passed_policies += 1
                 
-                metric_groups.append(
-                    MetricGroup(
-                        name=group_name,
-                        display_name=display_name,
-                        metrics=metrics
-                    )
-                )
-    else:
-        # Use legacy extraction system
-        fairness_metrics = extract_fairness_metrics(evaluation_result)
-        toxicity_metrics = extract_toxicity_metrics(evaluation_result)
-        stereotype_metrics = extract_stereotype_metrics(evaluation_result)
-        
-        metric_groups = [
-            MetricGroup(
-                name="fairness",
-                display_name="Fairness Metrics",
-                metrics=fairness_metrics
+                # Handle nested policy results without the "policy" field
+                elif not any(key in ["policy", "metrics"] for key in result_data):
+                    for policy_name, policy_data in result_data.items():
+                        if isinstance(policy_data, dict):
+                            # Check for metrics directly in the policy data
+                            if "metrics" in policy_data:
+                                metrics = policy_data["metrics"]
+                                if isinstance(metrics, dict):
+                                    all_passed = all(m.get("control_passed", False) for m in metrics.values())
+                                    
+                                    policy_result = {
+                                        "is_nested": False,
+                                        "policy": policy_name,
+                                        "result": all_passed,
+                                        "metrics": {
+                                            key: {
+                                                "name": m.get("name", key),
+                                                "value": m.get("value"),
+                                                "control_passed": m.get("control_passed", False)
+                                            }
+                                            for key, m in metrics.items()
+                                        }
+                                    }
+                                    policy_results.append(policy_result)
+                                    total_policies += 1
+                                    if all_passed:
+                                        passed_policies += 1
+                                    
+                            # Handle expressions format
+                            elif "expressions" in policy_data and policy_data["expressions"]:
+                                for expr in policy_data["expressions"]:
+                                    if "value" in expr and "metrics" in expr["value"]:
+                                        metrics = expr["value"]["metrics"]
+                                        if isinstance(metrics, dict):
+                                            all_passed = all(m.get("control_passed", False) for m in metrics.values())
+                                            
+                                            policy_result = {
+                                                "is_nested": False,
+                                                "policy": policy_name,
+                                                "result": all_passed,
+                                                "metrics": {
+                                                    key: {
+                                                        "name": m.get("name", key),
+                                                        "value": m.get("value"),
+                                                        "control_passed": m.get("control_passed", False)
+                                                    }
+                                                    for key, m in metrics.items()
+                                                }
+                                            }
+                                            policy_results.append(policy_result)
+                                            total_policies += 1
+                                            if all_passed:
+                                                passed_policies += 1
+                                                
+                            # Handle nested structure without metrics directly
+                            elif isinstance(policy_data, dict) and not any(key in ["metrics", "expressions"] for key in policy_data):
+                                nested_details = {}
+                                nested_passed = 0
+                                nested_total = 0
+                                
+                                for sub_policy, details in policy_data.items():
+                                    metrics = {}
+                                    if isinstance(details, dict):
+                                        if "metrics" in details:
+                                            metrics = details["metrics"]
+                                        elif "expressions" in details and details["expressions"]:
+                                            for expr in details["expressions"]:
+                                                if "value" in expr and "metrics" in expr["value"]:
+                                                    metrics = expr["value"]["metrics"]
+                                                    break
+                                    
+                                    if metrics and isinstance(metrics, dict):
+                                        passed = all(m.get("control_passed", False) for m in metrics.values())
+                                        nested_details[sub_policy] = {
+                                            "name": sub_policy,
+                                            "passed": passed,
+                                            "metrics": {
+                                                key: {
+                                                    "name": m.get("name", key),
+                                                    "value": m.get("value"),
+                                                    "control_passed": m.get("control_passed", False)
+                                                }
+                                                for key, m in metrics.items()
+                                            }
+                                        }
+                                        nested_total += 1
+                                        if passed:
+                                            nested_passed += 1
+                                
+                                if nested_total > 0:
+                                    success_rate = f"{(nested_passed / nested_total) * 100:.1f}%" if nested_total > 0 else "0.0%"
+                                    policy_results.append({
+                                        "is_nested": True,
+                                        "policy": policy_name,
+                                        "result": nested_passed == nested_total,
+                                        "summary": {
+                                            "success_rate": success_rate,
+                                            "total": nested_total,
+                                            "passed": nested_passed,
+                                            "failed": nested_total - nested_passed
+                                        },
+                                        "details": nested_details
+                                    })
+                                    total_policies += nested_total
+                                    passed_policies += nested_passed
+    
+    # Calculate progress class (0-100 in steps of 10)
+    progress_class = 0
+    if total_policies > 0:
+        progress = (passed_policies / total_policies) * 100
+        progress_class = round(progress / 10) * 10
+    
+    # Create the report data structure matching our template
+    report_data = {
+        "APP_TITLE": "aicertify Self-Assessment Report",
+        "EVAL_DATE": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "USER_INFO": os.getenv("USER", "local_user"),
+        "APP_NAME": app_name,
+        "REGULATIONS_LIST": ["EU AI Act"],  # This could be made dynamic based on policy category
+        "TOTAL_POLICIES": total_policies,
+        "GREEN_COUNT": passed_policies,
+        "RED_COUNT": total_policies - passed_policies,
+        "PROGRESS_CLASS": str(progress_class),  # Convert to string to match template expectations
+        "EXEC_SUMMARY": f"Evaluation shows {progress_class}% of controls passing.",
+        "POLICY_RESULTS": policy_results,
+        "TERMINOLOGY": (
+            "1. **Controls:** Individual compliance checks within policies.\n"
+            "2. **Policies:** Groups of related compliance controls.\n"
+            "3. **Regulations:** Overarching regulatory frameworks.\n"
+            "4. **Nested Policies:** Policies organized in hierarchical structures."
         ),
-        MetricGroup(
-            name="toxicity",
-            display_name="Toxicity Metrics",
-            metrics=toxicity_metrics
+        "FULL_DISCLAIMER": (
+            "This report is generated based on automated evaluation of AI system compliance. "
+            "While we strive for accuracy, this assessment should not be considered as legal advice. "
+            "Please consult with appropriate legal and compliance experts for definitive guidance."
         ),
-        MetricGroup(
-            name="stereotype",
-            display_name="Stereotype Metrics",
-            metrics=stereotype_metrics
-        )
-    ]
+        "CURRENT_YEAR": datetime.now().year
+    }
     
-    # Extract policy results
-    policy_results = extract_policy_results(opa_results)
-    
-    # Create summary if available
-    summary = None
-    if "summary_text" in evaluation_result:
-        summary_data = evaluation_result["summary_text"]
-        if isinstance(summary_data, str):
-            summary = summary_data
-        elif isinstance(summary_data, dict):
-            # Create a summary from the available data
-            summary_parts = []
-            
-            # Check for toxicity
-            if "has_toxicity" in summary_data and summary_data["has_toxicity"]:
-                summary_parts.append("Toxicity detected in responses")
-            elif "toxicity_values" in summary_data:
-                toxicity_values = summary_data["toxicity_values"]
-                if toxicity_values.get("toxic_fraction", 0) > 0.1:
-                    summary_parts.append("Toxicity detected in responses")
-            
-            # Check for bias
-            if "has_bias" in summary_data and summary_data["has_bias"]:
-                summary_parts.append("Bias detected in responses")
-            elif "stereotype_values" in summary_data:
-                stereotype_values = summary_data["stereotype_values"]
-                if stereotype_values.get("gender_bias_detected", False) or stereotype_values.get("racial_bias_detected", False):
-                    summary_parts.append("Bias detected in responses")
-                
-            if not summary_parts:
-                summary_parts.append("No significant issues detected")
-                
-            summary = ". ".join(summary_parts)
-    
-    # Create the evaluation report
-    return EvaluationReport(
-        app_details=app_details,
-        metric_groups=metric_groups,
-        policy_results=policy_results,
-        summary=summary
-    ) 
+    return report_data 

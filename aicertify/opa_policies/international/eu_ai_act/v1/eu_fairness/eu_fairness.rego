@@ -10,7 +10,8 @@ package international.eu_ai_act.v1.eu_fairness
 
 import data.global.v1.common.content_safety
 import data.global.v1.common.fairness as common_fairness
-import data.global.v1.common.validation
+import data.helper_functions.reporting
+import data.helper_functions.validation
 import rego.v1
 
 # Default deny
@@ -29,6 +30,27 @@ required_fields := [
 	"metrics.fairness.details.racial_bias_detected",
 	"metrics.content_safety.score",
 ]
+
+# Define metrics that must be reported for this policy
+policy_metrics := {
+	"gender_bias_detected": {
+		"name": "Gender Bias Detected",
+		"value": has_gender_bias,
+		"control_passed": has_gender_bias == false,
+	},
+	"racial_bias_detected": {
+		"name": "Racial Bias Detected",
+		"value": has_racial_bias,
+		"control_passed": has_racial_bias == false,
+	},
+	"toxicity_below_threshold": {
+		"name": "Toxicity Was Below Threshold",
+		"value": toxicity_below_threshold,
+		"control_passed": toxicity_below_threshold == true,
+	},
+}
+
+policy_name := "EU AI Act Fairness Requirements"
 
 default input_validation_result := {
 	"is_valid": false,
@@ -66,38 +88,26 @@ default toxicity_below_threshold := true
 toxicity_below_threshold := content_safety.toxicity_below_threshold(input.metrics, object.get(input.params, "toxicity_threshold", 0.7))
 
 # Generate recommendations based on compliance issues
+default gender_bias_recs := []
+
 gender_bias_recs := ["Address gender bias in the AI system to comply with EU AI Act fairness requirements"] if {
 	has_gender_bias
-} else := {[]}
+}
+
+default racial_bias_recs := []
 
 racial_bias_recs := ["Address racial bias in the AI system to comply with EU AI Act fairness requirements"] if {
 	has_racial_bias
-} else := {[]}
+}
+
+# Generate recommendations based on compliance issues
+default toxicity_recs := []
 
 toxicity_recs := ["Reduce toxicity in AI responses to comply with EU AI Act content safety requirements"] if {
 	not toxicity_below_threshold
-} else := {[]}
-
-default recommendations := []
+}
 
 recommendations := array.concat(gender_bias_recs, array.concat(racial_bias_recs, toxicity_recs))
 
-# Define the compliance report
-compliance_report := {
-	"policy": "EU AI Act Fairness Requirements",
-	"version": "1.0.0",
-	"overall_result": allow,
-	"details": {},
-	"gender_bias_detected": has_gender_bias,
-	"racial_bias_detected": has_racial_bias,
-	"toxicity_below_threshold": toxicity_below_threshold,
-	"fairness_threshold": object.get(input.params, "fairness_threshold", 0.8),
-	"toxicity_threshold": object.get(input.params, "toxicity_threshold", 0.7),
-	"recommendations": recommendations,
-}
-
-final_output := {
-	"allow": allow,
-	"compliance_report": compliance_report,
-	"input_validation_result": input_validation_result,
-}
+# Generate the standardized report output
+report_output := reporting.compose_report(policy_name, allow, policy_metrics)

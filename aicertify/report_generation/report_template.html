@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ APP_TITLE }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
+        h1, h2, h3 { color: #2c3e50; }
+        .section { margin-bottom: 40px; }
+        .pass { color: #27ae60; font-weight: bold; }
+        .fail { color: #c0392b; font-weight: bold; }
+        .footer { font-size: 0.8em; color: #7f8c8d; margin-top: 40px; }
+        .policy { margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 5px; }
+        .control { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 3px; }
+        .control-header { display: flex; justify-content: space-between; align-items: center; }
+        .control-details { margin-left: 20px; font-size: 0.9em; }
+        .summary-box { 
+            padding: 20px; 
+            background: #f8f9fa; 
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e74c3c;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #2ecc71;
+            transition: width 0.5s ease-in-out;
+        }
+        /* Predefined progress classes */
+        .progress-0 { width: 0; }
+        .progress-10 { width: 10%; }
+        .progress-20 { width: 20%; }
+        .progress-30 { width: 30%; }
+        .progress-40 { width: 40%; }
+        .progress-50 { width: 50%; }
+        .progress-60 { width: 60%; }
+        .progress-70 { width: 70%; }
+        .progress-80 { width: 80%; }
+        .progress-90 { width: 90%; }
+        .progress-100 { width: 100%; }
+        
+        /* Table of Contents styles */
+        .toc {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .toc a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            color: #3498db;
+        }
+        
+        /* Header with logo */
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 20px;
+        }
+        
+        /* Page header with logo */
+        .page-header {
+            position: fixed;
+            top: 0;
+            right: 20px;
+            padding: 10px;
+            background: white;
+        }
+        .page-header img {
+            width: 30px;
+            height: 30px;
+        }
+        
+        .nested-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        
+        .nested-header {
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nested-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .nested-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nested-stat {
+            padding: 5px 10px;
+            border-radius: 3px;
+            background-color: #eee;
+        }
+        
+        .nested-policies {
+            margin-left: 20px;
+        }
+        
+        .nested-policy {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 3px solid #ddd;
+        }
+        
+        .nested-policy.passed {
+            border-left-color: #4CAF50;
+        }
+        
+        .nested-policy.failed {
+            border-left-color: #f44336;
+        }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 3px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .badge.success {
+            background-color: #4CAF50;
+        }
+        
+        .badge.failure {
+            background-color: #f44336;
+        }
+        
+        .content {
+            padding: 0 18px;
+            background-color: #f9f9f9;
+        }
+        
+        .metric-value {
+            font-weight: bold;
+        }
+        
+        .metric-value.success {
+            color: #4CAF50;
+        }
+        
+        .metric-value.failure {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <!-- Fixed logo on each page -->
+    <div class="page-header">
+        <img src="data:image/png;base64,{{ LOGO_BASE64 }}" alt="AICertify Logo">
+    </div>
+
+    <!-- Main header with logo -->
+    <div class="header">
+        <img src="data:image/png;base64,{{ LOGO_BASE64 }}" alt="AICertify Logo" class="logo">
+        <h1>{{ APP_TITLE }}</h1>
+    </div>
+    
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ul>
+            <li><a href="#summary">1. Control Evaluation Summary</a></li>
+            <li><a href="#exec-summary">2. Executive Summary</a></li>
+            <li><a href="#detailed-results">3. Detailed Control Results</a></li>
+            <li><a href="#terminology">4. Terminology</a></li>
+            <li><a href="#disclaimer">5. Disclaimer</a></li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <p>
+            <strong>Evaluation Date:</strong> {{ EVAL_DATE }}<br>
+            <strong>User/Computer:</strong> {{ USER_INFO }}<br>
+            <strong>Application:</strong> {{ APP_NAME }}
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Regulations Assessed</h2>
+        <ul>
+            {% for regulation in REGULATIONS_LIST %}
+                <li>{{ regulation }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="section" id="summary">
+        <h2>Control Evaluation Summary</h2>
+        <div class="summary-box">
+            <p><strong>Total Controls Evaluated:</strong> {{ TOTAL_POLICIES }}</p>
+            <div class="progress-bar">
+                <div class="progress-bar-fill progress-{{ PROGRESS_CLASS }}"></div>
+            </div>
+            <p>
+                <span class="pass">✔ Passed Controls: {{ GREEN_COUNT }}</span><br>
+                <span class="fail">✖ Failed Controls: {{ RED_COUNT }}</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="section" id="exec-summary">
+        <h2>Executive Summary</h2>
+        <p>{{ EXEC_SUMMARY }}</p>
+    </div>
+
+    <div class="results-section">
+        <h2>Policy Evaluation Results</h2>
+        {% for policy in POLICY_RESULTS %}
+            {% if policy.is_nested %}
+                <div class="nested-section">
+                    <div class="nested-header">
+                        <span>{{ policy.policy }}</span>
+                        <span class="badge {{ 'success' if policy.result else 'failure' }}">
+                            {{ policy.summary.success_rate }}
+                        </span>
+                    </div>
+                    <div class="content">
+                        <div class="nested-summary">
+                            <div class="nested-stats">
+                                <span class="nested-stat">Total: {{ policy.summary.total }}</span>
+                                <span class="nested-stat success">Passed: {{ policy.summary.passed }}</span>
+                                <span class="nested-stat failure">Failed: {{ policy.summary.failed }}</span>
+                            </div>
+                        </div>
+                        <div class="nested-policies">
+                            {% for path, details in policy.details.items() %}
+                                <div class="nested-policy {{ 'passed' if details.passed else 'failed' }}">
+                                    <h4>{{ details.name }}</h4>
+                                    <div class="metrics">
+                                        {% for metric_key, metric in details.metrics.items() %}
+                                            <div class="metric">
+                                                <span class="metric-name">{{ metric.name }}:</span>
+                                                <span class="metric-value {{ 'success' if metric.control_passed else 'failure' }}">
+                                                    {{ metric.value }}
+                                                </span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="policy-result">
+                    <h3>{{ policy.policy }}</h3>
+                    <div class="result-badge {{ 'success' if policy.result else 'failure' }}">
+                        {{ 'PASSED' if policy.result else 'FAILED' }}
+                    </div>
+                    <div class="details">
+                        {% for metric_key, metric in policy.metrics.items() %}
+                            <div class="metric">
+                                <span class="metric-name">{{ metric.name }}:</span>
+                                <span class="metric-value {{ 'success' if metric.control_passed else 'failure' }}">
+                                    {{ metric.value }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <div class="section" id="terminology">
+        <h2>Terminology</h2>
+        <p>{{ TERMINOLOGY | safe }}</p>
+    </div>
+
+    <div class="section" id="disclaimer">
+        <h2>Disclaimer</h2>
+        <p><em>{{ FULL_DISCLAIMER }}</em></p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; {{ CURRENT_YEAR }} AICertify. All rights reserved.</p>
+    </div>
+</body>
+</html>

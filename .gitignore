@@ -185,3 +185,9 @@ reference-docs/
 **/temp_reports
 **/examples/outputs/*
 **/debug_opa/
+**/debug-opa/
+**/debug-opa
+**/debug-opa/**
+**/debug-opa/**/*
+**/debug-opa/**/**
+**/debug-opa/**/**/*

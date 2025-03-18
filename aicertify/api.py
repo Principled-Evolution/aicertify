@@ -14,6 +14,7 @@ from typing import Dict, List, Any, Optional, Union, Tuple
 from datetime import datetime
 from shutil import copy2
 from uuid import UUID
+import subprocess
 
 # Configure logging
 #logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -948,6 +949,8 @@ async def aicertify_app_for_policy(
                 filename = f"folder_report_{contract.application_name}_{timestamp}.md"
             elif report_format == "pdf":
                 filename = f"folder_report_{contract.application_name}_{timestamp}.pdf"
+            elif report_format == "html":
+                filename = f"folder_report_{contract.application_name}_{timestamp}.html"
             else:
                 filename = f"folder_report_{contract.application_name}_{timestamp}.txt"
             
@@ -959,7 +962,7 @@ async def aicertify_app_for_policy(
                     "opa_results": opa_results
                 }
             else:
-                from aicertify.report_generation.report_generator import ReportGenerator
+                from aicertify.report_generation.report_generator import ReportGenerator, create_report_data
                 from aicertify.report_generation.data_extraction import create_evaluation_report
                 report_gen = ReportGenerator()
                 report_data = create_evaluation_report(
@@ -984,6 +987,33 @@ async def aicertify_app_for_policy(
                 report_path = pdf_path
                 abs_path = os.path.abspath(report_path)
                 logger.info(f"\033[32m📊 PDF Report generated at: \033]8;;file://{abs_path}\033\\{abs_path}\033]8;;\033\\\033[0m")
+            elif report_format.lower() == "html":
+                # Create HTML report data
+                html_report_data = create_report_data(report_data)
+                report_path = os.path.join(output_dir, filename)
+                abs_path = os.path.abspath(report_path)
+                
+                # Generate HTML report
+                if report_gen.generate_html_report(html_report_data, report_path):
+                    abs_path = str(Path(report_path).resolve())
+                    file_url = f"file://{abs_path}"
+                    logger.info(f"\033[32m🌐 HTML Report generated at: {abs_path}\033[0m")
+                    
+                    # Check if running in WSL
+                    if "microsoft" in Path("/proc/version").read_text().lower():
+                        # In WSL, suggest using Windows browser
+                        windows_path = subprocess.check_output(['wslpath', '-w', abs_path]).decode().strip()
+                        logger.info(f"\033[32m📂 To view in Windows browser: {windows_path}\033[0m")
+                    else:
+                        # For native Linux, try xdg-open but handle failure gracefully
+                        try:
+                            subprocess.run(['xdg-open', file_url], check=True, capture_output=True)
+                            logger.info("\033[32m🌐 Report opened in default browser\033[0m")
+                        except subprocess.CalledProcessError:
+                            logger.info(f"\033[33mℹ️  To view the report manually:\033[0m")
+                            logger.info(f"\033[33m   - Linux: xdg-open '{abs_path}'\033[0m")
+                            logger.info(f"\033[33m   - Windows: start '{abs_path}'\033[0m")
+                            logger.info(f"\033[33m   - Or open the file directly in your preferred browser\033[0m")
             elif report_format.lower() == "json":
                 report_path = os.path.join(output_dir, filename)
                 abs_path = os.path.abspath(report_path)
