@@ -22,7 +22,7 @@ from aicertify.models.report import EvaluationReport
 from aicertify.regulations import RegulationSet
 from aicertify.api import (
     aicertify_app_for_policy, 
-    evaluate_contract_by_folder,
+    evaluate_by_policy,
     generate_reports
 )
 
@@ -246,4 +246,4 @@ def create(
         model_name=model_name,
         model_version=model_version,
         model_metadata=model_metadata
-    ) 
+    )

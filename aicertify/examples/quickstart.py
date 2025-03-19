@@ -112,10 +112,6 @@ async def main():
     # Print report paths and open HTML report in browser
     for regulation, report_path in app1_reports.items():
         print(f"Report for {regulation}: {report_path}")
-        if report_path.endswith('.html'):
-            report_url = Path(report_path).absolute().as_uri()
-            print(f"Opening HTML report in browser: {report_url}")
-            webbrowser.open(report_url)
     
     print("\nQuickstart completed successfully!")
 
