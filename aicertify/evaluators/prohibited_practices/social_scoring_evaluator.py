@@ -25,6 +25,15 @@ class SocialScoringEvaluator(BaseEvaluator):
     leading to detrimental treatment, which is prohibited under EU AI Act Article 5(1)(c).
     """
     
+    # Define the metrics supported by this evaluator
+    SUPPORTED_METRICS: Tuple[str, ...] = (
+        "social_scoring.score",
+        "social_scoring.detrimental_treatment",
+        "social_scoring.combined_score",
+        "metrics.social_scoring.score",
+        "metrics.social_scoring.detrimental_treatment"
+    )
+    
     def __init__(
         self,
         social_scoring_threshold: float = 0.3,

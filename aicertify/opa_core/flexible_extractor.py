@@ -3,75 +3,46 @@ import logging
 from aicertify.models.report import PolicyResult
 
 class FlexibleExtractor:
-    def extract_policy_results(self, opa_results: Dict[str, Any], policy_name: str) -> PolicyResult:
-        """
-        Extract detailed policy results from OPA evaluation results.
+    def _extract_value_from_expression(self, expr: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Helper method to extract value from an OPA expression.
         
         Args:
-            opa_results: The OPA evaluation results.
-            policy_name: The name of the policy to extract results for.
+            expr: The expression dictionary
             
         Returns:
-            A PolicyResult object containing the extracted policy results.
+            The extracted value or None if not found
         """
-        # Initialize default values
-        compliant = False
-        reason = f"No compliance report available for {policy_name}"
-        recommendations = []
-        details = {"error": reason}  # Always use a dictionary for details
+        return expr.get("value") if isinstance(expr, dict) else None
+
+    def _extract_from_nested_result(self, result_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Helper method to extract data from nested result structure.
         
-        logging.debug(f"Extracting policy results for {policy_name}")
-        
-        try:
-            # Try to get version v1 policy data
-            policy_data = self.extract_policy_data(opa_results, policy_name)
+        Args:
+            result_data: The nested result data
             
-            # If we found a compliance report in the policy data
-            if policy_data and isinstance(policy_data, dict) and "compliance_report" in policy_data:
-                report = policy_data["compliance_report"]
-                
-                # Extract basic fields if they exist
-                if isinstance(report, dict):
-                    logging.debug(f"Found compliance report for {policy_name}")
-                    compliant = report.get("compliant", False)
-                    reason = report.get("reason", "No reason provided")
-                    recommendations = report.get("recommendations", [])
-                    
-                    # Use all remaining data as details if available
-                    report_details = {k: v for k, v in report.items() 
-                                    if k not in ["compliant", "reason", "recommendations"]}
-                    
-                    # If we have details in the report, use them, otherwise use a default structure
-                    if report_details:
-                        details = report_details
-                    else:
-                        details = {"info": "No detailed information available in the compliance report"}
-                else:
-                    logging.warning(f"Compliance report for {policy_name} is not a dictionary: {report}")
-                    details = {"error": f"Invalid compliance report format: {type(report).__name__}"}
-            else:
-                logging.debug(f"No compliance report found for {policy_name}")
-                details = {"error": f"No compliance report found for policy {policy_name}"}
-        except Exception as e:
-            logging.error(f"Error extracting policy results for {policy_name}: {e}")
-            reason = f"Error extracting policy results: {str(e)}"
-            details = {"error": str(e), "exception_type": type(e).__name__}
-        
-        # Ensure details is always a dictionary
-        if not isinstance(details, dict):
-            details = {"error": f"Invalid details format: {details}"}
-        
-        # Create and return the result
-        return PolicyResult(
-            name=policy_name,
-            result=compliant,
-            details=details,
-            recommendations=recommendations
-        )
-        
-    def extract_policy_data(self, opa_results: Dict[str, Any], policy_name: str) -> Optional[Dict[str, Any]]:
+        Returns:
+            The extracted policy data or None if not found
         """
-        Extract policy data for a specific policy from OPA evaluation results.
+        if not isinstance(result_data, dict):
+            return None
+            
+        # Handle direct value format (when metrics are directly available)
+        if "metrics" in result_data:
+            return result_data
+            
+        # Handle nested OPA result format
+        if "result" in result_data:
+            nested_result = result_data["result"]
+            if isinstance(nested_result, list) and nested_result:
+                expressions = nested_result[0].get("expressions", [])
+                if expressions and isinstance(expressions, list):
+                    value = self._extract_value_from_expression(expressions[0])
+                    if value and "metrics" in value:
+                        return value
+        return None
+
+    def extract_policy_data(self, opa_results: Dict[str, Any], policy_name: str) -> Optional[Dict[str, Any]]:
+        """Extract policy data from OPA results.
         
         Args:
             opa_results: The OPA evaluation results
@@ -80,72 +51,30 @@ class FlexibleExtractor:
         Returns:
             Dictionary containing the policy data, or None if not found
         """
-        logging.debug(f"Extracting policy data for {policy_name}")
-        
         try:
-            # Check if we have a valid OPA result structure
             if not opa_results or "result" not in opa_results:
                 logging.warning("No valid OPA results found")
                 return None
-            
-            # Get the result list
-            result_list = opa_results["result"]
-            if not isinstance(result_list, list) or not result_list:
-                logging.warning("OPA results has empty or invalid result list")
-                return None
-            
-            # Get the first result
-            first_result = result_list[0]
-            
-            # Check for expressions
-            if "expressions" not in first_result or not first_result["expressions"]:
-                logging.warning("No expressions found in OPA result")
-                return None
-            
-            # Get the first expression
-            first_expr = first_result["expressions"][0]
-            
-            # Check for value
-            if "value" not in first_expr:
-                logging.warning("No value found in OPA expression")
-                return None
-            
-            # Get the value
-            value = first_expr["value"]
-            
-            # Check for version keys (v1, v2, etc.)
-            version_keys = [k for k in value.keys() if k.startswith("v")]
-            if not version_keys:
-                logging.warning("No version keys found in OPA result value")
-                return None
-            
-            # Try each version key, prioritizing 'v1' if it exists
-            if "v1" in version_keys:
-                version_keys.remove("v1")
-                version_keys.insert(0, "v1")  # Put v1 first
-            
-            # Search for the policy in each version
-            for version_key in version_keys:
-                version_data = value[version_key]
-                if not isinstance(version_data, dict):
-                    logging.warning(f"Version {version_key} data is not a dictionary")
-                    continue
                 
-                # Look for the policy by name
-                if policy_name in version_data:
-                    policy_data = version_data[policy_name]
-                    logging.debug(f"Found policy data for {policy_name} in version {version_key}")
-                    return policy_data
-                
-                # Also check for policies with normalized names (replacing underscores with spaces and capitalizing)
-                normalized_name = policy_name.replace("_", " ").title()
-                if normalized_name in version_data:
-                    policy_data = version_data[normalized_name]
-                    logging.debug(f"Found policy data for {policy_name} using normalized name {normalized_name}")
-                    return policy_data
+            result = opa_results["result"]
             
-            # If we get here, we didn't find the policy in any version
-            logging.warning(f"Policy {policy_name} not found in any version")
+            # Handle aggregated individual results format
+            if isinstance(result, dict) and result.get("policy") == "Aggregated Individual Results":
+                for individual_result in result.get("results", []):
+                    if individual_result.get("policy") == policy_name:
+                        return self._extract_from_nested_result(individual_result.get("result", {}))
+                logging.warning(f"Policy {policy_name} not found in aggregated results")
+                return None
+                
+            # Handle direct OPA evaluation result
+            if isinstance(result, list) and result:
+                first_result = result[0]
+                if "expressions" in first_result and first_result["expressions"]:
+                    value = self._extract_value_from_expression(first_result["expressions"][0])
+                    if value and "metrics" in value:
+                        return value
+                        
+            logging.warning(f"No valid report_output format found for policy {policy_name}")
             return None
             
         except Exception as e:
@@ -153,10 +82,61 @@ class FlexibleExtractor:
             import traceback
             logging.debug(traceback.format_exc())
             return None
+
+    def extract_policy_results(self, opa_results: Dict[str, Any], policy_name: str) -> PolicyResult:
+        """Extract detailed policy results from OPA evaluation results.
+        
+        Args:
+            opa_results: The OPA evaluation results
+            policy_name: The name of the policy to extract results for
             
-    def extract_all_policy_results(self, opa_results: Dict[str, Any]) -> List[PolicyResult]:
+        Returns:
+            A PolicyResult object containing the extracted policy results
         """
-        Extract results for all policies found in the OPA evaluation results.
+        # Initialize default values
+        compliant = False
+        reason = f"No report_output available for {policy_name}"
+        recommendations = []
+        details = {"error": reason}
+        
+        try:
+            policy_data = self.extract_policy_data(opa_results, policy_name)
+            
+            if policy_data and isinstance(policy_data, dict) and "metrics" in policy_data:
+                metrics = policy_data["metrics"]
+                if isinstance(metrics, dict):
+                    valid_metrics = all(
+                        isinstance(m, dict) and
+                        "name" in m and isinstance(m["name"], str) and
+                        "value" in m and
+                        "control_passed" in m and isinstance(m["control_passed"], bool)
+                        for m in metrics.values()
+                    )
+                    
+                    if valid_metrics:
+                        compliant = all(m["control_passed"] for m in metrics.values())
+                        details = {
+                            "metrics": metrics,
+                            "policy": policy_name,
+                            "timestamp": policy_data.get("timestamp", None)
+                        }
+                        reason = "Policy evaluation completed with standardized metrics"
+                        recommendations = policy_data.get("recommendations", [])
+            
+        except Exception as e:
+            logging.error(f"Error extracting policy results for {policy_name}: {e}")
+            reason = f"Error extracting policy results: {str(e)}"
+            details = {"error": str(e), "exception_type": type(e).__name__}
+        
+        return PolicyResult(
+            name=policy_name,
+            result=compliant,
+            details=details,
+            recommendations=recommendations
+        )
+
+    def extract_all_policy_results(self, opa_results: Dict[str, Any]) -> List[PolicyResult]:
+        """Extract results for all policies found in the OPA evaluation results.
         
         Args:
             opa_results: The OPA evaluation results
@@ -165,65 +145,31 @@ class FlexibleExtractor:
             List of PolicyResult objects, one for each policy found
         """
         policy_results = []
+        processed_policies = set()
         
         try:
-            # Check if we have a valid OPA result structure
             if not opa_results or "result" not in opa_results:
-                logging.warning("No valid OPA results found")
                 return policy_results
-            
-            # Get the result list
-            result_list = opa_results["result"]
-            if not isinstance(result_list, list) or not result_list:
-                logging.warning("OPA results has empty or invalid result list")
-                return policy_results
-            
-            # Get the first result
-            first_result = result_list[0]
-            
-            # Check for expressions
-            if "expressions" not in first_result or not first_result["expressions"]:
-                logging.warning("No expressions found in OPA result")
-                return policy_results
-            
-            # Get the first expression
-            first_expr = first_result["expressions"][0]
-            
-            # Check for value
-            if "value" not in first_expr:
-                logging.warning("No value found in OPA expression")
-                return policy_results
-            
-            # Get the value
-            value = first_expr["value"]
-            
-            # Check for version keys (v1, v2, etc.)
-            version_keys = [k for k in value.keys() if k.startswith("v")]
-            if not version_keys:
-                logging.warning("No version keys found in OPA result value")
-                return policy_results
-            
-            # Process all policies in all versions
-            processed_policies = set()  # Track which policies we've already processed
-            
-            for version_key in version_keys:
-                version_data = value[version_key]
-                if not isinstance(version_data, dict):
-                    logging.warning(f"Version {version_key} data is not a dictionary")
-                    continue
                 
-                # Process each policy in this version
-                for policy_name, policy_data in version_data.items():
-                    # Skip if we've already processed this policy
-                    if policy_name in processed_policies:
-                        continue
-                    
-                    # Extract results for this policy
-                    policy_result = self.extract_policy_results(opa_results, policy_name)
-                    policy_results.append(policy_result)
-                    
-                    # Mark as processed
-                    processed_policies.add(policy_name)
+            result = opa_results["result"]
+            
+            # Handle aggregated individual results format
+            if isinstance(result, dict) and result.get("policy") == "Aggregated Individual Results":
+                for individual_result in result.get("results", []):
+                    policy_name = individual_result.get("policy")
+                    if policy_name and policy_name not in processed_policies:
+                        policy_result = self.extract_policy_results(opa_results, policy_name)
+                        policy_results.append(policy_result)
+                        processed_policies.add(policy_name)
+            # Handle direct OPA evaluation result
+            elif isinstance(result, list) and result:
+                first_result = result[0]
+                if "expressions" in first_result and first_result["expressions"]:
+                    value = self._extract_value_from_expression(first_result["expressions"][0])
+                    if value and "metrics" in value:
+                        policy_name = value.get("policy", "unknown_policy")
+                        policy_result = self.extract_policy_results(opa_results, policy_name)
+                        policy_results.append(policy_result)
             
             logging.info(f"Extracted results for {len(policy_results)} policies")
             return policy_results

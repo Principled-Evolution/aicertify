@@ -25,6 +25,14 @@ class ManipulationEvaluator(BaseEvaluator):
     to materially distort behavior, which is prohibited under EU AI Act Article 5(1)(a).
     """
     
+    SUPPORTED_METRICS = [
+        'manipulation.score',
+        'manipulation.deception_score',
+        'manipulation.toxicity_score',
+        'manipulation.compliance',
+        'metrics.manipulation.score'
+    ]
+    
     def __init__(
         self,
         manipulation_threshold: float = 0.3,

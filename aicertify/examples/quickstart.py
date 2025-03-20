@@ -12,8 +12,13 @@ Steps:
 
 import asyncio
 import logging
+# dont expose CUDA
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+from pathlib import Path
 from aicertify import regulations
 from aicertify import application
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -94,20 +99,20 @@ async def main():
     
     # Step 4: Evaluate applications against regulations
     print("\nEvaluating applications against regulations...")
+    reports_dir = Path("reports")
+    reports_dir.mkdir(exist_ok=True)
+    
     app1_results = await app1.evaluate(
         regulations=regulations_set,
-        report_format="markdown",
+        report_format="html",  # Changed to html format
         output_dir="reports"
     )
     
-    # Evaluate the second application (optional)
-    # app2_results = await app2.evaluate(regulations_set)
-    
-    # Step 5: Get the reports
+    # Step 5: Get the reports and open in browser
     print("\nGetting evaluation reports...")
     app1_reports = app1.get_report()
     
-    # Print report paths
+    # Print report paths and open HTML report in browser
     for regulation, report_path in app1_reports.items():
         print(f"Report for {regulation}: {report_path}")
     

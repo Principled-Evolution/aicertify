@@ -1,2 +1,0 @@
-#!/bin/bash
-/usr/local/bin/opa eval --data /home/kapil/Projects/AICertify/aicertify/opa_policies --format json 'data.international.eu_ai_act.v1.eu_fairness.final_output' -i /home/kapil/Projects/AICertify/debug-opa/opa_input_20250313_143115.json

@@ -1,4 +1,4 @@
-package global.v1.common.validation
+package helper_functions.validation
 
 import rego.v1
 

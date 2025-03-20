@@ -16,11 +16,17 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, 
 from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from dataclasses import dataclass
+from jinja2 import Environment, BaseLoader
 
 # Import centralized models
 from aicertify.models.evaluation import MetricValue
+from aicertify.models.report import EvaluationReport
+from aicertify.report_generation.report_models import AggregatedReport
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 # Full and short disclaimer texts.
 DISCLAIMER_FULL = (
@@ -237,8 +243,46 @@ class ReportGenerator:
             logging.error(f"Error generating PDF report: {ex}")
             return ""
 
+    @staticmethod
+    def generate_html_report(report_data: dict, output_path: str) -> bool:
+        """
+        Generate an HTML report using Jinja2 from the provided report_data dictionary,
+        and write it to the specified output_path.
+        
+        Args:
+            report_data (dict): The standardized report data containing keys matching the template placeholders.
+            output_path (str): The file path where the HTML report will be saved.
+        
+        Returns:
+            bool: True if the report is generated and saved successfully, False otherwise.
+        """
+        try:
+            # Load the HTML template from the report_template.html file in the same directory
+            template_path = Path(__file__).parent / "report_template.html"
+            with open(template_path, "r", encoding="utf-8") as f:
+                html_template = f.read()
+            # Add the current year to the report data for the footer.
+            report_data["CURRENT_YEAR"] = datetime.now().year
+            
+            # Create a Jinja2 environment using the BaseLoader (template is provided as a string)
+            env = Environment(loader=BaseLoader(), autoescape=True)
+            template = env.from_string(html_template)
+            
+            # Render the template with the provided data.
+            html_content = template.render(**report_data)
+            
+            # Save the generated HTML content to a file.
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            
+            logging.info(f"HTML report generated successfully at: {output_path}")
+            return True
+        except Exception as e:
+            logging.error(f"Failed to generate HTML report: {e}")
+            return False
+
 # Example usage:
-if __name__ == "__main__":
+if __name__ == "__main_deprecated__":
     from datetime import datetime
     # For demonstration, define dummy report model classes.
     @dataclass
@@ -331,3 +375,229 @@ if __name__ == "__main__":
     pdf_path = ReportGenerator.generate_pdf_report(md_content, "sample_report.pdf")
     if pdf_path:
         print(f"PDF report generated successfully: {pdf_path}")
+
+def calculate_progress_class(total: int, passed: int) -> int:
+    """Calculate the progress class (rounded to nearest 10)"""
+    if total == 0:
+        return 0
+    progress = (passed / total * 100)
+    return round(progress / 10) * 10
+
+def convert_markdown_to_html(text: str) -> str:
+    """Convert basic markdown syntax to HTML"""
+    # Convert bold - using regex to handle all occurrences
+    text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
+    # Convert newlines to <br>
+    text = text.replace("\n", "<br>")
+    return text
+
+def get_logo_base64() -> str:
+    """Get the base64 encoded logo"""
+    import base64
+    from pathlib import Path
+    
+    try:
+        # Get absolute path to assets folder, searching in multiple possible locations
+        possible_paths = [
+            Path(__file__).parent.parent / "assets" / "aic.png",
+            Path(__file__).parent.parent.parent / "aicertify" / "assets" / "aic.png",
+            Path.cwd() / "aicertify" / "assets" / "aic.png"
+        ]
+        
+        for assets_path in possible_paths:
+            if assets_path.exists():
+                logging.info(f"Found logo at: {assets_path}")
+                try:
+                    with open(assets_path, "rb") as f:
+                        data = base64.b64encode(f.read()).decode()
+                        if data:
+                            return data
+                        else:
+                            logging.warning(f"Logo file at {assets_path} was empty")
+                except Exception as e:
+                    logging.error(f"Error reading logo file at {assets_path}: {e}")
+                    continue
+        
+        # If we get here, no valid logo was found
+        logging.warning(f"Logo file not found in any of: {[str(p) for p in possible_paths]}")
+        return ""
+    except Exception as e:
+        logging.error(f"Error in get_logo_base64: {e}")
+        return ""
+
+def create_report_data(report_data: Union[AggregatedReport, Dict[str, Any], EvaluationReport]) -> dict:
+    """Convert report data to template-compatible format."""
+    # Define standard terminology - using HTML tags directly since this is for HTML output
+    terminology = (
+        "1. <strong>Controls:</strong> Individual compliance checks within policies.<br>"
+        "2. <strong>Policies:</strong> Groups of related compliance controls.<br>"
+        "3. <strong>Regulations:</strong> Overarching regulatory frameworks.<br>"
+        "4. <strong>Nested Policies:</strong> Policies organized in hierarchical structures."
+    )
+    
+    # Get logo data first to ensure it's available
+    logo_base64 = get_logo_base64()
+    
+    # If we receive a dictionary, it's already in the correct format
+    if isinstance(report_data, dict):
+        # Count total controls by summing up metrics in each policy result
+        total_controls = 0
+        passed_controls = 0
+        
+        # Update policy results to use proper metric names and count passed controls
+        for policy in report_data.get("POLICY_RESULTS", []):
+            if not policy.get("is_nested", False):
+                metrics = policy.get("metrics", {})  # Changed from details to metrics
+                total_controls += len(metrics)
+                # Use control_passed directly from OPA metrics
+                passed_controls += sum(1 for m in metrics.values() if m.get("control_passed", False))
+        
+        # Handle division by zero case
+        passing_percentage = (passed_controls / total_controls * 100) if total_controls > 0 else 0.0
+        
+        report_data["TOTAL_POLICIES"] = total_controls
+        report_data["GREEN_COUNT"] = passed_controls
+        report_data["RED_COUNT"] = total_controls - passed_controls
+        report_data["PROGRESS_CLASS"] = calculate_progress_class(total_controls, passed_controls)
+        report_data["TERMINOLOGY"] = terminology
+        report_data["EXEC_SUMMARY"] = f"Evaluation shows {passing_percentage:.1f}% of controls passing."
+        report_data["LOGO_BASE64"] = logo_base64  # Ensure logo data is included
+        report_data["APP_TITLE"] = "aicertify Self-Assessment Report"  # Set consistent title
+        
+        return report_data
+    
+    # Handle EvaluationReport format
+    elif isinstance(report_data, EvaluationReport):
+        total_policies = len(report_data.policy_results)
+        passed_policies = sum(1 for p in report_data.policy_results if p.result)
+        
+        # track total_controls and passed_controls
+        total_controls = 0
+        passed_controls = 0 
+        for policy in report_data.policy_results:
+            total_controls += len(policy.metrics)
+            passed_controls += sum(1 for m in policy.metrics.values() if m.get("control_passed", False))
+            
+        # Handle division by zero case
+        passing_percentage = (passed_policies / total_policies * 100) if total_policies > 0 else 0.0
+        
+        # Process policy results
+        policy_results = []
+        
+        for policy in report_data.policy_results:
+            policy_metrics = {}
+            if policy.metrics:
+                policy_metrics = policy.metrics
+            
+            policy_result = {
+                "policy": policy.name,
+                "result": policy.result,
+                "is_nested": policy.is_nested,
+                "metrics": {
+                    metric_id: {
+                        "name": metric_data.get("name", metric_id),
+                        "value": metric_data.get("value"),
+                        "control_passed": metric_data.get("control_passed", False)
+                    }
+                    for metric_id, metric_data in policy_metrics.items()
+                }
+            }
+            
+            # Include details if available
+            if policy.details:
+                policy_result["details"] = policy.details
+            
+            policy_results.append(policy_result)
+        
+        return {
+            "APP_TITLE": "aicertify Self-Assessment Report",
+            "EVAL_DATE": report_data.app_details.evaluation_date.strftime("%Y-%m-%d %H:%M:%S"),
+            "USER_INFO": "Report generated by AICertify",
+            "APP_NAME": report_data.app_details.name,
+            "REGULATIONS_LIST": report_data.summary.get("regulations", []),
+            "TOTAL_POLICIES": total_controls,
+            "GREEN_COUNT": passed_controls,
+            "RED_COUNT": total_controls - passed_controls,
+            "PROGRESS_CLASS": calculate_progress_class(total_controls, passed_controls),
+            "EXEC_SUMMARY": report_data.summary.get("summary", f"Evaluation shows {passing_percentage:.1f}% of controls passing."),
+            "POLICY_RESULTS": policy_results,
+            "TERMINOLOGY": terminology,
+            "FULL_DISCLAIMER": DISCLAIMER_FULL,
+            "LOGO_BASE64": logo_base64
+        }
+    
+    # Handle legacy AggregatedReport format
+    elif isinstance(report_data, AggregatedReport):
+        total = report_data.control_summary.total_controls
+        passed = report_data.control_summary.passed_controls
+        
+        # Handle division by zero case
+        passing_percentage = (passed / total * 100) if total > 0 else 0.0
+        
+        # Process regular policy results
+        policy_results = [
+            {
+                "policy": pr.policy,  # Use the policy name from OPA
+                "result": pr.result,
+                "metrics": {
+                    metric_key: {
+                        "name": metric.name,
+                        "value": metric.value,
+                        "control_passed": metric.control_passed  # Ensure we use control_passed consistently
+                    }
+                    for metric_key, metric in pr.metrics.items()
+                }
+            }
+            for pr in report_data.policy_reports
+        ]
+        
+        # Process nested policy results if they exist
+        for nested_report in report_data.nested_reports:
+            nested_section = {
+                "policy": f"{nested_report.category}/{nested_report.subcategory} (v{nested_report.version})",  # Use consistent policy field
+                "result": nested_report.success_rate >= 50.0,
+                "is_nested": True,
+                "summary": {
+                    "total": nested_report.total_policies,
+                    "passed": nested_report.successful_evaluations,
+                    "failed": nested_report.failed_evaluations,
+                    "success_rate": f"{nested_report.success_rate:.1f}%"
+                },
+                "details": {}
+            }
+            
+            for policy in nested_report.policy_reports:
+                nested_section["details"][policy.package_path or policy.policy] = {
+                    "name": policy.policy,
+                    "value": policy.result,
+                    "control_passed": policy.result,  # Use consistent field name
+                    "metrics": {
+                        metric_key: {
+                            "name": metric.name,
+                            "value": metric.value,
+                            "control_passed": metric.control_passed  # Use consistent field name
+                        }
+                        for metric_key, metric in policy.metrics.items()
+                    }
+                }
+            
+            policy_results.append(nested_section)
+        
+        return {
+            "APP_TITLE": "aicertify Self-Assessment Report",
+            "EVAL_DATE": report_data.evaluation_date.strftime("%Y-%m-%d %H:%M:%S"),
+            "USER_INFO": "test_user",
+            "APP_NAME": report_data.app_name,
+            "REGULATIONS_LIST": report_data.regulations,
+            "TOTAL_POLICIES": total,
+            "GREEN_COUNT": passed,
+            "RED_COUNT": report_data.control_summary.failed_controls,
+            "PROGRESS_CLASS": calculate_progress_class(total, passed),
+            "EXEC_SUMMARY": f"Evaluation shows {passing_percentage:.1f}% of controls passing.",
+            "POLICY_RESULTS": policy_results,
+            "TERMINOLOGY": convert_markdown_to_html(terminology),
+            "FULL_DISCLAIMER": "This is a test report for demonstration purposes.",
+            "LOGO_BASE64": logo_base64
+        }
+    else:
+        raise ValueError("Input must be either an AggregatedReport object, an EvaluationReport object, or a dictionary")

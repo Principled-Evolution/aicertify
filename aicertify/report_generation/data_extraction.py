@@ -8,15 +8,17 @@ evaluation results, ensuring reports are complete and accurate.
 import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+import os
 
 # Import from centralized models
 from aicertify.models.evaluation import MetricValue
 from aicertify.models.report import (
     EvaluationReport, ApplicationDetails,
-    MetricGroup, PolicyResult
+    MetricGroup, PolicyResult, create_metric_group
 )
 
 # Import feature flag configuration
+from aicertify.opa_core.extraction import extract_all_policy_results
 from aicertify.report_generation.config import use_flexible_extraction
 
 # Import flexible extraction system
@@ -24,44 +26,42 @@ from aicertify.report_generation.flexible_extraction import extract_metrics as f
 
 logger = logging.getLogger(__name__)
 
-def extract_application_details(evaluation_result: Dict[str, Any]) -> ApplicationDetails:
+def extract_application_details(eval_result: Dict[str, Any]) -> ApplicationDetails:
     """
     Extract application details from evaluation results.
     
     Args:
-        evaluation_result: Dictionary containing evaluation metrics
+        eval_result: Evaluation results containing application information
         
     Returns:
-        ApplicationDetails object with extracted information
+        ApplicationDetails object with app information
     """
     # Extract app name
-    app_name = "Unknown Application"
-    if "app_name" in evaluation_result:
-        app_name = evaluation_result["app_name"]
-    elif "application_name" in evaluation_result:
-        app_name = evaluation_result["application_name"]
+    app_name = eval_result.get("application_name", "Unknown Application")
     
-    # Extract evaluation mode
-    evaluation_mode = "Standard"
-    if "evaluation_mode" in evaluation_result:
-        evaluation_mode = evaluation_result["evaluation_mode"]
+    # Extract model information if available
+    model_info = eval_result.get("model_info", {})
+    if isinstance(model_info, dict):
+        model_name = model_info.get("name", "Unknown")
+        model_provider = model_info.get("provider", "Unknown")
+        model_type = model_info.get("type", "Unknown")
+    else:
+        model_name = "Unknown"
+        model_provider = "Unknown"
+        model_type = "Unknown"
     
-    # Extract contract count
-    contract_count = 0
-    if "combined_contract_count" in evaluation_result:
-        contract_count = evaluation_result["combined_contract_count"]
-    elif "contract_count" in evaluation_result:
-        contract_count = evaluation_result["contract_count"]
-    elif "interactions" in evaluation_result:
-        # If we have a list of interactions, count them
-        contract_count = len(evaluation_result["interactions"])
+    # Extract metadata
+    metadata = eval_result.get("metadata", {})
     
-    # Create the application details
+    # Create and return ApplicationDetails
     return ApplicationDetails(
         name=app_name,
-        evaluation_mode=evaluation_mode,
-        contract_count=contract_count,
-        evaluation_date=datetime.now()
+        model_info={
+            "name": model_name,
+            "provider": model_provider,
+            "type": model_type
+        },
+        metadata=metadata
     )
 
 def extract_fairness_metrics(evaluation_result: Dict[str, Any]) -> List[MetricValue]:
@@ -383,519 +383,93 @@ def extract_stereotype_metrics(evaluation_result: Dict[str, Any]) -> List[Metric
     
     return metrics
 
-def extract_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult]:
-    """Extract policy results from OPA evaluation results."""
-    # Check if we should use the flexible extraction system
-    if use_flexible_extraction():
-        try:
-            # Use the new flexible extractor from opa_core
-            from aicertify.opa_core.extraction import extract_all_policy_results as flexible_extract
-            logger.info("Using flexible extraction system")
-            policy_results = flexible_extract(opa_results)
-            
-            # If we got results, return them
-            if policy_results:
-                logger.info(f"Extracted {len(policy_results)} policy results using flexible extractor")
-                return policy_results
-            
-            # If the flexible extraction failed, fall back to the original method
-            logger.warning("Flexible extraction returned no results, falling back to original method")
-        except Exception as e:
-            logger.error(f"Error using flexible extraction system: {e}")
-            logger.info("Falling back to original extraction method")
-    
-    # Original extraction method as fallback
-    policy_results = []
-    
-    # Check if we have a valid OPA result structure
-    if not opa_results or "result" not in opa_results:
-        logger.warning("No valid OPA results found")
-        return policy_results
-    
-    # Get the first result
-    if not opa_results["result"] or not isinstance(opa_results["result"], list):
-        logger.warning("OPA results has empty or invalid result list")
-        return policy_results
-    
-    first_result = opa_results["result"][0]
-    
-    # Check for expressions
-    if "expressions" not in first_result or not first_result["expressions"]:
-        logger.warning("No expressions found in OPA result")
-        return policy_results
-    
-    first_expr = first_result["expressions"][0]
-    
-    # Check for value
-    if "value" not in first_expr:
-        logger.warning("No value found in OPA expression")
-        return policy_results
-    
-    value = first_expr["value"]
-    
-    # Log the structure of the value
-    logger.debug(f"OPA result value keys: {list(value.keys())}")
-    
-    # Process all version keys (v1, v2, etc.) instead of just "v1"
-    version_keys = [k for k in value.keys() if k.startswith("v")]
-    logger.debug(f"Found version keys: {version_keys}")
-    
-    for version_key in version_keys:
-        version_data = value[version_key]
-        logger.debug(f"Processing version {version_key} with {len(version_data)} policies")
-        
-        # Process each policy in the current version
-        for policy_name, policy_data in version_data.items():
-            logger.debug(f"Processing policy: {policy_name}")
-            
-            # Check if the policy has a compliance report
-            if "compliance_report" in policy_data:
-                compliance_report = policy_data["compliance_report"]
-                logger.debug(f"Found compliance report for {policy_name}")
-                
-                # Extract details from the compliance report
-                overall_result = compliance_report.get("overall_result", False)
-                policy_title = compliance_report.get("policy", policy_name.replace("_", " ").title())
-                status = compliance_report.get("status", "Unknown")
-                details = compliance_report.get("details", {})
-                
-                # Ensure details is a dictionary, not a string
-                if not isinstance(details, dict):
-                    details = {"error": f"Invalid details format: {details}"}
-                    
-                message = details.get("message", "No details provided")
-                recommendations = compliance_report.get("recommendations", [])
-                
-                # Create a PolicyResult object
-                policy_result = PolicyResult(
-                    name=policy_title,
-                    result=overall_result,
-                    details=details,
-                    recommendations=recommendations
-                )
-                
-                # Add to the list of policy results
-                policy_results.append(policy_result)
-                logger.debug(f"Added policy result for {policy_name}")
-            else:
-                logger.warning(f"No compliance report found for {policy_name}")
-                
-                # Add a placeholder result for policies without a compliance report
-                policy_result = PolicyResult(
-                    name=policy_name.replace("_", " ").title(),
-                    result=False,
-                    details={"error": "No compliance report available"},
-                    recommendations=[]
-                )
-                policy_results.append(policy_result)
-    
-    logger.info(f"Extracted {len(policy_results)} policy results from OPA evaluation")
-    return policy_results
+# This function is no longer needed as we're using the consolidated extraction function
+# def extract_structured_data_from_debug(debug_output: str) -> Dict[str, Any]:
+#     """This function has been removed in favor of the consolidated extraction system."""
+#     return None
 
-def extract_structured_data_from_debug(debug_output: str) -> Dict[str, Any]:
-    """
-    Extract structured data from OPA debug output.
-    
-    This function tries multiple strategies to extract JSON data from debug output:
-    1. Look for complete JSON objects
-    2. Parse specific sections of the debug output
-    3. Extract policy-specific information
-    
-    Args:
-        debug_output: String containing OPA debug output
-        
-    Returns:
-        Dictionary containing structured data extracted from debug output,
-        or None if no structured data could be extracted
-    """
-    # Strategy 1: Look for complete JSON objects
-    try:
-        import re
-        import json
-        
-        # First try to find JSON data that starts with {"v1": {
-        v1_json_match = re.search(r'(\{\s*"v1"\s*:[\s\S]*?\}\s*\}(?=\s*\n|\s*$))', debug_output)
-        if v1_json_match:
-            try:
-                json_str = v1_json_match.group(1)
-                # Try to parse it directly
-                try:
-                    json_data = json.loads(json_str)
-                    if isinstance(json_data, dict) and "v1" in json_data:
-                        return json_data
-                except json.JSONDecodeError:
-                    # If direct parsing fails, try to clean up the string
-                    # Remove any trailing commas before closing braces
-                    json_str = re.sub(r',\s*\}', '}', json_str)
-                    # Ensure all property names are quoted
-                    json_str = re.sub(r'([{,]\s*)([a-zA-Z0-9_]+)(\s*:)', r'\1"\2"\3', json_str)
-                    # Try parsing again
-                    json_data = json.loads(json_str)
-                    if isinstance(json_data, dict) and "v1" in json_data:
-                        return json_data
-            except Exception as e:
-                logger.warning(f"Error parsing v1 JSON object: {e}")
-        
-        # If that fails, try to find any JSON object in the output
-        json_pattern = r'(\{(?:[^{}]|(?1))*\})'
-        json_matches = list(re.finditer(json_pattern, debug_output, re.DOTALL))
-        
-        if json_matches:
-            # Sort by length to find the largest JSON object
-            json_matches.sort(key=lambda m: len(m.group(1)), reverse=True)
-            
-            for match in json_matches:
-                try:
-                    json_str = match.group(1)
-                    # Try to parse it directly
-                    try:
-                        json_data = json.loads(json_str)
-                        # Check if this looks like a valid OPA result
-                        if isinstance(json_data, dict) and "v1" in json_data:
-                            return json_data
-                    except json.JSONDecodeError:
-                        # If direct parsing fails, try to clean up the string
-                        # Remove any trailing commas before closing braces
-                        json_str = re.sub(r',\s*\}', '}', json_str)
-                        # Ensure all property names are quoted
-                        json_str = re.sub(r'([{,]\s*)([a-zA-Z0-9_]+)(\s*:)', r'\1"\2"\3', json_str)
-                        # Try parsing again
-                        json_data = json.loads(json_str)
-                        if isinstance(json_data, dict) and "v1" in json_data:
-                            return json_data
-                except Exception:
-                    continue
-    except Exception as e:
-        logger.warning(f"Error extracting JSON from debug output: {e}")
-    
-    # Strategy 2: Manual extraction of the JSON structure
-    try:
-        # Look for the start of the JSON object
-        v1_start_match = re.search(r'{\s*"v1":', debug_output)
-        if v1_start_match:
-            start_pos = v1_start_match.start()
-            # Find the matching closing brace
-            brace_count = 1
-            end_pos = start_pos + 1
-            
-            while brace_count > 0 and end_pos < len(debug_output):
-                if debug_output[end_pos] == '{':
-                    brace_count += 1
-                elif debug_output[end_pos] == '}':
-                    brace_count -= 1
-                end_pos += 1
-            
-            if brace_count == 0:
-                json_str = debug_output[start_pos:end_pos]
-                try:
-                    # Try to parse it directly
-                    try:
-                        json_data = json.loads(json_str)
-                        return json_data
-                    except json.JSONDecodeError:
-                        # If direct parsing fails, try to clean up the string
-                        # Remove any trailing commas before closing braces
-                        json_str = re.sub(r',\s*\}', '}', json_str)
-                        # Ensure all property names are quoted
-                        json_str = re.sub(r'([{,]\s*)([a-zA-Z0-9_]+)(\s*:)', r'\1"\2"\3', json_str)
-                        # Try parsing again
-                        json_data = json.loads(json_str)
-                        return json_data
-                except Exception as e:
-                    logger.warning(f"Error parsing manually extracted JSON: {e}")
-    except Exception as e:
-        logger.warning(f"Error during manual JSON extraction: {e}")
-    
-    # Strategy 3: Parse specific sections of the debug output
-    try:
-        result = {}
-        
-        # Look for policy evaluation results
-        policy_sections = re.findall(r'data\.([a-zA-Z0-9_\.]+)\.([a-zA-Z0-9_]+)\.compliance_report', debug_output)
-        
-        for domain_path, policy_name in policy_sections:
-            # Extract domain and policy information
-            domain_parts = domain_path.split('.')
-            
-            # Extract compliance information - look for the specific structure in your example
-            compliance_match = re.search(
-                r'compliance_report.*?{.*?details.*?{.*?message.*?:.*?"(.*?)".*?}', 
-                debug_output, 
-                re.DOTALL
-            )
-            
-            if compliance_match:
-                message = compliance_match.group(1)
-                
-                # Build the nested structure
-                current = result
-                if "v1" not in current:
-                    current["v1"] = {}
-                current = current["v1"]
-                
-                for part in domain_parts:
-                    if part not in current:
-                        current[part] = {}
-                    current = current[part]
-                
-                if policy_name not in current:
-                    current[policy_name] = {}
-                
-                # Create a basic compliance report structure
-                current[policy_name]["compliance_report"] = {
-                    "overall_result": False,
-                    "policy": f"{domain_parts[-1].capitalize()} {policy_name.replace('_', ' ').capitalize()}",
-                    "version": "1.0.0",
-                    "details": {
-                        "message": message
-                    }
-                }
-                
-                # Look for recommendations
-                recommendations_match = re.search(
-                    r'recommendations.*?\[(.*?)\]', 
-                    debug_output, 
-                    re.DOTALL
-                )
-                
-                if recommendations_match:
-                    recommendations_str = recommendations_match.group(1)
-                    recommendations = []
-                    
-                    # Extract individual recommendations
-                    for rec_match in re.finditer(r'"(.*?)"', recommendations_str):
-                        recommendations.append(rec_match.group(1))
-                    
-                    if recommendations:
-                        current[policy_name]["compliance_report"]["recommendations"] = recommendations
-                
-                # Also look for allow, implementation_pending, and non_compliant
-                allow_match = re.search(rf'{policy_name}\.allow.*?(true|false)', debug_output)
-                if allow_match:
-                    current[policy_name]["allow"] = allow_match.group(1) == "true"
-                
-                pending_match = re.search(rf'{policy_name}\.implementation_pending.*?(true|false)', debug_output)
-                if pending_match:
-                    current[policy_name]["implementation_pending"] = pending_match.group(1) == "true"
-                    # Also add to compliance report
-                    current[policy_name]["compliance_report"]["implementation_pending"] = pending_match.group(1) == "true"
-                
-                non_compliant_match = re.search(rf'{policy_name}\.non_compliant.*?(true|false)', debug_output)
-                if non_compliant_match:
-                    current[policy_name]["non_compliant"] = non_compliant_match.group(1) == "true"
-        
-        if "v1" in result:
-            return result
-    except Exception as e:
-        logger.warning(f"Error parsing debug output sections: {e}")
-    
-    # Strategy 4: Direct extraction from the example format
-    try:
-        # Look for the specific format in the example
-        pattern = r'{\s*"v1":\s*{\s*"([^"]+)":\s*{\s*"allow":\s*(true|false),\s*"compliance_report":\s*{\s*"details":\s*{\s*"message":\s*"([^"]+)"'
-        match = re.search(pattern, debug_output, re.DOTALL)
-        
-        if match:
-            policy_name = match.group(1)
-            allow_value = match.group(2) == "true"
-            message = match.group(3)
-            
-            # Create a basic result structure
-            result = {
-                "v1": {
-                    policy_name: {
-                        "allow": allow_value,
-                        "compliance_report": {
-                            "overall_result": False,
-                            "policy": policy_name.replace("_", " ").capitalize(),
-                            "version": "1.0.0",
-                            "details": {
-                                "message": message
-                            }
-                        }
-                    }
-                }
-            }
-            
-            # Look for recommendations
-            recommendations_match = re.search(
-                r'"recommendations":\s*\[(.*?)\]', 
-                debug_output, 
-                re.DOTALL
-            )
-            
-            if recommendations_match:
-                recommendations_str = recommendations_match.group(1)
-                recommendations = []
-                
-                # Extract individual recommendations
-                for rec_match in re.finditer(r'"(.*?)"', recommendations_str):
-                    recommendations.append(rec_match.group(1))
-                
-                if recommendations:
-                    result["v1"][policy_name]["compliance_report"]["recommendations"] = recommendations
-            
-            return result
-    except Exception as e:
-        logger.warning(f"Error extracting from example format: {e}")
-    
-    # If all strategies fail, return None
-    return None
-
-def process_extracted_policy_data(extracted_data: Dict[str, Any]) -> List[PolicyResult]:
-    """
-    Process extracted policy data to create PolicyResult objects.
-    
-    Args:
-        extracted_data: Dictionary containing structured data extracted from debug output
-        
-    Returns:
-        List of PolicyResult objects
-    """
-    policy_results = []
-    
-    try:
-        if "v1" in extracted_data:
-            for domain, domain_data in extracted_data["v1"].items():
-                for policy_name, policy_data in domain_data.items():
-                    if isinstance(policy_data, dict) and "compliance_report" in policy_data:
-                        report_data = policy_data["compliance_report"]
-                        result = report_data.get("overall_result", False)
-                        
-                details = {
-                            "policy": report_data.get("policy", f"{domain}.{policy_name}"),
-                            "version": report_data.get("version", "1.0"),
-                    "timestamp": datetime.now().isoformat()
-                }
-                # Extract recommendations if available
-                if "recommendations" in report_data:
-                    details["recommendations"] = report_data["recommendations"]
-                
-                # Extract message if available
-                if "details" in report_data and "message" in report_data["details"]:
-                    details["message"] = report_data["details"]["message"]
-                policy_results.append(PolicyResult(
-                    name=policy_name,
-                    result=result,
-                    details=details
-                ))
-    except Exception as e:
-        logger.warning(f"Error processing extracted policy data: {e}")
-        # Add a fallback policy result
-        policy_results.append(PolicyResult(
-            name="extracted_data",
-            result=False,
-            details={
-                "error": f"Failed to process extracted data: {e}",
-                "policy": "Fallback Policy", 
-                "version": "1.0",
-                "timestamp": datetime.now().isoformat()
-            }
-        ))
-    
-    return policy_results
+# This function is no longer needed as we're using the consolidated extraction function
+# def process_extracted_policy_data(extracted_data: Dict[str, Any]) -> List[PolicyResult]:
+#     """This function has been removed in favor of the consolidated extraction system."""
+#     return []
 
 def create_evaluation_report(
-    evaluation_result: Dict[str, Any], 
+    eval_result: Dict[str, Any],
     opa_results: Optional[Dict[str, Any]] = None
 ) -> EvaluationReport:
     """
-    Create a complete evaluation report from evaluation results and OPA results.
+    Creates a structured evaluation report from evaluation results and policy results.
     
     Args:
-        evaluation_result: Dictionary containing evaluation metrics
-        opa_results: Dictionary containing OPA policy evaluation results
+        eval_result: The evaluation results containing metrics and application details
+        opa_results: Optional OPA policy results to include
         
     Returns:
-        Complete EvaluationReport object for report generation
+        An EvaluationReport Pydantic model containing the structured report
     """
-    # Use empty dict if opa_results is None
-    if opa_results is None:
-        opa_results = {}
-    
     # Extract application details
-    app_details = extract_application_details(evaluation_result)
+    app_details = extract_application_details(eval_result)
     
-    # Create metric groups - use flexible extraction if enabled
-    if use_flexible_extraction():
-        logger.info("Using flexible extraction system")
-        all_metrics = flexible_extract_metrics(evaluation_result)
-        
-        metric_groups = []
-        for group_name, metrics in all_metrics.items():
-            if metrics:  # Only include non-empty metric groups
-                # Use display name from configuration if available
-                display_name = group_name.title() + " Metrics"
-                
-                metric_groups.append(
-                    MetricGroup(
-                        name=group_name,
-                        display_name=display_name,
-                        metrics=metrics
-                    )
-                )
-    else:
-        # Use legacy extraction system
-        fairness_metrics = extract_fairness_metrics(evaluation_result)
-        toxicity_metrics = extract_toxicity_metrics(evaluation_result)
-        stereotype_metrics = extract_stereotype_metrics(evaluation_result)
-        
-        metric_groups = [
-            MetricGroup(
-                name="fairness",
-                display_name="Fairness Metrics",
-                metrics=fairness_metrics
-        ),
-        MetricGroup(
-            name="toxicity",
-            display_name="Toxicity Metrics",
-            metrics=toxicity_metrics
-        ),
-        MetricGroup(
-            name="stereotype",
-            display_name="Stereotype Metrics",
-            metrics=stereotype_metrics
-        )
-    ]
+    # Initialize lists for report structure
+    metric_groups = []
+    policy_results = []
     
-    # Extract policy results
-    policy_results = extract_policy_results(opa_results)
+    # Process OPA results
+    if opa_results and opa_results.get("result"):
+        try:
+            policy_results = extract_all_policy_results(opa_results)
+        except Exception as e:
+            logging.error(f"Error extracting policy results: {e}")
     
-    # Create summary if available
-    summary = None
-    if "summary_text" in evaluation_result:
-        summary_data = evaluation_result["summary_text"]
-        if isinstance(summary_data, str):
-            summary = summary_data
-        elif isinstance(summary_data, dict):
-            # Create a summary from the available data
-            summary_parts = []
+    # Group metrics by category
+    metrics_by_category = {}
+    
+    # First process direct metrics from eval_result
+    if "metrics" in eval_result and eval_result["metrics"]:
+        direct_metrics = {}
+        for metric_id, metric_data in eval_result["metrics"].items():
+            # Determine category (default to "Model Quality")
+            category = metric_data.get("category", "Model Quality")
             
-            # Check for toxicity
-            if "has_toxicity" in summary_data and summary_data["has_toxicity"]:
-                summary_parts.append("Toxicity detected in responses")
-            elif "toxicity_values" in summary_data:
-                toxicity_values = summary_data["toxicity_values"]
-                if toxicity_values.get("toxic_fraction", 0) > 0.1:
-                    summary_parts.append("Toxicity detected in responses")
+            # Create or update category in the metrics_by_category dict
+            if category not in metrics_by_category:
+                metrics_by_category[category] = {}
             
-            # Check for bias
-            if "has_bias" in summary_data and summary_data["has_bias"]:
-                summary_parts.append("Bias detected in responses")
-            elif "stereotype_values" in summary_data:
-                stereotype_values = summary_data["stereotype_values"]
-                if stereotype_values.get("gender_bias_detected", False) or stereotype_values.get("racial_bias_detected", False):
-                    summary_parts.append("Bias detected in responses")
-                
-            if not summary_parts:
-                summary_parts.append("No significant issues detected")
-                
-            summary = ". ".join(summary_parts)
+            # Add metric to the category
+            metrics_by_category[category][metric_id] = metric_data
     
-    # Create the evaluation report
+    # Then process metrics from policy results
+    for policy in policy_results:
+        if policy.metrics:
+            for metric_id, metric_data in policy.metrics.items():
+                # Determine category (default to policy name)
+                category = metric_data.get("category", policy.name)
+                
+                # Create or update category in the metrics_by_category dict
+                if category not in metrics_by_category:
+                    metrics_by_category[category] = {}
+                
+                # Add metric to the category
+                metrics_by_category[category][metric_id] = metric_data
+    
+    # Create metric groups from the categorized metrics
+    for category, metrics in metrics_by_category.items():
+        metric_group = create_metric_group(category, metrics)
+        metric_groups.append(metric_group)
+    
+    # Generate summary information
+    total_policies = len(policy_results)
+    green_count = sum(1 for p in policy_results if p.result)
+    red_count = total_policies - green_count
+    
+    # Create and return the structured report
     return EvaluationReport(
         app_details=app_details,
         metric_groups=metric_groups,
         policy_results=policy_results,
-        summary=summary
-    ) 
+        summary={
+            "total_policies": total_policies,
+            "green_count": green_count,
+            "red_count": red_count
+        }
+    )

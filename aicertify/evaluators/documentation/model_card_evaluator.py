@@ -24,6 +24,18 @@ class ModelCardEvaluator(BaseEvaluator):
     and quality of the documentation against HuggingFace Model Card standards.
     """
     
+    # Define the metrics supported by this evaluator
+    SUPPORTED_METRICS: Tuple[str, ...] = (
+        "model_card.score",
+        "model_card.completeness",
+        "model_card.quality",
+        "model_card.section_scores",
+        "model_card.compliance_level",
+        "metrics.model_card.score",
+        "metrics.model_card.completeness",
+        "metrics.model_card.quality"
+    )
+    
     # Required sections based on HuggingFace Model Card standards and EU AI Act requirements
     REQUIRED_SECTIONS = {
         "model_details": {
