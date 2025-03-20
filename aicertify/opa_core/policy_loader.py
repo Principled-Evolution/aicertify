@@ -33,6 +33,15 @@ class PolicyLoader:
             # Log diagnostic info about the path we're using
             logging.debug(f"Using policies directory from module path: {self.policies_dir}")
             
+            # Check if this is a symbolic link to gopal
+            if self.policies_dir.is_symlink():
+                target_path = Path(os.readlink(self.policies_dir))
+                if not target_path.is_absolute():
+                    # Convert relative symlink to absolute path
+                    target_path = (self.policies_dir.parent / target_path).resolve()
+                logging.debug(f"opa_policies is a symlink to: {target_path}")
+                self.policies_dir = target_path
+            
             # If path doesn't exist, try additional search paths
             if not self.policies_dir.exists():
                 logging.warning(f"Primary policies directory not found at: {self.policies_dir}")
@@ -43,6 +52,12 @@ class PolicyLoader:
                     self.policies_dir = cwd_path
                     logging.debug(f"Found policies in current working directory: {self.policies_dir}")
                 
+                # Try gopal in current working directory
+                gopal_path = Path.cwd() / "gopal"
+                if gopal_path.exists():
+                    self.policies_dir = gopal_path
+                    logging.debug(f"Found policies in gopal directory: {self.policies_dir}")
+                
                 # Try to find relative to the main script
                 elif '__main__' in sys.modules:
                     main_module = sys.modules['__main__']
@@ -50,8 +65,10 @@ class PolicyLoader:
                         main_path = Path(main_module.__file__).parent
                         possible_paths = [
                             main_path / "opa_policies",
+                            main_path / "gopal",
                             main_path / "aicertify" / "opa_policies",
-                            main_path.parent / "aicertify" / "opa_policies"
+                            main_path.parent / "aicertify" / "opa_policies",
+                            main_path.parent / "gopal"
                         ]
                         
                         for path in possible_paths:
@@ -66,9 +83,14 @@ class PolicyLoader:
                     for path in sys.path:
                         if "site-packages" in path:
                             site_path = Path(path) / "aicertify" / "opa_policies"
+                            gopal_site_path = Path(path) / "gopal"
                             if site_path.exists():
                                 self.policies_dir = site_path
                                 logging.debug(f"Found policies at known path: {self.policies_dir}")
+                                break
+                            elif gopal_site_path.exists():
+                                self.policies_dir = gopal_site_path
+                                logging.debug(f"Found gopal policies at known path: {self.policies_dir}")
                                 break
         else:
             self.policies_dir = Path(policies_dir)
@@ -80,6 +102,16 @@ class PolicyLoader:
             err_msg = f"Policies directory not found or not a directory: {self.policies_dir}"
             logging.critical(err_msg)
             raise ValueError(err_msg)
+        
+        # Check for VERSION file to verify gopal compatibility
+        version_file = self.policies_dir / "VERSION"
+        if version_file.exists():
+            try:
+                version = version_file.read_text().strip()
+                logging.info(f"Found gopal version: {version}")
+                self._check_compatibility(version)
+            except Exception as e:
+                logging.warning(f"Error checking gopal version: {e}")
         
         # Debug log directory contents
         top_level_items = list(self.policies_dir.iterdir())
@@ -97,6 +129,24 @@ class PolicyLoader:
         # Extract package mappings from all policies for composition support
         self.package_mappings = self._extract_package_mappings()
         
+    def _check_compatibility(self, version: str) -> None:
+        """
+        Check if the gopal version is compatible with this version of AICertify.
+        
+        Args:
+            version: The version string from the VERSION file
+        """
+        # For now, we're compatible with all versions
+        # In the future, we can implement more sophisticated version checking
+        min_supported = "1.0.0"
+        max_supported = "2.0.0"
+        
+        # Simple version comparison for now
+        if version < min_supported:
+            logging.warning(f"Gopal version {version} is older than minimum supported version {min_supported}")
+        elif version.split('.')[0] > max_supported.split('.')[0]:
+            logging.warning(f"Gopal version {version} may not be compatible with this version of AICertify")
+        
     def _load_policies(self) -> Dict[str, Dict[str, Dict[str, List[str]]]]:
         """
         Load all .rego policies from the policies directory using the modular structure.
@@ -106,6 +156,7 @@ class PolicyLoader:
         - international/eu_ai_act/v1/fairness/fairness.rego
         - industry_specific/healthcare/v1/patient_safety/patient_safety.rego
         - operational/aiops/v1/scalability/scalability.rego
+        - custom/my_category/v1/my_policy.rego
         
         Returns:
             Dictionary mapping categories to subcategories to versions to lists of policy file paths
@@ -126,7 +177,8 @@ class PolicyLoader:
             "global": {},
             "international": {},
             "industry_specific": {},
-            "operational": {}
+            "operational": {},
+            "custom": {}
         }
         
         if not self.policies_dir.exists():
