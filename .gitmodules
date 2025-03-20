@@ -1,0 +1,3 @@
+[submodule "aicertify/opa_policies"]
+	path = aicertify/opa_policies
+	url = https://github.com/Principled-Evolution/gopal.git
