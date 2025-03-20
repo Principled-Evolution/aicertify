@@ -95,6 +95,8 @@ class EvaluatorConfig:
 class BaseEvaluator(ABC):
     """Base abstract class for all compliance evaluators in AICertify."""
     
+    SUPPORTED_METRICS = []  # Default empty list of supported metrics
+    
     def __init__(self, config: Optional[Dict] = None):
         """
         Initialize the evaluator with optional configuration.
@@ -105,6 +107,16 @@ class BaseEvaluator(ABC):
         self.config = EvaluatorConfig(config or {})
         self.threshold = self.config.get("threshold", 0.7)
         self._initialize()
+    
+    @classmethod
+    def get_supported_metrics(cls) -> List[str]:
+        """
+        Get the list of metrics supported by this evaluator.
+        
+        Returns:
+            List of metric names supported by the evaluator
+        """
+        return cls.SUPPORTED_METRICS
     
     @abstractmethod
     def _initialize(self) -> None:

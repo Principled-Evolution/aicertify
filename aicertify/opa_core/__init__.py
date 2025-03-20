@@ -11,9 +11,8 @@ from aicertify.opa_core.policy_loader import PolicyLoader
 
 # Import extraction utilities
 from aicertify.opa_core.extraction import (
-    extract_policy_results,
     extract_all_policy_results,
-    extract_policy_data,
+    extract_report_outputs,
     validate_opa_results,
 )
 
@@ -21,8 +20,7 @@ from aicertify.opa_core.extraction import (
 __all__ = [
     'OpaEvaluator',
     'PolicyLoader',
-    'extract_policy_results',
     'extract_all_policy_results',
-    'extract_policy_data',
+    'extract_report_outputs',
     'validate_opa_results',
 ]

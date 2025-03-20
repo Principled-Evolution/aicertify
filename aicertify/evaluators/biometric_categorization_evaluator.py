@@ -25,6 +25,16 @@ class BiometricCategorizationEvaluator(BaseEvaluator):
     under EU AI Act Article 5(1)(c) in certain contexts.
     """
     
+    SUPPORTED_METRICS = [
+        'biometric.categorization.score',
+        'biometric.gender.score',
+        'biometric.ethnicity.score',
+        'biometric.age.score',
+        'biometric.disability.score',
+        'biometric.compliance',
+        'metrics.biometric.categorization.score'
+    ]
+    
     def __init__(
         self,
         biometric_categorization_threshold: float = 0.3,

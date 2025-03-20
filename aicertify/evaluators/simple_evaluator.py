@@ -18,6 +18,7 @@ from aicertify.opa_core.simple_policy import (
     get_available_policies,
     get_policy_description
 )
+from aicertify.opa_core.extraction import extract_all_policy_results
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

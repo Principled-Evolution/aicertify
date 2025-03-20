@@ -27,6 +27,12 @@ class AccuracyEvaluator(BaseEvaluator):
     AI systems to provide accurate and factual information.
     """
     
+    SUPPORTED_METRICS = [
+        'accuracy.score',
+        'accuracy.precision',
+        'accuracy.recall'
+    ]
+    
     def __init__(
         self,
         hallucination_threshold: float = 0.7,

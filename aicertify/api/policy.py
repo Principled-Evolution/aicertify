@@ -156,7 +156,7 @@ async def aicertify_app_for_policy(
                 from aicertify.report_generation.data_extraction import create_evaluation_report
                 report_gen = ReportGenerator()
                 report_data = create_evaluation_report(
-                    evaluation_result=evaluation_result,
+                    eval_result=evaluation_result,
                     opa_results=opa_results
                 )
             
@@ -182,6 +182,8 @@ async def aicertify_app_for_policy(
                 html_report_data = create_report_data(report_data)
                 report_path = os.path.join(output_dir, filename)
                 abs_path = os.path.abspath(report_path)
+                # store the policy requested by the user as the regulations assessed
+                html_report_data["REGULATIONS_LIST"] = [policy_folder]
                 
                 # Generate HTML report
                 if report_gen.generate_html_report(html_report_data, report_path):

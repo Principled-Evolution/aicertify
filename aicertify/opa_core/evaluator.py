@@ -13,6 +13,8 @@ from datetime import datetime
 import tempfile
 import requests
 import atexit
+import re
+import time
 
 from ..models.contract_models import AiCertifyContract as Contract
 
@@ -932,13 +934,27 @@ class OpaEvaluator:
         """
         logging.info(f"Evaluating policies in category: {policy_category}")
         
-        return self.evaluate_by_folder_name_with_params(
+        evaluation_results = self.evaluate_by_folder_name_with_params(
             folder_name=policy_category,
             input_data=input_data,
             custom_params=custom_params,
             mode=mode,
             restrict_to_folder=False  # Allow cross-folder dependencies
         )
+
+        # Save OPA results to file for debugging
+        debug_dir = os.path.join(os.getcwd(), "debug_output")
+        os.makedirs(debug_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        debug_file = os.path.join(debug_dir, f"opa_results_{timestamp}.json")
+        try:
+            with open(debug_file, 'w') as f:
+                json.dump(evaluation_results, f, indent=2, default=str)
+            logging.info(f"Saved OPA results to {debug_file} for debugging")
+        except Exception as e:
+            logging.error(f"Failed to save OPA results for debugging: {e}")
+
+        return evaluation_results
 
     def _transform_input_for_opa(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """

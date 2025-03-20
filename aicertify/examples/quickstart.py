@@ -12,10 +12,13 @@ Steps:
 
 import asyncio
 import logging
-import webbrowser
+# dont expose CUDA
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 from pathlib import Path
 from aicertify import regulations
 from aicertify import application
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

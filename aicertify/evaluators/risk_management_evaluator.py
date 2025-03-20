@@ -26,6 +26,15 @@ class RiskManagementEvaluator(BaseEvaluator):
     3. Monitoring systems implementation
     """
     
+    SUPPORTED_METRICS = [
+        'risk_management.score',
+        'risk_management.assessment_score',
+        'risk_management.mitigation_score',
+        'risk_management.monitoring_score',
+        'risk_management.compliance',
+        'metrics.risk_management.score'
+    ]
+    
     def _initialize(self) -> None:
         """Initialize the risk management evaluator."""
         # Set the name for this evaluator
