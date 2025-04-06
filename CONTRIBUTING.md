@@ -1,6 +1,6 @@
 # 🛠️ Contributing to AICertify 🚀
 
-Thank you for your interest in contributing to **AICertify**! 🎉  
+Thank you for your interest in contributing to **AICertify**! 🎉
 We welcome contributions from developers, AI practitioners, and governance professionals.
 
 ## 📌 Ways to Contribute
@@ -9,12 +9,12 @@ We welcome contributions from developers, AI practitioners, and governance profe
 - Before posting, search existing issues to **avoid duplicates**.
 
 ### **2️⃣ Feature Requests & Discussions**
-- Have an idea for improvement? **Start a discussion!**  
-  👉 [Join GitHub Discussions](https://github.com/mantric/AICertify/discussions)  
+- Have an idea for improvement? **Start a discussion!**
+  👉 [Join GitHub Discussions](https://github.com/mantric/AICertify/discussions)
 - If it's a major proposal, we recommend **creating an issue first**.
 
 ### **3️⃣ Contributing Code**
-We accept **bug fixes, new policies, API improvements, and documentation updates**.  
+We accept **bug fixes, new policies, API improvements, and documentation updates**.
 
 #### **📜 Setting Up Your Development Environment**
 1. **Fork the Repository** & Clone:
@@ -50,7 +50,7 @@ We accept **bug fixes, new policies, API improvements, and documentation updates
    - **Check CI Logs**: Ensure tests pass before requesting a review.
 
 ### **4️⃣ Writing OPA Policies**
-We encourage contributions to **regulatory compliance**, **functional validation**, and **acceptance criteria**.  
+We encourage contributions to **regulatory compliance**, **functional validation**, and **acceptance criteria**.
 
 #### **📝 Example Contribution: New OPA Policy**
 📄 **`policies/compliance/new_policy.rego`**
@@ -72,10 +72,10 @@ Add an **example input file** in `examples/`, update `README.md`, and test it.
 By contributing, you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md) (to be added soon).
 
 ## ✅ **Contribution Checklist**
-☑ Code follows project conventions.  
-☑ New policies include test cases in `examples/`.  
-☑ No breaking changes without discussion.  
-☑ All contributions follow [semantic commit messages](https://www.conventionalcommits.org/).  
+☑ Code follows project conventions.
+☑ New policies include test cases in `examples/`.
+☑ No breaking changes without discussion.
+☑ All contributions follow [semantic commit messages](https://www.conventionalcommits.org/).
 
 ## 🏷️ Issue & PR Labels
 We use **GitHub Labels** to track work:

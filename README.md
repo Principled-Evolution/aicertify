@@ -161,6 +161,29 @@ poetry run ruff check .
 poetry run black --check .
 ```
 
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality. To install the pre-commit hooks, run:
+
+```bash
+# Install pre-commit hooks
+poetry run pre-commit install
+```
+
+The pre-commit hooks will run automatically when you commit changes. They include:
+
+- Trailing whitespace removal
+- End of file fixer
+- YAML syntax check
+- Ruff linting (with auto-fixes)
+- Black code formatting
+
+You can also run the pre-commit hooks manually on all files:
+
+```bash
+poetry run pre-commit run --all-files
+```
+
 ## Contributing
 
 Contributions are welcome! See `CONTRIBUTING.md` for guidelines.

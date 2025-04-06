@@ -15,9 +15,9 @@
         .control { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 3px; }
         .control-header { display: flex; justify-content: space-between; align-items: center; }
         .control-details { margin-left: 20px; font-size: 0.9em; }
-        .summary-box { 
-            padding: 20px; 
-            background: #f8f9fa; 
+        .summary-box {
+            padding: 20px;
+            background: #f8f9fa;
             border-radius: 5px;
             margin-bottom: 20px;
         }
@@ -45,7 +45,7 @@
         .progress-80 { width: 80%; }
         .progress-90 { width: 90%; }
         .progress-100 { width: 100%; }
-        
+
         /* Table of Contents styles */
         .toc {
             background: #f8f9fa;
@@ -64,7 +64,7 @@
         .toc a:hover {
             color: #3498db;
         }
-        
+
         /* Header with logo */
         .header {
             display: flex;
@@ -76,7 +76,7 @@
             height: 50px;
             margin-right: 20px;
         }
-        
+
         /* Page header with logo */
         .page-header {
             position: fixed;
@@ -89,7 +89,7 @@
             width: 30px;
             height: 30px;
         }
-        
+
         .nested-section {
             margin: 20px 0;
             padding: 15px;
@@ -97,7 +97,7 @@
             border-radius: 5px;
             background-color: #f9f9f9;
         }
-        
+
         .nested-header {
             padding: 10px;
             background-color: #f1f1f1;
@@ -107,71 +107,71 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .nested-summary {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
-        
+
         .nested-stats {
             display: flex;
             gap: 20px;
         }
-        
+
         .nested-stat {
             padding: 5px 10px;
             border-radius: 3px;
             background-color: #eee;
         }
-        
+
         .nested-policies {
             margin-left: 20px;
         }
-        
+
         .nested-policy {
             margin: 10px 0;
             padding: 10px;
             border-left: 3px solid #ddd;
         }
-        
+
         .nested-policy.passed {
             border-left-color: #4CAF50;
         }
-        
+
         .nested-policy.failed {
             border-left-color: #f44336;
         }
-        
+
         .badge {
             padding: 4px 8px;
             border-radius: 3px;
             color: white;
             font-weight: bold;
         }
-        
+
         .badge.success {
             background-color: #4CAF50;
         }
-        
+
         .badge.failure {
             background-color: #f44336;
         }
-        
+
         .content {
             padding: 0 18px;
             background-color: #f9f9f9;
         }
-        
+
         .metric-value {
             font-weight: bold;
         }
-        
+
         .metric-value.success {
             color: #4CAF50;
         }
-        
+
         .metric-value.failure {
             color: #f44336;
         }
@@ -188,7 +188,7 @@
         <img src="data:image/png;base64,{{ LOGO_BASE64 }}" alt="AICertify Logo" class="logo">
         <h1>{{ APP_TITLE }}</h1>
     </div>
-    
+
     <!-- Table of Contents -->
     <div class="toc">
         <h2>Table of Contents</h2>

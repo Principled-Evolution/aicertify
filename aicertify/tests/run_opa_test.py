@@ -3,6 +3,7 @@
 Standalone script to test OPA policy imports without loading the entire AICertify package.
 This avoids loading transformers and other heavy dependencies.
 """
+
 import json
 import os
 import sys

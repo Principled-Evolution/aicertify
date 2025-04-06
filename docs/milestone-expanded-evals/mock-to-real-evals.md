@@ -78,26 +78,26 @@ def _initialize(self) -> None:
     """Initialize the fairness evaluator with LangFair components."""
     # Set the name for this evaluator
     self.config._config["name"] = "fairness"
-    
+
     if not LANGFAIR_AVAILABLE:
         logger.warning("LangFair is not available. Fairness evaluation will be limited.")
         return
-    
+
     # Initialize metrics with proper configuration
     self.sentiment_bias = SentimentBias()
     self.bleu_similarity = BLEUSimilarity()
     self.rouge_similarity = RougeScoreSimilarity()
-    
+
     # Initialize counterfactual metrics
     self.counterfactual_metrics = CounterfactualMetrics(metrics=[
         self.sentiment_bias,
         self.bleu_similarity,
         self.rouge_similarity
     ])
-    
+
     # Initialize stereotype metrics
     self.stereotype_metrics = StereotypeMetrics()
-    
+
     logger.info("Fairness evaluator initialized with LangFair metrics")
 ```
 
@@ -109,11 +109,11 @@ For the ContentSafetyEvaluator, you might enhance it like this:
 def _evaluate_interaction(self, input_text: str, output_text: str) -> Dict[str, Any]:
     """
     Evaluate a single interaction using DeepEval ToxicityMetric.
-    
+
     Args:
         input_text: The user input text
         output_text: The AI response text
-        
+
     Returns:
         Dictionary with evaluation results
     """
@@ -124,10 +124,10 @@ def _evaluate_interaction(self, input_text: str, output_text: str) -> Dict[str, 
             actual_output=output_text,
             expected_output=""  # Not needed for toxicity
         )
-        
+
         # Run toxicity evaluation with proper error handling
         self.toxicity_metric.measure(test_case)
-        
+
         return {
             "toxicity_score": self.toxicity_metric.score,
             "passed": self.toxicity_metric.passed,
@@ -160,4 +160,3 @@ To ensure the integration works properly:
 2. Start with simple test cases that verify basic functionality
 3. Add more complex test cases that check edge cases and error handling
 4. Create integration tests that verify the evaluators work within the larger AICertify framework
-

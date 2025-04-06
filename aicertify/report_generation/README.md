@@ -67,14 +67,14 @@ from aicertify.report_generation.flexible_extraction import register_custom_extr
 def my_custom_extractor(evaluation_result):
     # Custom extraction logic
     metrics = []
-    
+
     # Add metrics
     metrics.append(MetricValue(
         name="my_metric",
         display_name="My Metric",
         value=calculate_my_metric(evaluation_result)
     ))
-    
+
     return metrics
 
 # Register the custom extractor
@@ -154,4 +154,4 @@ markdown_content = report_generator.generate_markdown_report(report)
 # Write the report to a file
 with open("report.md", "w") as f:
     f.write(markdown_content)
-``` 
+```

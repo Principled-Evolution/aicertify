@@ -77,4 +77,4 @@ If you encounter any issues, try running with the `--verbose` flag to get more d
 
 ```bash
 python aicertify_cli.py --contract examples/outputs/medical_diagnosis/contract_2025-03-03_183048.json --policy eu_fairness --verbose
-``` 
+```

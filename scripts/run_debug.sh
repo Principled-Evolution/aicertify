@@ -59,4 +59,4 @@ export OPENAI_LOG_LEVEL=INFO
 OPA_DEBUG=$OPA_DEBUG LOG_LEVEL=$LOG_LEVEL LOG_FILE=$LOG_FILE python examples/debug_policy_evaluation.py
 
 echo ""
-echo "Debug script completed. Log file: $LOG_FILE" 
+echo "Debug script completed. Log file: $LOG_FILE"

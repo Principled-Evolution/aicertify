@@ -72,7 +72,11 @@ class OpaEvaluator:
         )
 
         self.policy_loader = PolicyLoader()
-        self.opa_path = None if (use_external_server or skip_opa_check) else self._verify_opa_installation()
+        self.opa_path = (
+            None
+            if (use_external_server or skip_opa_check)
+            else self._verify_opa_installation()
+        )
         self.use_external_server = use_external_server
         self.server_url = server_url
         self.policies_loaded = False
@@ -164,7 +168,9 @@ class OpaEvaluator:
         ci_env = os.environ.get("CI", "false").lower() in ("1", "true", "yes")
 
         if ci_env or self.skip_opa_check:
-            logging.warning(f"{error_msg}\nRunning in CI environment or skip_opa_check=True, continuing without OPA.")
+            logging.warning(
+                f"{error_msg}\nRunning in CI environment or skip_opa_check=True, continuing without OPA."
+            )
             return None
         else:
             logging.error(error_msg)
@@ -188,7 +194,7 @@ class OpaEvaluator:
             return {
                 "result": {
                     "mock_result": True,
-                    "message": "This is a mock result because OPA is not available."
+                    "message": "This is a mock result because OPA is not available.",
                 }
             }
         # Check environment variable for debug mode override

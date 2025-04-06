@@ -36,4 +36,4 @@ select = ["E4", "F4", "F8"]
 
 # Allow unused imports in __init__.py files.
 [lint.per-file-ignores]
-"__init__.py" = ["F401"] 
+"__init__.py" = ["F401"]

@@ -88,7 +88,6 @@ def extract_report_outputs(
                                             and "metrics" in value
                                             and isinstance(value["metrics"], dict)
                                         ):
-
                                             # Validate metrics structure
                                             valid_metrics = True
                                             for metric_key, metric in value[
@@ -195,7 +194,6 @@ def extract_report_outputs(
             and "metrics" in node
             and isinstance(node["metrics"], dict)
         ):
-
             # Validate metrics structure
             valid_metrics = True
             for metric_key, metric in node["metrics"].items():

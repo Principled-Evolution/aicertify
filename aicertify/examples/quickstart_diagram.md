@@ -10,24 +10,24 @@ graph TB
         A[regulations.py]
         B[application.py]
     end
-    
+
     subgraph "Core Services"
         C[api.py]
         D[evaluators]
         E[opa_core]
         F[report_generation]
     end
-    
+
     subgraph "Data Models"
         G[models/contract.py]
         H[models/evaluation.py]
         I[models/report.py]
     end
-    
+
     subgraph "OPA Policies"
         J[opa_policies]
     end
-    
+
     A -->|loads| E
     A -->|selects| J
     B -->|creates| G
@@ -51,22 +51,22 @@ sequenceDiagram
     participant OPA as opa_core
     participant Evaluators as evaluators
     participant Report as report_generation
-    
+
     User->>Regulations: create()
     Regulations->>OPA: load policies
     Regulations-->>User: RegulationSet
-    
+
     User->>Regulations: add(regulation_name)
     Regulations->>OPA: find_matching_policy_folders()
     OPA-->>Regulations: matching folders
     Regulations-->>User: success
-    
+
     User->>Application: create(name, model_info)
     Application-->>User: Application
-    
+
     User->>Application: add_interaction(input, output)
     Application-->>User: success
-    
+
     User->>Application: evaluate(regulations)
     Application->>API: aicertify_app_for_policy()
     API->>OPA: evaluate_policy_category()
@@ -77,7 +77,7 @@ sequenceDiagram
     Report-->>API: report path
     API-->>Application: results and report path
     Application-->>User: evaluation results
-    
+
     User->>Application: get_report()
     Application-->>User: report paths
 ```
@@ -111,4 +111,4 @@ See the `quickstart.py` file for a complete working example of using the AICerti
 - Specify report formats: markdown, PDF, or JSON
 - Configure output directories for reports
 - Add custom metadata to applications and interactions
-- Select specific regulations based on your compliance needs 
+- Select specific regulations based on your compliance needs

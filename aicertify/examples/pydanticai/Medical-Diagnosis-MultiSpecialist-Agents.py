@@ -22,69 +22,69 @@ case_description = """**Patient Case Report**
     - Name: Jeremy Irons, Jr. II
     - DoB: 01/01/1980
     - Sex: M
-    - Weight: 180 lbs (81.6 kg)  
-    - Height: 5'11" (180 cm)  
-    - BMI: 25.1 kg/m²  
+    - Weight: 180 lbs (81.6 kg)
+    - Height: 5'11" (180 cm)
+    - BMI: 25.1 kg/m²
     - Occupation: Office Manager
     - Chief Complaint: Chest pain
 
-    **History of Present Illness:**  
+    **History of Present Illness:**
     Jeremy Irons, Jr. II, a 45-year-old male, presented to the emergency department with complaints of intermittent chest pain over the past three days. The pain is described as a tightness in the center of the chest, radiating to the left arm and jaw. The episodes last approximately 10-15 minutes and occur both at rest and during exertion. He also reports mild shortness of breath and occasional dizziness. He denies nausea, vomiting, fever, or recent infections.
 
-    **Past Medical History:**  
-    - Hypertension (diagnosed 5 years ago)  
-    - Hyperlipidemia (diagnosed 3 years ago)  
-    - Mild gastroesophageal reflux disease (GERD)  
+    **Past Medical History:**
+    - Hypertension (diagnosed 5 years ago)
+    - Hyperlipidemia (diagnosed 3 years ago)
+    - Mild gastroesophageal reflux disease (GERD)
     - No prior history of myocardial infarction or stroke
 
-    **Family History:**  
-    - Father: Died at 67 from myocardial infarction  
-    - Mother: Alive, 79, history of hypertension  
-    - Sibling: One older brother (58), history of type 2 diabetes and coronary artery disease  
+    **Family History:**
+    - Father: Died at 67 from myocardial infarction
+    - Mother: Alive, 79, history of hypertension
+    - Sibling: One older brother (58), history of type 2 diabetes and coronary artery disease
 
-    **Lifestyle and Social History:**  
-    - Smoker: 1 pack per day for 30 years  
-    - Alcohol: Occasional, 2-3 drinks per week  
-    - Diet: High in processed foods, moderate red meat intake, low vegetable consumption  
-    - Exercise: Sedentary lifestyle, occasional walking  
-    - Stress: High occupational stress  
+    **Lifestyle and Social History:**
+    - Smoker: 1 pack per day for 30 years
+    - Alcohol: Occasional, 2-3 drinks per week
+    - Diet: High in processed foods, moderate red meat intake, low vegetable consumption
+    - Exercise: Sedentary lifestyle, occasional walking
+    - Stress: High occupational stress
 
-    **Medications:**  
-    - Amlodipine 10 mg daily  
-    - Atorvastatin 20 mg daily  
-    - Omeprazole 20 mg daily  
+    **Medications:**
+    - Amlodipine 10 mg daily
+    - Atorvastatin 20 mg daily
+    - Omeprazole 20 mg daily
 
-    **Physical Examination:**  
-    - General: Alert, mildly anxious  
+    **Physical Examination:**
+    - General: Alert, mildly anxious
     - Vital Signs:
       - Blood Pressure: 148/92 mmHg
       - Heart Rate: 88 bpm
       - Respiratory Rate: 18 breaths/min
       - Temperature: 98.6°F (37°C)
-      - Oxygen Saturation: 98% on room air  
-    - Cardiovascular: No murmurs, rubs, or gallops; regular rate and rhythm  
-    - Respiratory: Clear breath sounds bilaterally  
-    - Abdomen: Soft, non-tender, no hepatosplenomegaly  
-    - Extremities: No edema or cyanosis  
+      - Oxygen Saturation: 98% on room air
+    - Cardiovascular: No murmurs, rubs, or gallops; regular rate and rhythm
+    - Respiratory: Clear breath sounds bilaterally
+    - Abdomen: Soft, non-tender, no hepatosplenomegaly
+    - Extremities: No edema or cyanosis
 
-    **Laboratory Results:**  
-    - Complete Blood Count (CBC): Normal  
+    **Laboratory Results:**
+    - Complete Blood Count (CBC): Normal
     - Lipid Panel:
       - Total Cholesterol: 240 mg/dL (high)
       - LDL: 160 mg/dL (high)
       - HDL: 38 mg/dL (low)
-      - Triglycerides: 180 mg/dL (high)  
-    - Blood Glucose: 105 mg/dL (fasting, borderline high)  
-    - Hemoglobin A1C: 5.8% (prediabetes)  
-    - Troponin: 0.02 ng/mL (normal)  
-    - Electrolytes: Normal  
-    - Kidney Function: Normal creatinine and eGFR  
+      - Triglycerides: 180 mg/dL (high)
+    - Blood Glucose: 105 mg/dL (fasting, borderline high)
+    - Hemoglobin A1C: 5.8% (prediabetes)
+    - Troponin: 0.02 ng/mL (normal)
+    - Electrolytes: Normal
+    - Kidney Function: Normal creatinine and eGFR
 
-    **Diagnostic Tests:**  
-    - **Electrocardiogram (ECG):** Mild ST depression in lead II, III, and aVF  
-    - **Chest X-ray:** No acute abnormalities  
-    - **Echocardiogram:** Normal left ventricular function, no significant valve abnormalities  
-    - **Stress Test:** Positive for inducible ischemia  
+    **Diagnostic Tests:**
+    - **Electrocardiogram (ECG):** Mild ST depression in lead II, III, and aVF
+    - **Chest X-ray:** No acute abnormalities
+    - **Echocardiogram:** Normal left ventricular function, no significant valve abnormalities
+    - **Stress Test:** Positive for inducible ischemia
     - **Coronary Angiography:** Pending for Further Evaluation
 """
 

@@ -62,4 +62,19 @@ langchain-openai = ">=0.0.5"
 [tool.poetry.group.dev.dependencies]
 pytest-asyncio = "^0.25.3"
 ruff = "^0.5.5"
+pre-commit = "^4.2.0"
+black = "^24.3.0"
 
+[tool.ruff]
+line-length = 88  # Match black's default
+target-version = "py312"
+select = ["E", "F", "I"]
+ignore = []
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.black]
+line-length = 88  # Default black line length
+target-version = ["py312"]
+include = '\.pyi?$'

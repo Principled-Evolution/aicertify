@@ -145,7 +145,7 @@ from aicertify.report_generation.flexible_extraction import register_custom_extr
 
 def extract_custom_metrics(evaluation_result):
     metrics = []
-    
+
     # Extract custom metrics
     if "custom_data" in evaluation_result:
         custom_data = evaluation_result["custom_data"]
@@ -156,7 +156,7 @@ def extract_custom_metrics(evaluation_result):
                 value=custom_data.get("value", 0.0)
             )
         )
-    
+
     return metrics
 
 # Register the custom extractor
@@ -235,20 +235,20 @@ from aicertify.evaluators.base_evaluator import BaseEvaluator
 
 class MyEvaluator(BaseEvaluator):
     """My custom evaluator for special metrics."""
-    
+
     # Option 1: Define supported metrics as a class attribute
     SUPPORTED_METRICS = [
         "my_evaluator.metric1",
         "my_evaluator.metric2"
     ]
-    
+
     # Option 2: Implement a method to return supported metrics
     def get_supported_metrics(self) -> List[str]:
         return [
             "my_evaluator.metric1",
             "my_evaluator.metric2"
         ]
-    
+
     # ... rest of the evaluator implementation
 ```
 
@@ -288,27 +288,27 @@ sequenceDiagram
     participant Registry as EvaluatorRegistry
     participant Extractor as FlexibleExtractor
     participant Reporter as ReportGenerator
-    
+
     App->>Registry: initialize_evaluator_registry()
     Registry->>Registry: discover_evaluator_classes()
     Registry->>Registry: register_evaluator(evaluator_class)
-    
+
     App->>Extractor: initialize_metric_extraction()
     Extractor->>Registry: get_all_metrics()
     Registry-->>Extractor: metrics
     Extractor->>Extractor: register_policy_metrics_with_extraction_system()
     Extractor->>Extractor: register_policy_metrics_extractor()
-    
+
     App->>Registry: discover_evaluators_for_metrics(required_metrics)
     Registry-->>App: evaluator_classes
-    
+
     App->>App: run_evaluators(evaluator_classes)
-    
+
     App->>Extractor: extract_metrics(evaluation_results)
     Extractor->>Extractor: apply_path_extractors()
     Extractor->>Extractor: apply_custom_extractors()
     Extractor-->>App: metrics
-    
+
     App->>Reporter: generate_report(metrics)
     Reporter-->>App: report
 ```
@@ -324,33 +324,33 @@ classDiagram
         +discover_evaluators(required_metrics)
         +get_all_metrics()
     }
-    
+
     class BaseEvaluator {
         +SUPPORTED_METRICS
         +get_supported_metrics()
     }
-    
+
     class MetricExtractor {
         +register_extractor(metric_type, extractor)
         +extract_metrics(evaluation_result)
     }
-    
+
     class MetricGroup {
         +name
         +display_name
         +metrics_config
         +extract_metrics(evaluation_result)
     }
-    
+
     class PolicyMetricExtraction {
         +register_policy_metrics_with_extraction_system()
         +initialize_metric_extraction()
     }
-    
+
     class ReportGenerator {
         +generate_report(metrics)
     }
-    
+
     EvaluatorRegistry "1" *-- "*" BaseEvaluator : registers
     BaseEvaluator <|-- CustomEvaluator
     MetricExtractor "1" *-- "*" MetricGroup : contains
@@ -361,4 +361,4 @@ classDiagram
 
 ## Conclusion
 
-The Flexible Metric Extraction System provides a flexible and extensible way to extract metrics from evaluation results in AICertify. By decoupling metric extraction from specific data structures, it makes it easier to add new evaluators and metrics without modifying code in multiple places. The integration with the evaluator registry provides automatic support for policy-required metrics, ensuring comprehensive reporting. 
+The Flexible Metric Extraction System provides a flexible and extensible way to extract metrics from evaluation results in AICertify. By decoupling metric extraction from specific data structures, it makes it easier to add new evaluators and metrics without modifying code in multiple places. The integration with the evaluator registry provides automatic support for policy-required metrics, ensuring comprehensive reporting.

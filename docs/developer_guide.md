@@ -106,20 +106,20 @@ async def main():
     # Create a regulations set
     regulations_set = regulations.create("eu_ai_act_evaluation")
     regulations_set.add("eu_ai_act")
-    
+
     # Create an application
     app = application.create(
         name="My AI Assistant",
         model_name="GPT-4",
         model_version="latest"
     )
-    
+
     # Add interactions
     app.add_interaction(
         input_text="What is the capital of France?",
         output_text="The capital of France is Paris."
     )
-    
+
     # Add context information
     app.add_context({
         "risk_documentation": "Risk assessment documentation...",
@@ -128,14 +128,14 @@ async def main():
             "intended_use": "Educational assistant"
         }
     })
-    
+
     # Evaluate the application
     results = await app.evaluate(
         regulations=regulations_set,
         report_format="html",
         output_dir="./reports"
     )
-    
+
     print(f"Report saved to: {results.get('report_path')}")
 
 # Run the evaluation
@@ -262,14 +262,14 @@ try:
         report_format='markdown',
         output_dir=contract_storage
     ))
-    
+
     # Log evaluation results
     logger.info(f'Application evaluation complete')
     if eval_result.get('report_path'):
         logger.info(f'Evaluation report saved to: {eval_result.get("report_path")}')
     else:
         logger.info('Report generated but path not returned')
-    
+
 except Exception as ex:
     logger.exception(f'Error during application evaluation: {ex}')
 ```
@@ -290,13 +290,13 @@ except Exception as ex:
 
    ```python
    from aicertify import application
-   
+
    app = application.create(
        name="Medical Diagnosis Session",
        model_name="gpt-4o-mini",
        model_metadata={"provider": "OpenAI"}
    )
-   
+
    # Add interactions
    for interaction in captured_interactions:
        app.add_interaction(
@@ -312,11 +312,11 @@ except Exception as ex:
    # Simple integration using Regulations/Application API
    from aicertify import regulations
    import asyncio
-   
+
    # Create regulations set
    regulations_set = regulations.create("medical_diagnosis_evaluation")
    regulations_set.add("eu_ai_act")
-   
+
    # Evaluate application
    eval_result = asyncio.run(app.evaluate(
        regulations=regulations_set,
@@ -364,10 +364,10 @@ The Medical Diagnosis example uses both OpenAI and Ollama models. If you're runn
    ```bash
    # Install Ollama if needed
    curl -fsSL https://ollama.com/install.sh | sh
-   
+
    # Start Ollama server
    ollama serve
-   
+
    # Pull the model (in a separate terminal)
    ollama pull deepseek-r1
    ```

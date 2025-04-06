@@ -80,4 +80,4 @@ graph TD
 6. `evaluate_contract_by_folder` uses `OpaEvaluator` to evaluate the contract against OPA policies
 7. `evaluate_contract_by_folder` generates a report using the report generation modules
 8. The report is saved to the specified output directory
-9. A summary of the results is printed to the console 
+9. A summary of the results is printed to the console

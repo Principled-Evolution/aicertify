@@ -47,11 +47,11 @@ def sample_contract():
             Risk Assessment:
             1. Identification: We have identified potential risks.
             2. Classification: Risks are classified.
-            
+
             Mitigation Measures:
             1. Control Measures: Regular audits
             2. Implementation: Continuous monitoring
-            
+
             Monitoring System:
             1. Metrics: We track metrics
             2. Frequency: Weekly reviews

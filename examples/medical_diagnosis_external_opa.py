@@ -94,7 +94,7 @@ def main():
    - The fever, cough, and fatigue are classic symptoms
    - Elevated WBC count suggests infection
    - Slightly elevated CRP indicates inflammation
-   
+
 2. COVID-19:
    - Presents with fever, cough, and fatigue
    - Can occur despite vaccination status

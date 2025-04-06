@@ -14,4 +14,4 @@ poetry run python cli\cli.py eval-folder --app-name "CareerCoachAI Interactive S
 
 poetry run python cli\cli.py eval-policy --input '.\examples\pydanticai\eval_outputs\consolidated_evaluation_CareerCoachAI Interactive Session2025-02-20_160855.json' --category compliance\fairness
 
-poetry run python cli\cli.py eval-all --app-name "CareerCoachAI Interactive Session" --folder .\examples\pydanticai\contracts\ --output consolidated_eval.json --category compliance\fairness 
+poetry run python cli\cli.py eval-all --app-name "CareerCoachAI Interactive Session" --folder .\examples\pydanticai\contracts\ --output consolidated_eval.json --category compliance\fairness

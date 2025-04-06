@@ -46,4 +46,4 @@ This document tracks all tasks and milestones required for integrating EU AI Act
 
 ## Next Steps
 - Regularly review and update this document as work progresses.
-- Maintain synchronous updates with the integration plan to ensure that all milestones are met and that our approach remains aligned with project goals. 
+- Maintain synchronous updates with the integration plan to ensure that all milestones are met and that our approach remains aligned with project goals.

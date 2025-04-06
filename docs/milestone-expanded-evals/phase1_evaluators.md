@@ -23,15 +23,15 @@ All evaluators inherit from the `BaseEvaluator` interface, which defines the sta
 ```python
 class BaseEvaluator:
     """Base interface for all compliance evaluators."""
-    
+
     def __init__(self, config: dict = None):
         """Initialize the evaluator with configuration."""
         self.config = config or {}
-        
+
     def evaluate(self, data: dict) -> EvaluationResult:
         """Evaluate the input data and return a result."""
         raise NotImplementedError("Subclasses must implement evaluate()")
-        
+
     async def evaluate_async(self, data: dict) -> EvaluationResult:
         """Asynchronously evaluate the input data."""
         return self.evaluate(data)
@@ -44,7 +44,7 @@ The `EvaluationResult` class represents the standardized output format for all e
 ```python
 class EvaluationResult:
     """Standardized result from an evaluator."""
-    
+
     def __init__(
         self,
         evaluator_name: str,
@@ -67,7 +67,7 @@ The `Report` class provides a standardized way to represent evaluation reports:
 ```python
 class Report:
     """Standardized report format."""
-    
+
     def __init__(
         self,
         content: str,
@@ -209,4 +209,4 @@ See the [evaluator_example.py](../aicertify/examples/evaluator_example.py) file 
 
 4. **Review Detailed Reports**: Don't just check the compliance status; review the detailed reports to understand specific areas for improvement.
 
-5. **Combine with OPA Policies**: For comprehensive compliance assessment, use both Phase 1 evaluators and OPA policies through the `evaluate_contract_comprehensive` function. 
+5. **Combine with OPA Policies**: For comprehensive compliance assessment, use both Phase 1 evaluators and OPA policies through the `evaluate_contract_comprehensive` function.

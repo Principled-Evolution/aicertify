@@ -493,7 +493,8 @@ async def main_async():
     # Create and run the toxic coach with certification - always use HF dataset
     try:
         toxic_coach = ToxicCareerCoachWithCertification(
-            use_hf_dataset=True, dataset_name=args.dataset_name  # Always use HF dataset
+            use_hf_dataset=True,
+            dataset_name=args.dataset_name,  # Always use HF dataset
         )
 
         # Step 1: Run the AI application and capture interactions

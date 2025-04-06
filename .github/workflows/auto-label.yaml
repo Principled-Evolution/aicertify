@@ -39,7 +39,7 @@ jobs:
       # Add in-progress label for draft PRs
       - name: Add in-progress label for draft PRs
         if: |
-          github.event_name == 'pull_request' && 
+          github.event_name == 'pull_request' &&
           github.event.pull_request.draft == true
         uses: actions-ecosystem/action-add-labels@v1
         with:
@@ -49,7 +49,7 @@ jobs:
       # Remove in-progress when PR is ready for review
       - name: Remove in-progress label when ready for review
         if: |
-          github.event_name == 'pull_request' && 
+          github.event_name == 'pull_request' &&
           github.event.action == 'ready_for_review'
         uses: actions-ecosystem/action-remove-labels@v1
         with:
@@ -59,8 +59,8 @@ jobs:
       # Automatically add "in progress" label for draft PRs
       - name: Add in-progress label for draft PRs
         if: |
-          github.event_name == 'pull_request' && 
-          (github.event.action == 'opened' || github.event.action == 'converted_to_draft') && 
+          github.event_name == 'pull_request' &&
+          (github.event.action == 'opened' || github.event.action == 'converted_to_draft') &&
           github.event.pull_request.draft == true
         uses: actions-ecosystem/action-add-labels@v1
         with:
@@ -69,7 +69,7 @@ jobs:
       # Add "waiting for feedback" when review requested
       - name: Add waiting-for-feedback label on review request
         if: |
-          github.event_name == 'pull_request' && 
+          github.event_name == 'pull_request' &&
           github.event.action == 'review_requested'
         uses: actions-ecosystem/action-add-labels@v1
         with:
@@ -78,7 +78,7 @@ jobs:
       # Remove "waiting for feedback" when PR is updated
       - name: Remove waiting-for-feedback label on PR update
         if: |
-          github.event_name == 'pull_request' && 
+          github.event_name == 'pull_request' &&
           github.event.action == 'synchronize'
         uses: actions-ecosystem/action-remove-labels@v1
         with:
@@ -87,7 +87,7 @@ jobs:
       # Add "needs testing" when PR is ready for review
       - name: Add needs-testing label when PR is ready
         if: |
-          github.event_name == 'pull_request' && 
+          github.event_name == 'pull_request' &&
           github.event.action == 'ready_for_review'
         uses: actions-ecosystem/action-add-labels@v1
         with:
@@ -96,7 +96,7 @@ jobs:
       # Clean up labels when PR/issue is closed
       - name: Clean up status labels on close
         if: |
-          (github.event_name == 'pull_request' || github.event_name == 'issues') && 
+          (github.event_name == 'pull_request' || github.event_name == 'issues') &&
           github.event.action == 'closed'
         uses: actions-ecosystem/action-remove-labels@v1
         with:

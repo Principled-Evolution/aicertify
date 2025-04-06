@@ -4,6 +4,7 @@ Minimal context serialization test that bypasses OPA initialization.
 This script directly extracts the relevant context handling components
 without importing the full AICertify package.
 """
+
 import os
 import json
 from typing import Dict, Any, Optional

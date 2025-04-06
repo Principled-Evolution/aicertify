@@ -22,7 +22,7 @@ Closes #123 (if applicable)
 1. Run `python cli.py --category compliance/eu_ai_act --input examples/input_examples.json`
 2. Start the API: `uvicorn service:app --reload`
 3. Send a request:
-   ```bash  
+   ```bash
    curl -X POST "http://localhost:8000/validate" -H "Content-Type: application/json" -d '{"category": "compliance/eu_ai_act", "input_data": {"bias_score": 0.03}}'
    ```
 
@@ -36,4 +36,3 @@ Provide a detailed description of the changes made.
 - ✅ [Updated README.md]
 - ✅ [Added new examples]
 - ✅ [Updated API documentation]
-

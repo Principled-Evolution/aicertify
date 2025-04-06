@@ -4,6 +4,7 @@ Test script to verify the OPA executable path and functionality,
 with minimal additions to support debugging in VS Code (under WSL)
 and testing of 'opa.exe' invocation as well as the Linux OPA executable.
 """
+
 import os
 import sys
 import shutil

@@ -78,20 +78,20 @@ def create_sample_contract():
         context={
             "risk_documentation": """
             Risk Management Documentation for LoanAdvisorAI
-            
+
             Risk Assessment:
-            1. Identification: We have identified potential risks including bias in financial advice, 
+            1. Identification: We have identified potential risks including bias in financial advice,
                misunderstanding of user queries, and potential privacy concerns with financial data.
             2. Classification: Risks are classified as compliance, operational, and reputational.
             3. Severity: Each risk is rated on a scale of 1-5 for both impact and probability.
             4. Probability: We estimate risk probabilities based on historical data and industry trends.
-            
+
             Mitigation Measures:
             1. Control Measures: Regular bias audits, content safety reviews, and privacy assessments
             2. Implementation: Continuous monitoring system with weekly evaluation of interaction samples
             3. Responsibility: Our AI Ethics Committee oversees risk management with quarterly reviews
             4. Timeline: Mitigation measures are updated quarterly and after any significant model updates
-            
+
             Monitoring System:
             1. Metrics: We track fairness metrics, user satisfaction, compliance with regulations
             2. Indicators: Key risk indicators include bias complaints, incorrect financial advice
