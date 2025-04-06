@@ -106,7 +106,7 @@ To implement this developer-friendly approach:
    async def evaluate_contract(contract_path: str, policy_category: str, **options) -> Dict[str, Any]:
        """One-line evaluation from a contract file path"""
        pass
-       
+
    async def evaluate_contract_object(contract: AiCertifyContract, policy_category: str, **options) -> Dict[str, Any]:
        """One-line evaluation from a contract object"""
        pass
@@ -151,4 +151,3 @@ The documentation should focus on these key points:
 2. **Separation of Concerns** - Developers only need to know about contracts and policies
 3. **Future-Proof** - New evaluators and metrics can be added without changing the API
 4. **Framework Agnostic** - Works with any AI framework that can produce the right contract structure
-

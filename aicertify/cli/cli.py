@@ -2,26 +2,30 @@ import argparse
 import asyncio
 import json
 import logging
-from pathlib import Path
 import datetime
 from decimal import Decimal
 from typing import Any, Dict, Union
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator
 from langfair.metrics.toxicity import ToxicityMetrics
 from aicertify.report_generation.report_generator import ReportGenerator
 from aicertify.models.report import (
-    EvaluationReport, ApplicationDetails,
-    MetricGroup, MetricValue, PolicyResult
+    EvaluationReport,
+    ApplicationDetails,
+    MetricGroup,
+    MetricValue,
+    PolicyResult,
 )
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 class CustomJSONEncoder(json.JSONEncoder):
     """Custom JSON encoder to handle Decimal and float values with full precision"""
+
     def default(self, obj):
         if isinstance(obj, Decimal):
             return str(obj)
@@ -54,31 +58,35 @@ def print_json_result(data: Dict[str, Any]) -> None:
 def main():
     """
     AICertify CLI Entry Point.
-    
-    Disclaimer: This software and its generated reports are provided "AS IS", without any warranty or guarantee 
+
+    Disclaimer: This software and its generated reports are provided "AS IS", without any warranty or guarantee
     of legal compliance. The generated reports include explicit disclaimer sections as per industry best practices.
-    
+
     Subcommand 'eval-policy':
       Evaluate an input JSON file against OPA policies.
-    
+
     Subcommand 'eval-folder':
       Evaluate a folder containing contract JSON files and produce a consolidated LangFair evaluation.
       Aggregates all interactions from contracts of a specified app, runs a consolidated evaluation, and stores the result.
-    
+
     Subcommand 'eval-all':
       Run consolidated evaluation on a folder and then evaluate OPA policies on the result.
-    
+
     Subcommand 'eval-evil-twins':
       Run and evaluate biased AI examples to verify non-zero metrics in Langfair.
     """
     parser = argparse.ArgumentParser(
         description="AICertify CLI: Validate AI applications and run evaluations. "
-                    "Disclaimer: This software is provided 'AS IS' with no warranty. Consult legal counsel for compliance."
+        "Disclaimer: This software is provided 'AS IS' with no warranty. Consult legal counsel for compliance."
     )
-    subparsers = parser.add_subparsers(dest="command", required=True, help="Sub-commands")
+    subparsers = parser.add_subparsers(
+        dest="command", required=True, help="Sub-commands"
+    )
 
     # Subcommand for OPA policy evaluation
-    policy_parser = subparsers.add_parser("eval-policy", help="Evaluate input JSON against OPA policies.")
+    policy_parser = subparsers.add_parser(
+        "eval-policy", help="Evaluate input JSON against OPA policies."
+    )
     loader = PolicyLoader()
     available_categories = list(loader.policies.keys())
     policy_parser.add_argument(
@@ -86,83 +94,82 @@ def main():
         type=str,
         choices=available_categories,
         required=True,
-        help=f"Policy category to evaluate. Available: {available_categories}"
+        help=f"Policy category to evaluate. Available: {available_categories}",
     )
     policy_parser.add_argument(
         "--input",
         type=str,
         required=True,
-        help="Path to input JSON file for evaluation."
+        help="Path to input JSON file for evaluation.",
     )
 
     # Subcommand for evaluating a folder of contract JSON files using consolidated LangFair evaluation
     folder_parser = subparsers.add_parser(
         "eval-folder",
-        help="Evaluate a folder containing contract JSON files and produce a consolidated LangFair evaluation."
+        help="Evaluate a folder containing contract JSON files and produce a consolidated LangFair evaluation.",
     )
     folder_parser.add_argument(
         "--app-name",
         type=str,
         required=True,
-        help="Application name to filter contracts."
+        help="Application name to filter contracts.",
     )
     folder_parser.add_argument(
         "--folder",
         type=str,
         required=True,
-        help="Folder containing contract JSON files."
+        help="Folder containing contract JSON files.",
     )
     folder_parser.add_argument(
         "--output",
         type=str,
         required=True,
-        help="Path to output JSON file for consolidated evaluation results."
+        help="Path to output JSON file for consolidated evaluation results.",
     )
 
     # New subcommand for running both evaluations together (eval-all)
     all_parser = subparsers.add_parser(
         "eval-all",
-        help="Run consolidated evaluation on a folder and then evaluate OPA policies on the result."
+        help="Run consolidated evaluation on a folder and then evaluate OPA policies on the result.",
     )
     all_parser.add_argument(
         "--app-name",
         type=str,
         required=True,
-        help="Application name to filter contracts."
+        help="Application name to filter contracts.",
     )
     all_parser.add_argument(
         "--folder",
         type=str,
         required=True,
-        help="Folder containing contract JSON files."
+        help="Folder containing contract JSON files.",
     )
     all_parser.add_argument(
         "--output",
         type=str,
         required=True,
-        help="Path to output JSON file for consolidated evaluation results."
+        help="Path to output JSON file for consolidated evaluation results.",
     )
     all_parser.add_argument(
         "--category",
         type=str,
         choices=available_categories,
         required=True,
-        help=f"Policy category to evaluate. Available: {available_categories}"
+        help=f"Policy category to evaluate. Available: {available_categories}",
     )
     all_parser.add_argument(
-        "--report-md",
-        type=str,
-        help="Optional path to output Markdown report file."
+        "--report-md", type=str, help="Optional path to output Markdown report file."
     )
     all_parser.add_argument(
         "--report-pdf",
         type=str,
-        help="Optional path to output PDF report file. Requires markdown and WeasyPrint libraries."
+        help="Optional path to output PDF report file. Requires markdown and WeasyPrint libraries.",
     )
-    
+
     # Register the eval-evil-twins command
     try:
-        from aicertify.cli.evil_twins_command import register_evil_twins_command
+        from .evil_twins_command import register_evil_twins_command
+
         register_evil_twins_command(subparsers)
     except ImportError as e:
         logging.debug(f"Evil twins command not registered: {e}")
@@ -200,11 +207,17 @@ def main():
     elif args.command == "eval-folder":
         # Run consolidated LangFair evaluation on a folder of contract JSON files
         try:
-            from aicertify.system_evaluators.evaluate_contract_langfair import evaluate_app_folder
+            from aicertify.system_evaluators.evaluate_contract_langfair import (
+                evaluate_app_folder,
+            )
         except ImportError:
-            logging.error("Cannot import evaluate_app_folder from aicertify.system_evaluators.evaluate_contract_langfair")
+            logging.error(
+                "Cannot import evaluate_app_folder from aicertify.system_evaluators.evaluate_contract_langfair"
+            )
             return
-        result = asyncio.run(evaluate_app_folder(args.app_name, args.folder, args.output))
+        result = asyncio.run(
+            evaluate_app_folder(args.app_name, args.folder, args.output)
+        )
         logging.info("Consolidated Evaluation Result:")
         if result:
             print(json.dumps(result, indent=4))
@@ -214,13 +227,19 @@ def main():
     elif args.command == "eval-all":
         # Run consolidated evaluation and then OPA policy evaluation on the result
         try:
-            from aicertify.system_evaluators.evaluate_contract_langfair import evaluate_app_folder
+            from aicertify.system_evaluators.evaluate_contract_langfair import (
+                evaluate_app_folder,
+            )
         except ImportError:
-            logging.error("Cannot import evaluate_app_folder from aicertify.system_evaluators.evaluate_contract_langfair")
+            logging.error(
+                "Cannot import evaluate_app_folder from aicertify.system_evaluators.evaluate_contract_langfair"
+            )
             return
 
         # Run consolidated evaluation
-        consolidated_result = asyncio.run(evaluate_app_folder(args.app_name, args.folder, args.output))
+        consolidated_result = asyncio.run(
+            evaluate_app_folder(args.app_name, args.folder, args.output)
+        )
         if not consolidated_result:
             logging.info("No evaluation results were produced from folder evaluation.")
             return
@@ -232,7 +251,9 @@ def main():
             with open(args.output, "r") as f:
                 opa_input = json.load(f)
         except Exception as e:
-            logging.error(f"Failed to load consolidated evaluation result from '{args.output}': {str(e)}")
+            logging.error(
+                f"Failed to load consolidated evaluation result from '{args.output}': {str(e)}"
+            )
             return
 
         # Run OPA policy evaluation
@@ -251,80 +272,92 @@ def main():
         # Print combined results
         combined = {
             "consolidated_evaluation": consolidated_result,
-            "opa_evaluation": opa_results
+            "opa_evaluation": opa_results,
         }
         print("Combined Evaluation Result:")
         print(json.dumps(combined, indent=4))
 
         # Convert evaluation results to report model
-        def create_evaluation_report(consolidated_result: dict, opa_results: dict) -> EvaluationReport:
+        def create_evaluation_report(
+            consolidated_result: dict, opa_results: dict
+        ) -> EvaluationReport:
             """Convert evaluation results to the report model structure."""
             metrics = consolidated_result.get("metrics", {})
-            
+
             # Create fairness metrics group
             fairness_metrics = [
                 MetricValue(
                     name="ftu_satisfied",
                     display_name="FTU Satisfied",
-                    value=format_metric_value(metrics.get("ftu_satisfied", "N/A"))
+                    value=format_metric_value(metrics.get("ftu_satisfied", "N/A")),
                 ),
                 MetricValue(
                     name="race_words_count",
                     display_name="Race Words Count",
-                    value=format_metric_value(metrics.get("race_words_count", "N/A"))
+                    value=format_metric_value(metrics.get("race_words_count", "N/A")),
                 ),
                 MetricValue(
                     name="gender_words_count",
                     display_name="Gender Words Count",
-                    value=format_metric_value(metrics.get("gender_words_count", "N/A"))
-                )
+                    value=format_metric_value(metrics.get("gender_words_count", "N/A")),
+                ),
             ]
-            
+
             # Create toxicity metrics group
             toxicity_data = metrics.get("toxicity", {})
             toxicity_metrics = [
                 MetricValue(
                     name="toxic_fraction",
                     display_name="Toxic Fraction",
-                    value=format_metric_value(toxicity_data.get("toxic_fraction", "N/A"))
+                    value=format_metric_value(
+                        toxicity_data.get("toxic_fraction", "N/A")
+                    ),
                 ),
                 MetricValue(
                     name="max_toxicity",
                     display_name="Max Toxicity",
-                    value=format_metric_value(toxicity_data.get("max_toxicity", "N/A"))
+                    value=format_metric_value(toxicity_data.get("max_toxicity", "N/A")),
                 ),
                 MetricValue(
                     name="toxicity_probability",
                     display_name="Toxicity Probability",
-                    value=format_metric_value(toxicity_data.get("toxicity_probability", "N/A"))
-                )
+                    value=format_metric_value(
+                        toxicity_data.get("toxicity_probability", "N/A")
+                    ),
+                ),
             ]
-            
+
             # Create stereotype metrics group
             stereotype_data = metrics.get("stereotype", {})
             stereotype_metrics = [
                 MetricValue(
                     name="gender_bias",
                     display_name="Gender Bias Detected",
-                    value=format_metric_value(stereotype_data.get("gender_bias_detected", "N/A"))
+                    value=format_metric_value(
+                        stereotype_data.get("gender_bias_detected", "N/A")
+                    ),
                 ),
                 MetricValue(
                     name="racial_bias",
                     display_name="Racial Bias Detected",
-                    value=format_metric_value(stereotype_data.get("racial_bias_detected", "N/A"))
-                )
+                    value=format_metric_value(
+                        stereotype_data.get("racial_bias_detected", "N/A")
+                    ),
+                ),
             ]
-            
+
             # Create policy results
             policy_results = []
             for policy_name, result in opa_results.items():
                 try:
-                    allow_value = result["result"][0]["expressions"][0]["value"]["allow"]
+                    allow_value = result["result"][0]["expressions"][0]["value"][
+                        "allow"
+                    ]
                     policy_results.append(
                         PolicyResult(
                             name=policy_name,
                             result=allow_value,
-                            details={"raw_result": result}
+                            details={"raw_result": result},
                         )
                     )
                 except Exception:
@@ -332,43 +365,47 @@ def main():
                         PolicyResult(
                             name=policy_name,
                             result=False,
-                            details={"error": "Failed to parse result"}
+                            details={"error": "Failed to parse result"},
                         )
                     )
-            
+
             return EvaluationReport(
                 app_details=ApplicationDetails(
                     name=consolidated_result.get("app_name", "N/A"),
                     evaluation_mode=consolidated_result.get("evaluation_mode", "N/A"),
-                    contract_count=consolidated_result.get("combined_contract_count", 0),
-                    evaluation_date=datetime.datetime.now()
+                    contract_count=consolidated_result.get(
+                        "combined_contract_count", 0
+                    ),
+                    evaluation_date=datetime.datetime.now(),
                 ),
                 metric_groups=[
                     MetricGroup(
                         name="fairness",
                         display_name="Fairness Metrics",
-                        metrics=fairness_metrics
+                        metrics=fairness_metrics,
                     ),
                     MetricGroup(
                         name="toxicity",
                         display_name="Toxicity Metrics",
-                        metrics=toxicity_metrics
+                        metrics=toxicity_metrics,
                     ),
                     MetricGroup(
                         name="stereotype",
                         display_name="Stereotype Metrics",
-                        metrics=stereotype_metrics
-                    )
+                        metrics=stereotype_metrics,
+                    ),
                 ],
                 policy_results=policy_results,
-                summary=consolidated_result.get("summary", "")
+                summary=consolidated_result.get("summary", ""),
             )
 
         # Generate reports if requested
         if args.report_md or args.report_pdf:
             report_gen = ReportGenerator()
-            evaluation_report = create_evaluation_report(consolidated_result, opa_results)
-            
+            evaluation_report = create_evaluation_report(
+                consolidated_result, opa_results
+            )
+
             if args.report_md:
                 markdown_report = report_gen.generate_markdown_report(evaluation_report)
                 try:
@@ -380,8 +417,10 @@ def main():
                     logging.error(f"Failed to write Markdown report: {e}")
 
             if args.report_pdf:
-                if 'markdown_report' not in locals():
-                    markdown_report = report_gen.generate_markdown_report(evaluation_report)
+                if "markdown_report" not in locals():
+                    markdown_report = report_gen.generate_markdown_report(
+                        evaluation_report
+                    )
                 if report_gen.generate_pdf_report(markdown_report, args.report_pdf):
                     logging.info(f"PDF report generated at: {args.report_pdf}")
                 else:
@@ -392,11 +431,12 @@ def main():
         print_json_result(consolidated_result)
         print("\nOPA Evaluation Results:")
         print_json_result(opa_results)
-        
+
     elif args.command == "eval-evil-twins":
         # Run and evaluate evil twin examples
         try:
-            from aicertify.cli.evil_twins_command import handle_evil_twins_command
+            from .evil_twins_command import handle_evil_twins_command
+
             result = asyncio.run(handle_evil_twins_command(args))
             logging.info("Evil Twins Evaluation Result:")
             print_json_result(result)
@@ -407,7 +447,9 @@ def main():
             print("  - langfair: For evaluation metrics")
             print("\nYou can install them with:")
             print("  pip install pydantic_ai langfair")
-            print("\nOr run with the --install-deps flag to install them automatically:")
+            print(
+                "\nOr run with the --install-deps flag to install them automatically:"
+            )
             print("  python -m aicertify.cli.cli eval-evil-twins --install-deps")
             return
 

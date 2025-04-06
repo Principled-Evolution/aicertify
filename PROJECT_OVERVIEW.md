@@ -134,4 +134,4 @@ When developing, consider:
   - PydanticAI/Pydantic for data models
   - FastAPI for service implementations
   - ReportLab for PDF generation
-- **Development Environment**: Windows, but cross-platform compatible 
+- **Development Environment**: Windows, but cross-platform compatible

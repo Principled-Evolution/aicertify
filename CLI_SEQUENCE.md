@@ -11,32 +11,32 @@ sequenceDiagram
     participant Evaluator as OPA Evaluator
     participant Phase1 as Phase 1 Evaluators
     participant Report as Report Generator
-    
+
     User->>CLI: Run with arguments
     Note over CLI: Parse arguments
-    
+
     CLI->>Contract: Load contract
     Contract-->>CLI: Return AiCertifyContract
-    
+
     CLI->>API: Call evaluate_contract_by_folder
-    
+
     API->>Phase1: Run Phase 1 evaluators
     Phase1-->>API: Return evaluation results
-    
+
     API->>Evaluator: Initialize OPA evaluator
     Evaluator-->>API: Return OPA evaluator instance
-    
+
     API->>Evaluator: Load policies from folder
     Evaluator-->>API: Return loaded policies
-    
+
     API->>Evaluator: Evaluate contract with policies
     Evaluator-->>API: Return OPA results
-    
+
     API->>Report: Generate report
     Report-->>API: Return report path
-    
+
     API-->>CLI: Return evaluation results
-    
+
     CLI-->>User: Display summary and report path
 ```
 
@@ -64,4 +64,4 @@ sequenceDiagram
 
 11. **User Feedback**: The CLI displays a summary of the results and the path to the generated report.
 
-This sequence ensures that the contract is properly evaluated against both Phase 1 evaluators and OPA policies, and that the results are presented to the user in a clear and concise manner. 
+This sequence ensures that the contract is properly evaluated against both Phase 1 evaluators and OPA policies, and that the results are presented to the user in a clear and concise manner.

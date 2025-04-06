@@ -105,4 +105,4 @@ This document summarizes the implementation of Phase 1 of the AICertify Systemat
    - Develop best practices guides for each evaluator
 
 ## Implementation Reference
-For detailed implementation guidance, including architectural patterns, separation of concerns between evaluators and OPA policies, and specific code examples, please refer to the `MILESTONE_EXPANDED_EVALS.md` document. 
+For detailed implementation guidance, including architectural patterns, separation of concerns between evaluators and OPA policies, and specific code examples, please refer to the `MILESTONE_EXPANDED_EVALS.md` document.

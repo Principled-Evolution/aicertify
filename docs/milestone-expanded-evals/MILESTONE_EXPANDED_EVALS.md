@@ -80,24 +80,24 @@ Contract
 class EvaluatorInterface:
     """
     Interface for all evaluators in the AICertify framework.
-    
+
     Designed for extensibility to allow domain-specific implementations
     while maintaining a consistent API.
     """
-    
+
     def evaluate(self, contract_data: dict) -> EvaluationResult:
         """Evaluate contract against criteria"""
         pass
-    
+
     async def evaluate_async(self, contract_data: dict) -> EvaluationResult:
         """Asynchronously evaluate contract"""
         pass
-    
-    def apply_policies(self, evaluation_result: EvaluationResult, 
+
+    def apply_policies(self, evaluation_result: EvaluationResult,
                        policy_category: str) -> PolicyResult:
         """Apply policies to evaluation results"""
         pass
-    
+
     def generate_report(self, evaluation_result: EvaluationResult,
                         policy_result: PolicyResult,
                         format: str) -> Report:
@@ -110,15 +110,15 @@ class EvaluatorInterface:
 ```python
 class EvaluatorRegistry:
     """Registry for available evaluators."""
-    
+
     def register_evaluator(self, domain: str, evaluator_class: Type[BaseEvaluator]):
         """Register an evaluator for a specific domain"""
         pass
-    
+
     def get_evaluator(self, domain: str, config: dict = None) -> BaseEvaluator:
         """Get an evaluator instance for a domain"""
         pass
-    
+
     def list_available_evaluators(self) -> List[str]:
         """List all available evaluators"""
         pass
@@ -129,15 +129,15 @@ class EvaluatorRegistry:
 ```python
 class CompositeEvaluator(BaseEvaluator):
     """Composite evaluator that orchestrates multiple evaluators."""
-    
+
     def add_evaluator(self, evaluator: BaseEvaluator):
         """Add an evaluator to the pipeline"""
         pass
-    
+
     def remove_evaluator(self, evaluator_name: str):
         """Remove an evaluator from the pipeline"""
         pass
-    
+
     def evaluate(self, contract_data: dict) -> Dict[str, EvaluationResult]:
         """Run all evaluators and aggregate results"""
         pass
@@ -152,24 +152,24 @@ Starting with the existing contract model, extend it to support:
 ```python
 class AICertifyContract(BaseModel):
     """Enhanced contract model for extensibility."""
-    
+
     # Basic contract information (existing)
     contract_id: UUID = Field(default_factory=uuid.uuid4)
     application_name: str
     creation_date: datetime = Field(default_factory=datetime.utcnow)
-    
+
     # Enhanced model information
     model_info: Dict[str, Any]
-    
+
     # Core interactions (mandatory)
     interactions: List[Interaction]
-    
+
     # Extensible context (domain-specific)
     context: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Regulatory and compliance context
     compliance_context: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Extension point for domain-specific validation
     @root_validator
     def validate_domain_specific(cls, values):
@@ -185,19 +185,19 @@ class AICertifyContract(BaseModel):
 ```python
 class EvaluatorConfig(BaseModel):
     """Configurable parameters for evaluators."""
-    
+
     # Common configuration
     report_formats: List[str] = ["markdown", "json", "pdf"]
-    
+
     # Configuration for evaluator behavior, NOT for thresholds
     # Thresholds are defined in OPA policies, not in evaluator configs
     fairness: Dict[str, Any] = Field(default_factory=dict)
     content_safety: Dict[str, Any] = Field(default_factory=dict)
     risk_management: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Extensible for domain-specific config
     __root__: Dict[str, Any] = Field(default_factory=dict)
-    
+
     def for_domain(self, domain: str) -> Dict[str, Any]:
         """Get configuration for a specific domain"""
         return self.__root__.get(domain, {})
@@ -210,23 +210,23 @@ Implement a modular policy loading and integration system:
 ```python
 class PolicyResolver:
     """Resolves appropriate policies based on contract attributes."""
-    
+
     def resolve_policies(self, contract: AICertifyContract) -> List[str]:
         """Determine applicable policies from contract content"""
         policies = []
-        
+
         # Base policies applicable to all contracts
         policies.extend(self._get_base_policies())
-        
+
         # Domain-specific policies
         if domain := contract.context.get("domain"):
             policies.extend(self._get_domain_policies(domain))
-        
+
         # Jurisdiction-specific policies
         if jurisdictions := contract.compliance_context.get("jurisdictions"):
             for jurisdiction in jurisdictions:
                 policies.extend(self._get_jurisdiction_policies(jurisdiction))
-        
+
         return policies
 ```
 
@@ -245,7 +245,7 @@ async def evaluate_contract_comprehensive(
 ) -> Dict[str, Any]:
     """
     Comprehensive evaluation of a contract with extensibility.
-    
+
     Args:
         contract: Contract to evaluate
         evaluator_config: Configuration for evaluators (behavior only, not thresholds)
@@ -253,17 +253,17 @@ async def evaluate_contract_comprehensive(
         additional_evaluators: Additional domain-specific evaluators to use
         report_format: Output format for reports
         output_dir: Directory to save reports
-        
+
     Returns:
         Evaluation results and report paths
     """
     # Initialize comprehensive evaluator
     config = EvaluatorConfig(**(evaluator_config or {}))
     evaluator = ComplianceEvaluator(config=config)
-    
+
     # Add core Phase 1 evaluators
     # These are always included
-    
+
     # Add additional domain-specific evaluators if specified
     if additional_evaluators:
         for evaluator_name in additional_evaluators:
@@ -271,24 +271,24 @@ async def evaluate_contract_comprehensive(
                 evaluator.add_evaluator(
                     EVALUATOR_REGISTRY.get_evaluator(evaluator_name, config)
                 )
-    
+
     # Resolve applicable policies
     resolver = PolicyResolver()
     if not policy_categories:
         # Auto-detect from contract content
         policy_categories = resolver.resolve_policies(contract)
-    
+
     # Run evaluation - produces standardized measurements
     results = await evaluator.evaluate_async(contract.dict())
-    
+
     # Apply policies - interprets measurements using domain-specific thresholds
     policy_results = evaluator.apply_policies(results, policy_categories)
-    
+
     # Generate and save report
     report = evaluator.generate_report(
         results, policy_results, format=report_format
     )
-    
+
     # Return results and report info
     return {
         "results": results,
@@ -307,19 +307,19 @@ To support various domains while maintaining a clean architecture:
 ```python
 class HealthcareEvaluatorAdapter(BaseEvaluator):
     """Adapter for healthcare-specific evaluation."""
-    
+
     def __init__(self, config: Dict[str, Any] = None):
         super().__init__(config)
         # Initialize healthcare-specific components
-        
+
     def evaluate(self, contract_data: dict) -> EvaluationResult:
         # Extract healthcare-specific context
         patient_data = contract_data.get("context", {}).get("patient_data")
         medical_context = contract_data.get("context", {}).get("medical_context")
-        
+
         # Apply healthcare-specific evaluations - produces objective measurements
         # but does NOT apply domain-specific thresholds
-        
+
         return healthcare_specific_result
 ```
 
@@ -492,7 +492,7 @@ This design provides important advantages:
    - Policies define compliance thresholds based on context
 
 2. **Transparency**:
-   - Threshold requirements are codified in readable policy files 
+   - Threshold requirements are codified in readable policy files
    - Developers can see exactly what standards apply in each domain
 
 3. **Versioning and governance**:

@@ -75,4 +75,4 @@ Key features of the system include:
 - Feature flags for gradual migration
 - Plugin system for custom extractors
 
-The system has been validated with real data using the debug_report_generation.py script. Both the legacy and flexible extraction systems now produce identical results for common metrics, with the flexible system also supporting additional metric types (Performance and Accuracy). The system is ready for final integration and can be enabled by default in AICertify using the `AICERTIFY_USE_FLEXIBLE_EXTRACTION` environment variable or programmatically using the `set_feature_flag` function. 
+The system has been validated with real data using the debug_report_generation.py script. Both the legacy and flexible extraction systems now produce identical results for common metrics, with the flexible system also supporting additional metric types (Performance and Accuracy). The system is ready for final integration and can be enabled by default in AICertify using the `AICERTIFY_USE_FLEXIBLE_EXTRACTION` environment variable or programmatically using the `set_feature_flag` function.

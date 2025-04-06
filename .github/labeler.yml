@@ -4,7 +4,7 @@
 
 '🐞 bug':
   - title: '(?i).*\b(bug|error|failure|crash|broken|not working|doesn''t work|isn''t working|problem|issue|defect|fault)\b.*'
-  paths:
+  - paths:
     - '**/tests/**/*'
     - '**/src/**/*'
     - '!docs/*'
@@ -12,7 +12,7 @@
 
 '📝 documentation':
   - title: '(?i).*\b(docs?|documentation|readme|wiki|guide|tutorial|example)\b.*'
-  paths:
+  - paths:
     - 'docs/**/*'
     - '**/*.md'
     - '**/README.md'
@@ -23,13 +23,13 @@
 
 '🚀 enhancement':
   - title: '(?i).*\b(enhancement|feature request|new feature|improvement|suggest|proposal|idea)\b.*'
-  paths:
+  - paths:
     - '**/feature/**/*'
     - '**/enhancement/**/*'
 
 '🤝 good first issue':
   - title: '(?i).*\b(good first issue|beginner friendly|easy|starter|newcomer|first timer)\b.*'
-  paths:
+  - paths:
     - 'examples/**/*'
     - 'docs/**/*'
 
@@ -38,7 +38,7 @@
 
 '🚧 in progress':
   - title: '(?i).*\b(in progress|wip|working on|ongoing|under development|implementing)\b.*'
-  paths:
+  - paths:
     - '**/wip/**/*'
 
 '⚠️ invalid':
@@ -46,7 +46,7 @@
 
 '🔄 needs testing':
   - title: '(?i).*\b(needs? testing|test required|verification needed|qa|quality assurance|test coverage)\b.*'
-  paths:
+  - paths:
     - '**/tests/**/*'
     - '**/__tests__/**/*'
     - '**/*.test.*'
@@ -54,13 +54,13 @@
 
 '❓ question':
   - title: '(?i).*(\?|question|how to|what is|when|where|why|who|how do|can someone|is there|are there).*'
-  paths:
+  - paths:
     - 'docs/**/*'
     - '.github/ISSUE_TEMPLATE/question.md'
 
 '🛡️ security':
   - title: '(?i).*\b(security|vulnerability|exploit|cve|sensitive|auth|authentication|authorization|permission)\b.*'
-  paths:
+  - paths:
     - '**/security/**/*'
     - '**/auth/**/*'
     - '**/authentication/**/*'

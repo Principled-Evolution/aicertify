@@ -86,5 +86,3 @@ async def test_autoeval(monkeypatch):
         data["counterfactual_metrics"],
     )
     assert all([abs(score[key] - ans[key]) < 1e-5 for key in ans])
-
-

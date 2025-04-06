@@ -10,7 +10,7 @@ assignees: ""
 ## 🔒 Security Issue
 A clear and concise description of the security vulnerability.
 
-⚠ **Do not disclose sensitive information publicly**.  
+⚠ **Do not disclose sensitive information publicly**.
 Instead, please email us at [YOUR_SECURITY_EMAIL].
 
 ## 📜 Vulnerability Description

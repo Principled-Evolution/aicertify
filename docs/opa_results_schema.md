@@ -9,50 +9,50 @@ classDiagram
     class OpaEvaluationResults {
         +AggregatedResults result
     }
-    
+
     class AggregatedResults {
         +string policy
         +PolicyEvaluation[] results
         +string? timestamp
     }
-    
+
     class PolicyEvaluation {
         +string policy
         +PolicyResult result
     }
-    
+
     class PolicyResult {
         +ExpressionResult[] result
     }
-    
+
     class ExpressionResult {
         +Expression[] expressions
     }
-    
+
     class Expression {
         +ReportOutput value
         +string text
         +Location? location
     }
-    
+
     class Location {
         +int row
         +int col
     }
-    
+
     class ReportOutput {
         +Dictionary~string,MetricValue~ metrics
         +string policy
         +bool result
         +int|string timestamp
     }
-    
+
     class MetricValue {
         +bool control_passed
         +string name
         +any value
     }
-    
+
     class ExtractedPolicyResult {
         +string policy_id
         +string policy_name
@@ -60,7 +60,7 @@ classDiagram
         +Dictionary~string,MetricValue~ metrics
         +int|string|datetime? timestamp
     }
-    
+
     OpaEvaluationResults --> AggregatedResults
     AggregatedResults --> PolicyEvaluation : contains many
     PolicyEvaluation --> PolicyResult
@@ -69,7 +69,7 @@ classDiagram
     Expression --> ReportOutput
     Expression --> Location
     ReportOutput --> MetricValue : contains many
-    
+
     %% Extraction result
     ReportOutput ..> ExtractedPolicyResult : extracted to
 ```
@@ -155,4 +155,4 @@ extracted_results = extract_policy_results_with_schema(opa_results)
 for policy in extracted_results:
     print(f"Policy: {policy.policy_name}")
     print(f"Result: {policy.result}")
-    print(f"Metrics: {len(policy.metrics)}") 
+    print(f"Metrics: {len(policy.metrics)}")

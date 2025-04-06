@@ -28,4 +28,4 @@ If you want to specify a custom output directory, you can use the `--contract-st
 python examples/Loan-Application-Evaluator.py --capture-contract --report-format pdf --contract-storage my_custom_path
 ```
 
-This structure ensures that all outputs are contained within the examples directory for easy access and reference. 
+This structure ensures that all outputs are contained within the examples directory for easy access and reference.

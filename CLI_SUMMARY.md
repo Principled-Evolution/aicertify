@@ -61,4 +61,4 @@ This architecture ensures that the CLI tool is maintainable, extensible, and eas
 
 ## Conclusion
 
-The AICertify CLI tool provides a convenient way to run evaluations from the command line, making it easier for users to integrate AICertify into their workflows. The tool is designed to be simple, intuitive, and powerful, providing access to the full functionality of the AICertify API. 
+The AICertify CLI tool provides a convenient way to run evaluations from the command line, making it easier for users to integrate AICertify into their workflows. The tool is designed to be simple, intuitive, and powerful, providing access to the full functionality of the AICertify API.

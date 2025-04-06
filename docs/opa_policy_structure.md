@@ -12,53 +12,53 @@ graph TD
     root --> international[international]
     root --> industry_specific[industry_specific]
     root --> operational[operational]
-    
+
     %% Global policies
     global --> global_v1[v1]
     global --> global_library[library]
-    
+
     global_v1 --> global_toxicity[toxicity.rego]
     global_v1 --> global_fairness[fairness.rego]
     global_v1 --> global_accountability[accountability.rego]
     global_v1 --> global_transparency[transparency.rego]
-    
+
     global_library --> common_rules[common_rules.rego]
-    
+
     %% International policies
     international --> eu_ai_act[eu_ai_act]
     international --> india[india]
     international --> nist[nist]
-    
+
     %% EU AI Act specific structure
     eu_ai_act --> eu_v1[v1]
     eu_v1 --> eu_fairness[fairness]
     eu_v1 --> eu_risk[risk_management]
     eu_v1 --> eu_transparency[transparency]
-    
+
     eu_fairness --> eu_fairness_rego[fairness.rego]
     eu_risk --> eu_risk_rego[risk_management.rego]
     eu_transparency --> eu_transparency_rego[transparency.rego]
-    
+
     %% Industry-specific policies
     industry_specific --> bfs[bfs]
     industry_specific --> healthcare[healthcare]
     industry_specific --> automotive[automotive]
-    
+
     %% Healthcare specific structure
     healthcare --> healthcare_v1[v1]
     healthcare_v1 --> patient_safety[patient_safety]
     patient_safety --> patient_safety_rego[patient_safety.rego]
-    
+
     %% Operational policies
     operational --> aiops[aiops]
     operational --> cost[cost]
     operational --> corporate[corporate]
-    
+
     classDef category fill:#f9f,stroke:#333,stroke-width:2px
     classDef version fill:#bbf,stroke:#333,stroke-width:1px
     classDef policy fill:#dfd,stroke:#333,stroke-width:1px
     classDef subcategory fill:#ffd,stroke:#333,stroke-width:1px
-    
+
     class global,international,industry_specific,operational category
     class global_v1,eu_v1,healthcare_v1 version
     class global_library,eu_ai_act,india,nist,bfs,healthcare,automotive,aiops,cost,corporate subcategory
@@ -103,23 +103,23 @@ graph TD
     A[Category Root] --> B[v1]
     A --> C[v2]
     A --> D[v3]
-    
+
     B --> E[Subcategory]
     C --> F[Subcategory]
     D --> G[Subcategory]
-    
+
     E --> B1[Policy File v1]
     F --> C1[Policy File v2]
     G --> D1[Policy File v3]
-    
+
     B1 -.-> C1
     C1 -.-> D1
     end
-    
+
     classDef version fill:#bbf,stroke:#333,stroke-width:1px
     classDef subcategory fill:#ffd,stroke:#333,stroke-width:1px
     classDef policy fill:#dfd,stroke:#333,stroke-width:1px
-    
+
     class B,C,D version
     class E,F,G subcategory
     class B1,C1,D1 policy
@@ -147,16 +147,16 @@ The PolicyLoader is designed to handle these variations in directory structure a
 ```mermaid
 graph TD
     A[Global Toxicity Policy] --> B[Library/Common Rules]
-    
+
     C[EU AI Act Policy] --> B
     C --> D[Global Fairness Policy]
-    
+
     E[BFS Model Risk Policy] --> A
     E --> C
-    
+
     classDef policy fill:#dfd,stroke:#333,stroke-width:1px
     classDef library fill:#fdd,stroke:#333,stroke-width:1px
-    
+
     class A,C,D,E policy
     class B library
 ```
@@ -175,7 +175,7 @@ sequenceDiagram
     participant Evaluator as OPA Evaluator
     participant Loader as Policy Loader
     participant OPA as OPA Engine
-    
+
     App->>Evaluator: evaluate(input_data, policy_category, subcategory)
     Evaluator->>Loader: get_policies(category, subcategory)
     Loader->>Loader: get_latest_version()
@@ -202,14 +202,14 @@ classDiagram
         +compliance rules
         +compliance_report
     }
-    
+
     class ComplianceReport {
         +policy_name: String
         +compliant: Boolean
         +reason: String
         +recommendations: Array
     }
-    
+
     OpaPolicy --> ComplianceReport : generates
 ```
 
@@ -304,4 +304,4 @@ all_policies = loader.resolve_policy_dependencies([policy])
 3. **Testing**: Write tests for policies to verify behavior
 4. **Documentation**: Include metadata and comments explaining policy logic
 5. **Versioning**: Create new versions for backward-incompatible changes
-6. **Dependencies**: Explicitly declare all policy dependencies 
+6. **Dependencies**: Explicitly declare all policy dependencies

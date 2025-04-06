@@ -49,7 +49,7 @@
 #### 3. **Areas of Concern or Potential Improvements**
 - **Beyond FTU:** While FTU compliance is a positive indicator, fairness cannot be fully ensured by simply ignoring sensitive attributes. The system may still inadvertently learn biased associations from its training data. Exploring and implementing additional fairness metrics that capture and mitigate these indirect biases could further enhance fairness.
 - **Dynamic Monitoring:** Continuous monitoring and evaluation are necessary to ensure the system remains unbiased and non-toxic as it encounters new data and contexts. The metrics provided are only a snapshot in time.
-- **Diverse Testing Scenarios:** To fully assess fairness and toxicity, the system should be tested across a wide range of scenarios, including edge cases that might not have been covered in the initial evaluation. 
+- **Diverse Testing Scenarios:** To fully assess fairness and toxicity, the system should be tested across a wide range of scenarios, including edge cases that might not have been covered in the initial evaluation.
 
 #### 4. **Overall Assessment of the System's Suitability**
 - The system demonstrates significant strengths in terms of fairness and ethical behavior, especially with its FTU compliance and low toxicity scores. However, true fairness in AI requires ongoing effort and more nuanced handling than just unawareness of protected attributes. The system is suitable for contexts where baseline fairness and non-toxicity are critical, but it should be part of a broader strategy that includes continuous monitoring and

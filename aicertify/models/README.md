@@ -16,12 +16,12 @@ graph TD
         A --> F[langfair.py]
         A --> G[model_card.py]
     end
-    
+
     subgraph "Legacy Compatibility"
         B --> H[contract_models.py]
         C --> I[evaluation_models.py]
     end
-    
+
     subgraph "Model Usage"
         J[report_generation] --> E
         J --> C
@@ -90,4 +90,4 @@ Or import specific models from their respective modules:
 from aicertify.models.evaluation import MetricValue, AiEvaluationResult
 from aicertify.models.report import EvaluationReport
 from aicertify.models.contract import AiCertifyContract
-``` 
+```

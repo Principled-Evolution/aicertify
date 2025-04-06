@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 async def test_core_components():
     """Test that core evaluator components can be instantiated and used."""
-    
+
     # Test EvaluationResult
     logger.info("Testing EvaluationResult...")
     result = EvaluationResult(
@@ -43,7 +43,7 @@ async def test_core_components():
     assert result.compliant is True
     assert result.score == 0.85
     logger.info("EvaluationResult test passed")
-    
+
     # Test Report
     logger.info("Testing Report...")
     report = Report(
@@ -54,7 +54,7 @@ async def test_core_components():
     assert report.format == "markdown"
     assert "# Test Report" in report.content
     logger.info("Report test passed")
-    
+
     # Test EvaluatorConfig
     logger.info("Testing EvaluatorConfig...")
     config = EvaluatorConfig(
@@ -65,7 +65,7 @@ async def test_core_components():
     # Just verify it can be instantiated
     assert config is not None
     logger.info("EvaluatorConfig test passed")
-    
+
     logger.info("All core component tests passed")
 
 # Run the test
@@ -84,7 +84,7 @@ asyncio.run(test_core_components())
 ```python
 async def test_individual_evaluators():
     """Test each evaluator with minimal sample data."""
-    
+
     # Create minimal test data
     test_data = {
         "interactions": [
@@ -94,7 +94,7 @@ async def test_individual_evaluators():
             "risk_documentation": "Risk Assessment: Test risk.\nMitigation Measures: Test measures.\nMonitoring System: Test monitoring."
         }
     }
-    
+
     # Test FairnessEvaluator
     logger.info("Testing FairnessEvaluator...")
     try:
@@ -106,7 +106,7 @@ async def test_individual_evaluators():
         logger.info("FairnessEvaluator test passed")
     except Exception as e:
         logger.error(f"FairnessEvaluator test failed: {e}")
-    
+
     # Test ContentSafetyEvaluator
     logger.info("Testing ContentSafetyEvaluator...")
     try:
@@ -118,7 +118,7 @@ async def test_individual_evaluators():
         logger.info("ContentSafetyEvaluator test passed")
     except Exception as e:
         logger.error(f"ContentSafetyEvaluator test failed: {e}")
-    
+
     # Test RiskManagementEvaluator
     logger.info("Testing RiskManagementEvaluator...")
     try:
@@ -130,7 +130,7 @@ async def test_individual_evaluators():
         logger.info("RiskManagementEvaluator test passed")
     except Exception as e:
         logger.error(f"RiskManagementEvaluator test failed: {e}")
-    
+
     logger.info("Individual evaluator tests completed")
 
 # Run the test
@@ -149,7 +149,7 @@ asyncio.run(test_individual_evaluators())
 ```python
 async def test_compliance_evaluator():
     """Test the ComplianceEvaluator's ability to orchestrate multiple evaluators."""
-    
+
     # Create minimal test data
     test_data = {
         "interactions": [
@@ -159,37 +159,37 @@ async def test_compliance_evaluator():
             "risk_documentation": "Risk Assessment: Test risk.\nMitigation Measures: Test measures.\nMonitoring System: Test monitoring."
         }
     }
-    
+
     # Create the ComplianceEvaluator with default configuration
     logger.info("Testing ComplianceEvaluator...")
     try:
         compliance_evaluator = ComplianceEvaluator()
-        
+
         # Run evaluation
         results = await compliance_evaluator.evaluate_async(test_data)
         logger.info(f"ComplianceEvaluator results: {results}")
-        
+
         # Verify results structure
         assert isinstance(results, dict), "Results should be a dictionary"
-        
+
         # Check for expected keys
         expected_keys = ["fairness", "content_safety", "risk_management"]
         for key in expected_keys:
             if key in results:
                 logger.info(f"Found result for {key}")
                 assert isinstance(results[key], EvaluationResult)
-        
+
         # Generate a report
         report = compliance_evaluator.generate_report(results, format="markdown")
         logger.info(f"Generated report format: {report.format}")
         assert report.format == "markdown"
         assert isinstance(report.content, str)
         assert len(report.content) > 0
-        
+
         logger.info("ComplianceEvaluator test passed")
     except Exception as e:
         logger.error(f"ComplianceEvaluator test failed: {e}")
-    
+
     logger.info("ComplianceEvaluator test completed")
 
 # Run the test
@@ -211,24 +211,24 @@ from aicertify.opa_core.evaluator import OpaEvaluator
 
 def test_opa_integration():
     """Test the integration with OPA policies."""
-    
+
     logger.info("Testing OPA policy integration...")
-    
+
     try:
         # Initialize policy loader
         policy_loader = PolicyLoader()
-        
+
         # Try loading some policies
         global_policies = policy_loader.get_policies("global")
         logger.info(f"Found {len(global_policies)} global policies")
-        
+
         # Try loading EU AI Act policies
         eu_policies = policy_loader.get_policies_by_category("international/eu_ai_act")
         logger.info(f"Found {len(eu_policies)} EU AI Act policies")
-        
+
         # Initialize OPA evaluator
         opa_evaluator = OpaEvaluator()
-        
+
         # Create minimal test input
         test_input = {
             "contract": {
@@ -240,18 +240,18 @@ def test_opa_integration():
                 "risk_management_score": 0.7
             }
         }
-        
+
         # Try evaluating with a policy if any are found
         if global_policies:
             policy = global_policies[0]
             logger.info(f"Testing evaluation with policy: {policy}")
             result = opa_evaluator.evaluate_policy(policy, test_input)
             logger.info(f"Policy evaluation result: {result}")
-        
+
         logger.info("OPA policy integration test passed")
     except Exception as e:
         logger.error(f"OPA policy integration test failed: {e}")
-    
+
     logger.info("OPA policy integration test completed")
 
 # Run the test
@@ -273,7 +273,7 @@ As you implement each step in the plan, validate that the components integrate c
 async def validate_step_implementation(step_name, validate_func):
     """Validate the implementation of a specific step."""
     logger.info(f"Validating implementation of {step_name}...")
-    
+
     try:
         # Run the validation function
         result = await validate_func()
@@ -292,25 +292,25 @@ async def validate_step1():
     # Test medical context generation
     patient_case = "Test patient case"
     specialists = ["Neurology", "Cardiology"]
-    
+
     medical_context = create_medical_context(patient_case, specialists)
-    
+
     # Verify structure
     assert "domain" in medical_context
     assert medical_context["domain"] == "healthcare"
     assert "risk_documentation" in medical_context
-    
+
     # Test financial context generation
     customer_data = {"name": "Test Customer", "income": 50000}
     loan_type = "personal"
-    
+
     financial_context = create_financial_context(customer_data, loan_type)
-    
+
     # Verify structure
     assert "domain" in financial_context
     assert financial_context["domain"] == "finance"
     assert "risk_documentation" in financial_context
-    
+
     return True
 
 # Validate step 1
@@ -333,16 +333,16 @@ def validate_contract(contract):
     assert contract.contract_id is not None
     assert contract.application_name is not None
     assert len(contract.interactions) > 0
-    
+
     # Check for domain-specific context
     assert "domain" in contract.context
     assert "risk_documentation" in contract.context
-    
+
     # Check compliance context
     if hasattr(contract, "compliance_context"):
         assert "jurisdictions" in contract.compliance_context
         assert "frameworks" in contract.compliance_context
-    
+
     return True
 ```
 
@@ -360,33 +360,33 @@ After completing the implementation, validate the entire pipeline from end to en
 ```python
 async def validate_end_to_end():
     """Validate the entire pipeline from contract creation to report generation."""
-    
+
     for example_name, run_example in [
         ("Medical Diagnosis", run_medical_diagnosis_example),
         ("Loan Application", run_loan_application_example)
     ]:
         logger.info(f"Validating {example_name} end-to-end...")
-        
+
         try:
             # Run the example
             result = await run_example()
-            
+
             # Verify contract was created
             assert "contract_path" in result
             assert os.path.exists(result["contract_path"])
-            
+
             # Verify evaluation was performed
             assert "evaluation_result" in result
-            
+
             # Verify report was generated
             assert "report_path" in result
             assert os.path.exists(result["report_path"])
-            
+
             logger.info(f"{example_name} end-to-end validation passed")
         except Exception as e:
             logger.error(f"{example_name} end-to-end validation failed: {e}")
             raise
-    
+
     logger.info("All end-to-end validations passed")
     return True
 ```
@@ -404,11 +404,11 @@ Finally, validate that the generated reports meet quality standards:
 ```python
 def validate_report_quality(report_path):
     """Validate that a report meets quality standards."""
-    
+
     # Check file exists and has content
     assert os.path.exists(report_path)
     assert os.path.getsize(report_path) > 0
-    
+
     # For PDF reports
     if report_path.endswith(".pdf"):
         # Verify PDF structure (would need a PDF library)
@@ -416,7 +416,7 @@ def validate_report_quality(report_path):
         with open(report_path, "rb") as f:
             pdf = PyPDF2.PdfFileReader(f)
             assert pdf.getNumPages() > 0
-    
+
     # For markdown reports
     elif report_path.endswith(".md"):
         with open(report_path, "r") as f:
@@ -425,7 +425,7 @@ def validate_report_quality(report_path):
             assert "# " in content  # Has headings
             assert "## " in content  # Has subheadings
             assert "| " in content  # Has tables
-    
+
     return True
 ```
 
@@ -441,7 +441,7 @@ To simplify the validation process, create a validation test suite that can be r
 ```python
 async def run_validation_suite():
     """Run the complete validation test suite."""
-    
+
     tests = [
         ("Core Components", test_core_components),
         ("Individual Evaluators", test_individual_evaluators),
@@ -449,34 +449,34 @@ async def run_validation_suite():
         ("OPA Integration", test_opa_integration),
         ("End-to-End Pipeline", validate_end_to_end)
     ]
-    
+
     results = {}
-    
+
     for test_name, test_func in tests:
         logger.info(f"Running {test_name} test...")
-        
+
         try:
             if asyncio.iscoroutinefunction(test_func):
                 await test_func()
             else:
                 test_func()
-            
+
             results[test_name] = "PASSED"
             logger.info(f"{test_name} test passed")
         except Exception as e:
             results[test_name] = f"FAILED: {str(e)}"
             logger.error(f"{test_name} test failed: {e}")
-    
+
     # Print summary
     logger.info("=" * 50)
     logger.info("Validation Test Summary")
     logger.info("=" * 50)
-    
+
     for test_name, result in results.items():
         logger.info(f"{test_name}: {result}")
-    
+
     logger.info("=" * 50)
-    
+
     # Return True if all tests passed
     return all(result == "PASSED" for result in results.values())
 

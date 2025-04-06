@@ -35,33 +35,33 @@ classDiagram
         +submitContract(contract: AiCertifyContract)
         +requestEvaluation(policyCategory: String)
     }
-    
+
     class Api {
         +evaluate_contract_with_phase1_evaluators(contract: AiCertifyContract, policyCategory: String)
         +generateReport(format: String, outputDir: String)
     }
-    
+
     class Evaluator {
         <<interface>>
         +evaluate(interaction: dict) : EvaluationResult
     }
-    
+
     class ComplianceEvaluator {
         +allEvaluators: dict
         +evaluate(data: dict) : dict
         +generate_report(results: dict, format: String) : Report
     }
-    
+
     class OpaPolicyEvaluator {
         +loadPolicies(policyFolder: String)
         +evaluatePolicy(evaluationData: dict) : dict
     }
-    
+
     Application --> Api : uses
     Api --> ComplianceEvaluator : delegates to
     ComplianceEvaluator --> Evaluator : aggregates
     Api --> OpaPolicyEvaluator : merges OPA evaluation
-    
+
     note for Application "Interface as per developer_guide.md, use clean and orthogonal API"
 ```
 
@@ -108,7 +108,7 @@ classDiagram
 
 ## Additional Considerations
 
-- **New Rego Policies for EU AI Act**: 
+- **New Rego Policies for EU AI Act**:
   - We need to add any and all new rego policies required to support the EU AI Act. For rego policies that do not currently have corresponding evaluators implemented, placeholders should be added, similar to the placeholder implemented in `diagnostic_safety.rego` for healthcare. This ensures that our policy repository is complete and can be expanded as more evaluator integrations are developed.
 
 - **Model-Card Interface and API Inputs**:
@@ -116,4 +116,4 @@ classDiagram
   - All new inputs and configuration options provided to `api.py` should adhere to our design principles: clarity, simplicity, and consistency, to promote ease-of-use and robust adoption of our open source library.
 
 ## Conclusion
-This updated integration plan shifts the focus to the `eu_ai_act` folder and its child folders, aligning the evaluation workflow with EU AI Act requirements. By creating a dedicated evaluation script and updating the API functions, while also defining placeholders for additional rego policies and a simple developer-friendly model-card interface, the solution maintains a clean separation between evaluator measurements and policy compliance logic. The final system provides a developer-friendly, orthogonal interface as outlined in the Developer Guide, and generates high-quality, consolidated compliance reports in PDF and other formats. 
+This updated integration plan shifts the focus to the `eu_ai_act` folder and its child folders, aligning the evaluation workflow with EU AI Act requirements. By creating a dedicated evaluation script and updating the API functions, while also defining placeholders for additional rego policies and a simple developer-friendly model-card interface, the solution maintains a clean separation between evaluator measurements and policy compliance logic. The final system provides a developer-friendly, orthogonal interface as outlined in the Developer Guide, and generates high-quality, consolidated compliance reports in PDF and other formats.

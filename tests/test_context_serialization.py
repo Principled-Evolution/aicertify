@@ -3,13 +3,15 @@
 Test script to verify context serialization in contracts
 """
 
-import os
 import json
 from pathlib import Path
 
 from aicertify.context_helpers import create_medical_context
-from aicertify.models.contract_models import create_contract, save_contract, load_contract
-from pydantic import BaseModel
+from aicertify.models.contract_models import (
+    create_contract,
+    save_contract,
+    load_contract,
+)
 
 # Define a simple test case
 test_case = """**Patient Case Report**
@@ -29,11 +31,7 @@ medical_context = create_medical_context(test_case, specialists)
 print(f"Context created: {json.dumps(medical_context, indent=2)}")
 
 # Create a simple model info
-model_info = {
-    "name": "test-model",
-    "version": "1.0",
-    "provider": "test-provider"
-}
+model_info = {"name": "test-model", "version": "1.0", "provider": "test-provider"}
 
 # Create a simple interaction
 interactions = [
@@ -42,7 +40,7 @@ interactions = [
         "timestamp": "2023-01-01T00:00:00Z",
         "input": "What's the diagnosis?",
         "output": "Based on the symptoms, it could be a tension headache.",
-        "metadata": {}
+        "metadata": {},
     }
 ]
 
@@ -52,7 +50,7 @@ contract = create_contract(
     application_name="test-app",
     model_info=model_info,
     interactions=interactions,
-    context=medical_context
+    context=medical_context,
 )
 
 # Save the contract
@@ -70,7 +68,9 @@ loaded_contract = load_contract(contract_path)
 # Check if context is preserved
 print("\nChecking context in loaded contract...")
 if loaded_contract.context:
-    print(f"Context found in loaded contract: {json.dumps(loaded_contract.context, indent=2)}")
+    print(
+        f"Context found in loaded contract: {json.dumps(loaded_contract.context, indent=2)}"
+    )
 else:
     print("ERROR: Context is empty in loaded contract!")
 
@@ -81,4 +81,4 @@ if loaded_contract.context == medical_context:
 else:
     print("ERROR: Contexts don't match!")
     print(f"Original context: {json.dumps(medical_context, indent=2)}")
-    print(f"Loaded context: {json.dumps(loaded_contract.context, indent=2)}") 
+    print(f"Loaded context: {json.dumps(loaded_contract.context, indent=2)}")

@@ -164,4 +164,4 @@ Always ensure that:
 
 1. The example is used in controlled environments
 2. The outputs are properly handled and disposed of
-3. No real users are exposed to the generated content 
+3. No real users are exposed to the generated content

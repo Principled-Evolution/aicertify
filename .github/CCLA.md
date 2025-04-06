@@ -7,7 +7,7 @@ The **Company** grants the **AICertify project maintainers** a **perpetual, worl
 
 ### **2. Corporate Approval**
 The individual submitting contributions on behalf of the Company certifies that:
-- They have **authorization from the Company** to contribute.  
+- They have **authorization from the Company** to contribute.
 - The Company **retains ownership** of contributions but grants the **right to use them** under the **Apache 2.0 License**.
 
 ### **3. No Confidential or Proprietary Information**
@@ -20,6 +20,6 @@ AICertify maintainers have **no obligation to accept, merge, or use** contributi
 All contributions are provided **"as is"**, with **no warranties**.
 
 ### **6. Acknowledgment**
-By submitting contributions, the Company **accepts and agrees** to this agreement.  
+By submitting contributions, the Company **accepts and agrees** to this agreement.
 
 🚀 **Thank you for contributing to AICertify!**
