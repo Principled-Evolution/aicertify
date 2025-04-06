@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 class ModelCardEvaluator(BaseEvaluator):
     """
     Evaluator for assessing technical documentation compliance using HuggingFace Model Card standards.
-    
+
     This evaluator checks if the provided model documentation meets the requirements
     specified in EU AI Act Articles 11, 12, and 53 by evaluating the completeness
     and quality of the documentation against HuggingFace Model Card standards.
     """
-    
+
     # Define the metrics supported by this evaluator
     SUPPORTED_METRICS: Tuple[str, ...] = (
         "model_card.score",
@@ -31,9 +31,9 @@ class ModelCardEvaluator(BaseEvaluator):
         "model_card.compliance_level",
         "metrics.model_card.score",
         "metrics.model_card.completeness",
-        "metrics.model_card.quality"
+        "metrics.model_card.quality",
     )
-    
+
     # Required sections based on HuggingFace Model Card standards and EU AI Act requirements
     REQUIRED_SECTIONS = {
         "model_details": {
@@ -100,37 +100,34 @@ class ModelCardEvaluator(BaseEvaluator):
             "eu_ai_act_reference": "Article 11(1)(i) - Description of the risk management measures",
         },
     }
-    
+
     # Quality levels for content assessment
     QUALITY_LEVELS = {
-        "missing": {
-            "score": 0.0,
-            "description": "Content is missing entirely"
-        },
+        "missing": {"score": 0.0, "description": "Content is missing entirely"},
         "minimal": {
             "score": 0.3,
-            "description": "Content is present but minimal or superficial"
+            "description": "Content is present but minimal or superficial",
         },
         "partial": {
             "score": 0.7,
-            "description": "Content is present and provides some useful information"
+            "description": "Content is present and provides some useful information",
         },
         "comprehensive": {
             "score": 1.0,
-            "description": "Content is comprehensive and detailed"
-        }
+            "description": "Content is comprehensive and detailed",
+        },
     }
-    
+
     def __init__(
         self,
         compliance_threshold: float = 0.7,
         section_weights: Optional[Dict[str, float]] = None,
         content_quality_thresholds: Optional[Dict[str, int]] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize the ModelCardEvaluator.
-        
+
         Args:
             compliance_threshold: Overall threshold for compliance determination
             section_weights: Optional custom weights for different sections
@@ -145,67 +142,67 @@ class ModelCardEvaluator(BaseEvaluator):
         self.content_quality_thresholds = content_quality_thresholds or {
             "minimal": 50,
             "partial": 200,
-            "comprehensive": 500
+            "comprehensive": 500,
         }
         super().__init__(kwargs)
-    
+
     def _initialize(self) -> None:
         """Initialize the evaluator with the configuration parameters."""
         # No additional initialization needed beyond what's in __init__
         pass
-    
+
     async def evaluate_async(self, documentation: Dict[str, Any]) -> EvaluationResult:
         """
         Asynchronously evaluate model documentation for compliance with EU AI Act requirements.
-        
+
         Args:
             documentation: Dictionary containing model documentation information
-            
+
         Returns:
             EvaluationResult object containing evaluation results
         """
         # For now, just call the synchronous method
         return self.evaluate(documentation)
-    
+
     def evaluate(self, documentation: Dict[str, Any]) -> EvaluationResult:
         """
         Evaluate model documentation for compliance with EU AI Act requirements.
-        
+
         Args:
             documentation: A dictionary containing the model documentation
-            
+
         Returns:
             EvaluationResult: The evaluation result
         """
         try:
             # Extract model card content
             model_card_content = documentation.get("model_card", {})
-            
+
             # Evaluate each required section
             section_scores = {}
             section_feedback = {}
             section_quality = {}
             missing_sections = []
             incomplete_sections = []
-            
+
             for section_id, section_info in self.REQUIRED_SECTIONS.items():
                 section_content = model_card_content.get(section_id, {})
-                section_score, section_feedback_items, quality_level = self._evaluate_section(
-                    section_id, section_info, section_content
+                section_score, section_feedback_items, quality_level = (
+                    self._evaluate_section(section_id, section_info, section_content)
                 )
                 section_scores[section_id] = section_score
                 section_feedback[section_id] = section_feedback_items
                 section_quality[section_id] = quality_level
-                
+
                 if section_score == 0.0:
                     missing_sections.append(section_info["name"])
                 elif section_score < 0.7:
                     incomplete_sections.append(section_info["name"])
-            
+
             # Calculate overall compliance score
             overall_score = self._calculate_overall_score(section_scores)
             is_compliant = overall_score >= self.compliance_threshold
-            
+
             # Generate detailed results
             detailed_results = {
                 "overall_score": overall_score,
@@ -216,23 +213,31 @@ class ModelCardEvaluator(BaseEvaluator):
                 "missing_sections": missing_sections,
                 "incomplete_sections": incomplete_sections,
                 "eu_ai_act_references": {
-                    section_id: info["eu_ai_act_reference"] 
+                    section_id: info["eu_ai_act_reference"]
                     for section_id, info in self.REQUIRED_SECTIONS.items()
-                }
+                },
             }
-            
+
             # Generate recommendations
-            self._generate_recommendations(section_scores, section_feedback, section_quality)
-            
+            self._generate_recommendations(
+                section_scores, section_feedback, section_quality
+            )
+
             return EvaluationResult(
                 evaluator_name="ModelCardEvaluator",
                 compliant=is_compliant,
                 score=overall_score,
                 threshold=self.compliance_threshold,
-                reason=self._generate_reason(is_compliant, overall_score, section_scores, missing_sections, incomplete_sections),
-                details=detailed_results
+                reason=self._generate_reason(
+                    is_compliant,
+                    overall_score,
+                    section_scores,
+                    missing_sections,
+                    incomplete_sections,
+                ),
+                details=detailed_results,
             )
-            
+
         except Exception as e:
             logger.error(f"Error in ModelCardEvaluator: {str(e)}")
             return EvaluationResult(
@@ -241,30 +246,33 @@ class ModelCardEvaluator(BaseEvaluator):
                 score=0.0,
                 threshold=self.compliance_threshold,
                 reason="An error occurred during evaluation. Please check the error and try again.",
-                details={"error": str(e)}
+                details={"error": str(e)},
             )
-    
+
     def _evaluate_section(
-        self, section_id: str, section_info: Dict[str, Any], section_content: Dict[str, Any]
+        self,
+        section_id: str,
+        section_info: Dict[str, Any],
+        section_content: Dict[str, Any],
     ) -> Tuple[float, List[str], str]:
         """
         Evaluate a single section of the model card.
-        
+
         Args:
             section_id: The ID of the section
             section_info: Information about the section
             section_content: The content of the section
-            
+
         Returns:
             Tuple[float, List[str], str]: The section score, feedback, and quality level
         """
         if not section_content:
             return 0.0, [f"Missing section: {section_info['name']}"], "missing"
-        
+
         feedback = []
         subsection_scores = []
         subsection_quality = []
-        
+
         # Check for required subsections
         for subsection in section_info["subsections"]:
             if subsection not in section_content or not section_content[subsection]:
@@ -276,13 +284,19 @@ class ModelCardEvaluator(BaseEvaluator):
                 quality_level, quality_score = self._assess_content_quality(content)
                 subsection_scores.append(quality_score)
                 subsection_quality.append(quality_level)
-                
+
                 if quality_level != "comprehensive":
-                    feedback.append(f"Subsection {subsection} has {quality_level} content")
-        
+                    feedback.append(
+                        f"Subsection {subsection} has {quality_level} content"
+                    )
+
         # Calculate section score as average of subsection scores
-        section_score = sum(subsection_scores) / len(section_info["subsections"]) if section_info["subsections"] else 0.0
-        
+        section_score = (
+            sum(subsection_scores) / len(section_info["subsections"])
+            if section_info["subsections"]
+            else 0.0
+        )
+
         # Determine overall quality level for the section
         if section_score == 0.0:
             quality_level = "missing"
@@ -292,32 +306,32 @@ class ModelCardEvaluator(BaseEvaluator):
             quality_level = "partial"
         else:
             quality_level = "comprehensive"
-        
+
         return section_score, feedback, quality_level
-    
+
     def _assess_content_quality(self, content: Any) -> Tuple[str, float]:
         """
         Assess the quality of content based on length and structure.
-        
+
         Args:
             content: The content to assess
-            
+
         Returns:
             Tuple[str, float]: The quality level and score
         """
         if content is None:
             return "missing", 0.0
-        
+
         # Convert content to string if it's not already
         if not isinstance(content, str):
             try:
                 content = str(content)
             except:
                 return "minimal", 0.3
-        
+
         # Assess quality based on length
         content_length = len(content)
-        
+
         if content_length == 0:
             return "missing", 0.0
         elif content_length < self.content_quality_thresholds["minimal"]:
@@ -326,43 +340,43 @@ class ModelCardEvaluator(BaseEvaluator):
             return "partial", 0.7
         else:
             return "comprehensive", 1.0
-    
+
     def _calculate_overall_score(self, section_scores: Dict[str, float]) -> float:
         """
         Calculate the overall compliance score.
-        
+
         Args:
             section_scores: Scores for each section
-            
+
         Returns:
             float: The overall compliance score
         """
         overall_score = 0.0
-        
+
         for section_id, score in section_scores.items():
             weight = self.section_weights.get(section_id, 0.0)
             overall_score += score * weight
-        
+
         return overall_score
-    
+
     def _generate_reason(
-        self, 
-        is_compliant: bool, 
-        overall_score: float, 
+        self,
+        is_compliant: bool,
+        overall_score: float,
         section_scores: Dict[str, float],
         missing_sections: List[str],
-        incomplete_sections: List[str]
+        incomplete_sections: List[str],
     ) -> str:
         """
         Generate a reason string based on evaluation results.
-        
+
         Args:
             is_compliant: Whether the documentation is compliant
             overall_score: The overall compliance score
             section_scores: Scores for each section
             missing_sections: List of missing sections
             incomplete_sections: List of incomplete sections
-            
+
         Returns:
             str: The reason string
         """
@@ -371,49 +385,49 @@ class ModelCardEvaluator(BaseEvaluator):
                 f"The model documentation meets EU AI Act requirements with an overall "
                 f"compliance score of {overall_score:.2f} (threshold: {self.compliance_threshold})."
             )
-        
+
         # Generate reason for non-compliance
         reason = (
             f"The model documentation does not meet EU AI Act requirements. "
             f"Overall compliance score: {overall_score:.2f} (threshold: {self.compliance_threshold})."
         )
-        
+
         if missing_sections:
             reason += f" Missing sections: {', '.join(missing_sections)}."
-        
+
         if incomplete_sections:
             reason += f" Incomplete sections: {', '.join(incomplete_sections)}."
-        
+
         return reason
-    
+
     def _generate_recommendations(
-        self, 
+        self,
         section_scores: Dict[str, float],
         section_feedback: Dict[str, List[str]],
-        section_quality: Dict[str, str]
+        section_quality: Dict[str, str],
     ) -> List[str]:
         """
         Generate recommendations based on evaluation results.
-        
+
         Args:
             section_scores: Scores for each section
             section_feedback: Feedback for each section
             section_quality: Quality level for each section
-            
+
         Returns:
             List[str]: List of recommendations
         """
         recommendations = []
-        
+
         # Add general recommendation
         recommendations.append(
             "Ensure model documentation complies with EU AI Act Articles 11, 12, and 53 requirements."
         )
-        
+
         # Add recommendations for missing or incomplete sections
         for section_id, score in section_scores.items():
             section_info = self.REQUIRED_SECTIONS[section_id]
-            
+
             if score == 0.0:
                 recommendations.append(
                     f"Add the missing '{section_info['name']}' section to comply with {section_info['eu_ai_act_reference']}."
@@ -422,14 +436,14 @@ class ModelCardEvaluator(BaseEvaluator):
                 recommendations.append(
                     f"Improve the '{section_info['name']}' section to better comply with {section_info['eu_ai_act_reference']}."
                 )
-                
+
                 # Add specific feedback for the section
                 for feedback_item in section_feedback.get(section_id, []):
                     recommendations.append(f"  - {feedback_item}")
-        
+
         # Add recommendation for documentation completeness
         recommendations.append(
             "Use the HuggingFace Model Card format to ensure comprehensive documentation."
         )
-        
-        return recommendations 
+
+        return recommendations

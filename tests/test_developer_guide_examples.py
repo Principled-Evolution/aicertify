@@ -28,19 +28,21 @@ try:
     from aicertify.models.model_card import create_model_card
     from aicertify.models.contract_models import create_contract_with_model_card
     from aicertify.api import evaluate_eu_ai_act_compliance
+
     IMPORTS_SUCCESSFUL = True
 except ImportError as e:
     logger.error(f"Error importing required modules: {str(e)}")
     IMPORTS_SUCCESSFUL = False
 
+
 def test_model_card_creation():
     """Test the model card creation example from the developer guide."""
     logger.info("Testing model card creation example")
-    
+
     if not IMPORTS_SUCCESSFUL:
         logger.error("Cannot run test due to import errors")
         return False
-    
+
     try:
         # Create a model card as shown in the developer guide
         model_card = create_model_card(
@@ -55,43 +57,41 @@ def test_model_card_creation():
             model_architecture="Transformer-based with 1B parameters",
             input_format="Natural language text queries",
             output_format="Natural language text responses",
-            performance_metrics={
-                "accuracy": 0.92,
-                "f1_score": 0.89
-            },
+            performance_metrics={"accuracy": 0.92, "f1_score": 0.89},
             ethical_considerations=[
                 "Data privacy concerns",
-                "Potential biases in medical training data"
+                "Potential biases in medical training data",
             ],
             limitations=[
                 "Limited knowledge cutoff",
-                "Not a replacement for medical professionals"
+                "Not a replacement for medical professionals",
             ],
             mitigation_strategies=[
                 "Human oversight required for all diagnoses",
-                "Clear confidence levels provided with responses"
+                "Clear confidence levels provided with responses",
             ],
             risk_category="high",
-            relevant_articles=["Article 10", "Article 14"]
+            relevant_articles=["Article 10", "Article 14"],
         )
-        
+
         logger.info("Successfully created model card")
         logger.info(f"Model card risk category: {model_card.risk_category}")
-        
+
         return True
-    
+
     except Exception as e:
         logger.error(f"Error creating model card: {str(e)}")
         return False
 
+
 def test_contract_creation():
     """Test the contract creation example from the developer guide."""
     logger.info("Testing contract creation example")
-    
+
     if not IMPORTS_SUCCESSFUL:
         logger.error("Cannot run test due to import errors")
         return False
-    
+
     try:
         # Create a model card
         model_card = create_model_card(
@@ -101,9 +101,9 @@ def test_contract_creation():
             primary_uses=["Medical diagnosis assistance", "Healthcare information"],
             description="Large language model fine-tuned for healthcare domain.",
             risk_category="high",
-            relevant_articles=["Article 10", "Article 14"]
+            relevant_articles=["Article 10", "Article 14"],
         )
-        
+
         # Create a contract with the model card
         contract = create_contract_with_model_card(
             application_name="Healthcare Assistant",
@@ -112,29 +112,30 @@ def test_contract_creation():
                 {
                     "input_text": "What are the symptoms of pneumonia?",
                     "output_text": "Pneumonia symptoms include chest pain, cough, fatigue, fever, and shortness of breath.",
-                    "metadata": {"topic": "medical_information"}
+                    "metadata": {"topic": "medical_information"},
                 }
-            ]
+            ],
         )
-        
+
         logger.info("Successfully created contract with model card")
         logger.info(f"Contract application name: {contract.application_name}")
         logger.info(f"Number of interactions: {len(contract.interactions)}")
-        
+
         return True
-    
+
     except Exception as e:
         logger.error(f"Error creating contract: {str(e)}")
         return False
 
+
 async def test_eu_ai_act_evaluation():
     """Test the EU AI Act compliance evaluation example from the developer guide."""
     logger.info("Testing EU AI Act compliance evaluation example")
-    
+
     if not IMPORTS_SUCCESSFUL:
         logger.error("Cannot run test due to import errors")
         return False
-    
+
     try:
         # Create a model card
         model_card = create_model_card(
@@ -144,9 +145,9 @@ async def test_eu_ai_act_evaluation():
             primary_uses=["Medical diagnosis assistance", "Healthcare information"],
             description="Large language model fine-tuned for healthcare domain.",
             risk_category="high",
-            relevant_articles=["Article 10", "Article 14"]
+            relevant_articles=["Article 10", "Article 14"],
         )
-        
+
         # Create a contract with the model card
         contract = create_contract_with_model_card(
             application_name="Healthcare Assistant",
@@ -155,34 +156,37 @@ async def test_eu_ai_act_evaluation():
                 {
                     "input_text": "What are the symptoms of pneumonia?",
                     "output_text": "Pneumonia symptoms include chest pain, cough, fatigue, fever, and shortness of breath.",
-                    "metadata": {"topic": "medical_information"}
+                    "metadata": {"topic": "medical_information"},
                 }
-            ]
+            ],
         )
-        
+
         # Create output directory
         output_dir = Path("test_reports")
         os.makedirs(output_dir, exist_ok=True)
-        
+
         # Evaluate EU AI Act compliance
         result = await evaluate_eu_ai_act_compliance(
             contract=contract,
             focus_areas=["prohibited_practices", "documentation"],
             generate_report=True,
             report_format="pdf",
-            output_dir=str(output_dir)
+            output_dir=str(output_dir),
         )
-        
+
         logger.info("Successfully evaluated EU AI Act compliance")
         logger.info(f"Overall compliance: {result.get('overall_compliant', False)}")
-        logger.info(f"Model card compliance level: {result.get('model_card_compliance_level', 'N/A')}")
+        logger.info(
+            f"Model card compliance level: {result.get('model_card_compliance_level', 'N/A')}"
+        )
         logger.info(f"Report path: {result.get('report_path', 'No report generated')}")
-        
+
         return True
-    
+
     except Exception as e:
         logger.error(f"Error evaluating EU AI Act compliance: {str(e)}")
         return False
+
 
 def run_all_tests():
     """Run all developer guide example tests and report results."""
@@ -190,9 +194,9 @@ def run_all_tests():
         ("DX-01-1", test_model_card_creation),
         ("DX-01-2", test_contract_creation),
     ]
-    
+
     results = {}
-    
+
     for test_id, test_func in tests:
         logger.info(f"\n=== Running test {test_id} ===")
         try:
@@ -206,7 +210,7 @@ def run_all_tests():
             logger.error(f"Exception in test {test_id}: {str(e)}")
             results[test_id] = False
             print(f"\n❌ FAIL: {test_id} (exception)")
-    
+
     # Run the async test separately
     logger.info("\n=== Running test DX-01-3 ===")
     try:
@@ -220,15 +224,16 @@ def run_all_tests():
         logger.error(f"Exception in test DX-01-3: {str(e)}")
         results["DX-01-3"] = False
         print("\n❌ FAIL: DX-01-3 (exception)")
-    
+
     # Print summary
     print("\n=== Test Summary ===")
     for test_id, result in results.items():
         status = "PASS" if result else "FAIL"
         print(f"{test_id}: {status}")
-    
+
     return all(results.values())
+
 
 if __name__ == "__main__":
     success = run_all_tests()
-    sys.exit(0 if success else 1) 
+    sys.exit(0 if success else 1)

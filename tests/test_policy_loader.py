@@ -10,7 +10,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 from aicertify.opa_core.policy_loader import PolicyLoader
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
 
 def test_policy_loader():
     """Test that the PolicyLoader can find and load policies from the submodule."""
@@ -50,6 +51,7 @@ def test_policy_loader():
         logging.error("Failed to find custom policies")
 
     logging.info("PolicyLoader test completed")
+
 
 if __name__ == "__main__":
     test_policy_loader()

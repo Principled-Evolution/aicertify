@@ -11,24 +11,28 @@ import traceback
 from datetime import datetime
 
 # Add the project root to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import all required modules at the top
-from aicertify.report_generation.data_extraction import create_evaluation_report as original_create_evaluation_report
+from aicertify.report_generation.data_extraction import (
+    create_evaluation_report as original_create_evaluation_report,
+)
 import aicertify.report_generation.data_extraction
-from aicertify.api import evaluate_contract_by_folder as original_evaluate_contract_by_folder
+from aicertify.api import (
+    evaluate_contract_by_folder as original_evaluate_contract_by_folder,
+)
 import aicertify.api
 
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("data_capture")
 
 # Create a directory for captured data
 capture_dir = "temp_reports/captured_data"
 os.makedirs(capture_dir, exist_ok=True)
+
 
 def create_evaluation_report_with_capture(evaluation_result, opa_results=None):
     """Wrapper around create_evaluation_report that captures input data."""
@@ -66,13 +70,23 @@ def create_evaluation_report_with_capture(evaluation_result, opa_results=None):
         logger.error(f"Error details saved to {error_path}")
         raise
 
-# Replace the original function with our capturing version
-aicertify.report_generation.data_extraction.create_evaluation_report = create_evaluation_report_with_capture
 
-def evaluate_contract_by_folder_with_capture(contract, policy_folder, evaluators=None,
-                                            evaluator_config=None, generate_report=False,
-                                            report_format="markdown", output_dir=None,
-                                            opa_evaluator=None):
+# Replace the original function with our capturing version
+aicertify.report_generation.data_extraction.create_evaluation_report = (
+    create_evaluation_report_with_capture
+)
+
+
+def evaluate_contract_by_folder_with_capture(
+    contract,
+    policy_folder,
+    evaluators=None,
+    evaluator_config=None,
+    generate_report=False,
+    report_format="markdown",
+    output_dir=None,
+    opa_evaluator=None,
+):
     """Wrapper around evaluate_contract_by_folder that captures input and output data."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -88,8 +102,14 @@ def evaluate_contract_by_folder_with_capture(contract, policy_folder, evaluators
     # Call the original function
     try:
         result = original_evaluate_contract_by_folder(
-            contract, policy_folder, evaluators, evaluator_config,
-            generate_report, report_format, output_dir, opa_evaluator
+            contract,
+            policy_folder,
+            evaluators,
+            evaluator_config,
+            generate_report,
+            report_format,
+            output_dir,
+            opa_evaluator,
         )
 
         # Capture result
@@ -111,12 +131,17 @@ def evaluate_contract_by_folder_with_capture(contract, policy_folder, evaluators
         logger.error(f"Error details saved to {error_path}")
         raise
 
+
 # Replace the original function with our capturing version
 aicertify.api.evaluate_contract_by_folder = evaluate_contract_by_folder_with_capture
 
-logger.info("Installed data capture hooks. Run debug_policy_evaluation.py to capture data.")
+logger.info(
+    "Installed data capture hooks. Run debug_policy_evaluation.py to capture data."
+)
 logger.info(f"Data will be saved to {os.path.abspath(capture_dir)}")
 
 if __name__ == "__main__":
-    print(f"Data capture hooks installed. Data will be saved to {os.path.abspath(capture_dir)}")
+    print(
+        f"Data capture hooks installed. Data will be saved to {os.path.abspath(capture_dir)}"
+    )
     print("Run debug_policy_evaluation.py to capture data during execution.")

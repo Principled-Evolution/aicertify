@@ -11,7 +11,9 @@ from aicertify.system_evaluators.langfair_auto_eval import evaluate_ai_responses
 logger = logging.getLogger(__name__)
 
 
-async def evaluate_contract_with_langfair(contract_json_path: str, output_dir: str = "evaluations") -> Optional[dict]:
+async def evaluate_contract_with_langfair(
+    contract_json_path: str, output_dir: str = "evaluations"
+) -> Optional[dict]:
     """
     1) Loads a contract from a JSON file,
     2) Converts its interactions to an AutoEvalInput,
@@ -62,7 +64,9 @@ async def evaluate_contract_with_langfair(contract_json_path: str, output_dir: s
     return result_dict
 
 
-def batch_evaluate_langfair(contract_paths: list[str], output_dir: str = "evaluations") -> list[Optional[dict]]:
+def batch_evaluate_langfair(
+    contract_paths: list[str], output_dir: str = "evaluations"
+) -> list[Optional[dict]]:
     """
     Iterates over multiple contract JSON files, evaluates each using LangFair auto-evaluation,
     and returns a list of evaluation results.
@@ -75,24 +79,29 @@ def batch_evaluate_langfair(contract_paths: list[str], output_dir: str = "evalua
         list[Optional[dict]]: A list of evaluation result dictionaries.
     """
     loop = asyncio.get_event_loop()
-    tasks = [evaluate_contract_with_langfair(cp, output_dir=output_dir) for cp in contract_paths]
+    tasks = [
+        evaluate_contract_with_langfair(cp, output_dir=output_dir)
+        for cp in contract_paths
+    ]
     results = loop.run_until_complete(asyncio.gather(*tasks))
     logger.info("All contracts evaluated with LangFair.")
     return results
 
 
-async def evaluate_app_folder(app_name: str, folder_path: str, output_json: str) -> Optional[dict]:
+async def evaluate_app_folder(
+    app_name: str, folder_path: str, output_json: str
+) -> Optional[dict]:
     """
     Loads all contract JSON files in folder_path for the specified app_name,
     aggregates prompts and responses from all interactions, runs a single
     LangFair auto-evaluation over the combined data, and saves the consolidated
     evaluation to output_json.
-    
+
     Parameters:
         app_name (str): The target application name to filter contracts.
         folder_path (str): Directory containing contract JSON files.
         output_json (str): File path where the consolidated evaluation result will be saved.
-        
+
     Returns:
         Optional[dict]: The consolidated evaluation result dictionary, or None if an error occurs.
     """
@@ -115,7 +124,9 @@ async def evaluate_app_folder(app_name: str, folder_path: str, output_json: str)
             data = json.loads(cf.read_text())
             contract = AiCertifyContract.parse_obj(data)
             if contract.application_name != app_name:
-                logger.debug(f"Skipping contract {cf}, different application name: {contract.application_name}")
+                logger.debug(
+                    f"Skipping contract {cf}, different application name: {contract.application_name}"
+                )
                 continue
             for interaction in contract.interactions:
                 aggregated_prompts.append(interaction.input_text)
@@ -128,9 +139,13 @@ async def evaluate_app_folder(app_name: str, folder_path: str, output_json: str)
         logger.warning(f"No interactions found for app '{app_name}' in {folder_path}.")
         return None
 
-    logger.info(f"Collected {len(aggregated_prompts)} total prompts/responses from {total_contract_count} contract(s).")
+    logger.info(
+        f"Collected {len(aggregated_prompts)} total prompts/responses from {total_contract_count} contract(s)."
+    )
 
-    auto_eval_input = AutoEvalInput(prompts=aggregated_prompts, responses=aggregated_responses)
+    auto_eval_input = AutoEvalInput(
+        prompts=aggregated_prompts, responses=aggregated_responses
+    )
     logger.info("Running a single auto-eval across all collected data.")
     try:
         auto_eval_result = await evaluate_ai_responses(auto_eval_input)
@@ -149,12 +164,14 @@ async def evaluate_app_folder(app_name: str, folder_path: str, output_json: str)
     if output_path.is_dir():
         # Append a default filename in the directory if output_json is a directory
         timestamp_str = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        output_file = output_path / f"consolidated_evaluation_{app_name}{timestamp_str}.json"
+        output_file = (
+            output_path / f"consolidated_evaluation_{app_name}{timestamp_str}.json"
+        )
     else:
         output_file = output_path
         output_file.parent.mkdir(parents=True, exist_ok=True)
     with open(output_file, "w") as f:
-        json.dump(result_dict, f, indent=2) 
+        json.dump(result_dict, f, indent=2)
 
     logger.info(f"Aggregated evaluation saved to {output_json} for app '{app_name}'.")
-    return result_dict 
+    return result_dict

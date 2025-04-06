@@ -26,6 +26,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("test_eu_ai_act_placeholder_policies")
 
+
 def is_placeholder_policy(policy_content: str) -> bool:
     """
     Check if a policy is a placeholder based on its content.
@@ -41,7 +42,7 @@ def is_placeholder_policy(policy_content: str) -> bool:
         "PLACEHOLDER",
         "placeholder",
         "implementation_pending",
-        "Pending detailed implementation"
+        "Pending detailed implementation",
     ]
 
     for indicator in placeholder_indicators:
@@ -49,6 +50,7 @@ def is_placeholder_policy(policy_content: str) -> bool:
             return True
 
     return False
+
 
 def get_policy_metadata(policy_content: str) -> Dict:
     """
@@ -61,24 +63,25 @@ def get_policy_metadata(policy_content: str) -> Dict:
         Dictionary containing metadata or empty dict if not found
     """
     # Look for metadata := { ... } pattern
-    metadata_match = re.search(r'metadata\s*:=\s*{([^}]*)}', policy_content, re.DOTALL)
+    metadata_match = re.search(r"metadata\s*:=\s*{([^}]*)}", policy_content, re.DOTALL)
 
     if metadata_match:
         metadata_str = metadata_match.group(1)
 
         # Extract key-value pairs
         metadata = {}
-        for line in metadata_str.split('\n'):
+        for line in metadata_str.split("\n"):
             line = line.strip()
-            if ':' in line:
-                key, value = line.split(':', 1)
+            if ":" in line:
+                key, value = line.split(":", 1)
                 key = key.strip().strip('"')
-                value = value.strip().strip(',').strip('"')
+                value = value.strip().strip(",").strip('"')
                 metadata[key] = value
 
         return metadata
 
     return {}
+
 
 def test_eu_ai_act_placeholder_policies():
     """Test if placeholder policies are properly loaded and identified."""
@@ -105,7 +108,7 @@ def test_eu_ai_act_placeholder_policies():
         # Get the policy content
         policy_content = None
         try:
-            with open(policy_path, 'r') as f:
+            with open(policy_path, "r") as f:
                 policy_content = f.read()
         except Exception as e:
             logger.error(f"Error reading policy file {policy_path}: {str(e)}")
@@ -119,7 +122,7 @@ def test_eu_ai_act_placeholder_policies():
 
         # Get metadata
         metadata = get_policy_metadata(policy_content)
-        status = metadata.get('status', '')
+        status = metadata.get("status", "")
 
         # Log the policy status
         policy_name = os.path.basename(policy_path)
@@ -131,7 +134,9 @@ def test_eu_ai_act_placeholder_policies():
             non_placeholder_policies.append(policy_path)
 
     # Summarize results
-    logger.info(f"Found {len(placeholder_policies)} placeholder policies and {len(non_placeholder_policies)} non-placeholder policies")
+    logger.info(
+        f"Found {len(placeholder_policies)} placeholder policies and {len(non_placeholder_policies)} non-placeholder policies"
+    )
 
     # Check if we found any placeholder policies
     if not placeholder_policies:
@@ -144,6 +149,7 @@ def test_eu_ai_act_placeholder_policies():
         logger.info(f"  - {os.path.basename(policy_path)}: {status}")
 
     return True
+
 
 if __name__ == "__main__":
     result = test_eu_ai_act_placeholder_policies()

@@ -26,10 +26,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger("test_eu_ai_act_policies")
 
+
 def get_all_rego_files_in_eu_ai_act_dir() -> List[Path]:
     """Directly find all .rego files in the EU AI Act policy directory."""
     script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
-    policy_dir = script_dir / "aicertify" / "opa_policies" / "international" / "eu_ai_act"
+    policy_dir = (
+        script_dir / "aicertify" / "opa_policies" / "international" / "eu_ai_act"
+    )
 
     if not policy_dir.exists():
         logger.error(f"EU AI Act policy directory not found at: {policy_dir}")
@@ -39,6 +42,7 @@ def get_all_rego_files_in_eu_ai_act_dir() -> List[Path]:
     rego_files = list(policy_dir.glob("**/*.rego"))
 
     return rego_files
+
 
 def test_eu_ai_act_policy_loading():
     """Test if all EU AI Act Rego policies are found by the policy loader."""
@@ -63,7 +67,9 @@ def test_eu_ai_act_policy_loading():
 
     # Print what was loaded for debugging
     logger.info(f"Found {len(loaded_policies)} policies via policy loader")
-    logger.info(f"Found {len(expected_policy_files)} .rego files in EU AI Act directory")
+    logger.info(
+        f"Found {len(expected_policy_files)} .rego files in EU AI Act directory"
+    )
 
     # Get policy filenames (without path) from loaded policies
     # The loaded policies have a specific format we need to parse
@@ -83,12 +89,15 @@ def test_eu_ai_act_policy_loading():
 
     # Check if all expected policies were loaded
     if missing_policies:
-        logger.error(f"The following EU AI Act policies were not loaded: {missing_policies}")
+        logger.error(
+            f"The following EU AI Act policies were not loaded: {missing_policies}"
+        )
         return False
 
     logger.info(f"Successfully loaded {len(loaded_policies)} EU AI Act policies")
     logger.info("All expected EU AI Act policies were found by the policy loader")
     return True
+
 
 if __name__ == "__main__":
     result = test_eu_ai_act_policy_loading()
@@ -97,5 +106,7 @@ if __name__ == "__main__":
         print("\n✅ PASS: All EU AI Act rego policies were found by the policy loader")
         sys.exit(0)
     else:
-        print("\n❌ FAIL: Some EU AI Act rego policies were not found by the policy loader")
+        print(
+            "\n❌ FAIL: Some EU AI Act rego policies were not found by the policy loader"
+        )
         sys.exit(1)

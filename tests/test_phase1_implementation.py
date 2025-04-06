@@ -9,14 +9,18 @@ import os
 import unittest
 import tempfile
 
-from aicertify.models.contract_models import create_contract, validate_contract, save_contract
+from aicertify.models.contract_models import (
+    create_contract,
+    validate_contract,
+    save_contract,
+)
 from aicertify.context_helpers import (
     create_medical_context,
     create_financial_context,
     extract_demographics,
     extract_medical_history,
     extract_customer_demographics,
-    extract_financial_profile
+    extract_financial_profile,
 )
 
 # Import API module for evaluation if needed
@@ -66,7 +70,7 @@ class TestPhase1Implementation(unittest.TestCase):
             "payment_history": "Good",
             "loan_amount_requested": 30000,
             "purpose": "Home improvement",
-            "collateral": "Home"
+            "collateral": "Home",
         }
 
         # Sample interactions for both domains
@@ -74,7 +78,7 @@ class TestPhase1Implementation(unittest.TestCase):
             {
                 "input_text": "What is the diagnosis?",
                 "output_text": "Based on the symptoms, the diagnosis is...",
-                "metadata": {"agent": "Test"}
+                "metadata": {"agent": "Test"},
             }
         ]
 
@@ -82,6 +86,7 @@ class TestPhase1Implementation(unittest.TestCase):
         """Clean up test fixtures."""
         # Clean up temp directory
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_extract_demographics(self):
@@ -137,7 +142,7 @@ class TestPhase1Implementation(unittest.TestCase):
         self.assertIn("specialist_qualifications", context["governance_info"])
         self.assertEqual(
             context["governance_info"]["specialist_qualifications"]["Cardiology"],
-            "board_certified"
+            "board_certified",
         )
 
     def test_create_financial_context(self):
@@ -169,7 +174,7 @@ class TestPhase1Implementation(unittest.TestCase):
 
         compliance_context = {
             "jurisdictions": ["us", "eu"],
-            "frameworks": ["hipaa", "eu_ai_act", "healthcare"]
+            "frameworks": ["hipaa", "eu_ai_act", "healthcare"],
         }
 
         contract = create_contract(
@@ -178,7 +183,7 @@ class TestPhase1Implementation(unittest.TestCase):
             interactions=self.interactions,
             final_output="Final diagnosis",
             context=medical_context,
-            compliance_context=compliance_context
+            compliance_context=compliance_context,
         )
 
         # Verify contract was created with the right context
@@ -195,11 +200,13 @@ class TestPhase1Implementation(unittest.TestCase):
 
     def test_create_financial_contract(self):
         """Test creation of a contract with financial context."""
-        financial_context = create_financial_context(self.customer_data, "personal_loan")
+        financial_context = create_financial_context(
+            self.customer_data, "personal_loan"
+        )
 
         compliance_context = {
             "jurisdictions": ["us", "eu"],
-            "frameworks": ["fair_lending", "eu_ai_act", "financial"]
+            "frameworks": ["fair_lending", "eu_ai_act", "financial"],
         }
 
         contract = create_contract(
@@ -208,7 +215,7 @@ class TestPhase1Implementation(unittest.TestCase):
             interactions=self.interactions,
             final_output="Loan approved",
             context=financial_context,
-            compliance_context=compliance_context
+            compliance_context=compliance_context,
         )
 
         # Verify contract was created with the right context
@@ -229,9 +236,7 @@ class TestPhase1Implementation(unittest.TestCase):
         invalid_context = {
             "domain": "healthcare",
             "specialty": "multi-specialist-diagnosis",
-            "patient_data": {
-                "demographics": extract_demographics(self.patient_case)
-            }
+            "patient_data": {"demographics": extract_demographics(self.patient_case)},
             # Missing risk_documentation
         }
 
@@ -241,7 +246,7 @@ class TestPhase1Implementation(unittest.TestCase):
                 application_name="Invalid Medical Test",
                 model_info={"model_name": "test-model"},
                 interactions=self.interactions,
-                context=invalid_context
+                context=invalid_context,
             )
             # If we get here, validation didn't fail as expected
             self.fail("Expected validation to fail for invalid medical contract")
@@ -255,7 +260,7 @@ class TestPhase1Implementation(unittest.TestCase):
         invalid_context = {
             "domain": "finance",
             "specialty": "loan_evaluation",
-            "risk_documentation": "Risk documentation"
+            "risk_documentation": "Risk documentation",
             # Missing customer_data
         }
 
@@ -265,7 +270,7 @@ class TestPhase1Implementation(unittest.TestCase):
                 application_name="Invalid Financial Test",
                 model_info={"model_name": "test-model"},
                 interactions=self.interactions,
-                context=invalid_context
+                context=invalid_context,
             )
             # If we get here, validation didn't fail as expected
             self.fail("Expected validation to fail for invalid financial contract")

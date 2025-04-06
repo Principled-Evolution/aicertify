@@ -6,7 +6,6 @@ backward compatibility with existing data structures while providing a flexible
 foundation for future extensions.
 """
 
-
 # Fairness metrics configuration
 FAIRNESS_METRICS = {
     "ftu_satisfied": {
@@ -17,7 +16,7 @@ FAIRNESS_METRICS = {
             "summary.fairness.ftu_satisfied",
         ],
         "default_value": False,
-        "display_name": "FTU Satisfied"
+        "display_name": "FTU Satisfied",
     },
     "counterfactual_score": {
         "paths": [
@@ -29,7 +28,7 @@ FAIRNESS_METRICS = {
             "phase1_results.results.fairness.details.counterfactual_score",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "Counterfactual Score"
+        "display_name": "Counterfactual Score",
     },
     "stereotype_score": {
         "paths": [
@@ -41,7 +40,7 @@ FAIRNESS_METRICS = {
             "phase1_results.results.fairness.details.stereotype_score",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "Stereotype Score"
+        "display_name": "Stereotype Score",
     },
     "sentiment_bias": {
         "paths": [
@@ -56,7 +55,7 @@ FAIRNESS_METRICS = {
             "phase1_results.results.fairness.details.sentiment_bias",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "Sentiment Bias"
+        "display_name": "Sentiment Bias",
     },
     "race_word_count": {
         "paths": [
@@ -66,7 +65,7 @@ FAIRNESS_METRICS = {
             "summary.fairness.race_word_count",
         ],
         "default_value": 0,
-        "display_name": "Race Word Count"
+        "display_name": "Race Word Count",
     },
     "gender_word_count": {
         "paths": [
@@ -76,7 +75,7 @@ FAIRNESS_METRICS = {
             "summary.fairness.gender_word_count",
         ],
         "default_value": 0,
-        "display_name": "Gender Word Count"
+        "display_name": "Gender Word Count",
     },
     "combined_score": {
         "paths": [
@@ -88,7 +87,7 @@ FAIRNESS_METRICS = {
             "phase1_results.results.fairness.details.combined_score",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "Combined Score"
+        "display_name": "Combined Score",
     },
     "bleu_similarity": {
         "paths": [
@@ -103,7 +102,7 @@ FAIRNESS_METRICS = {
             "phase1_results.results.fairness.details.bleu_similarity",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "BLEU Similarity"
+        "display_name": "BLEU Similarity",
     },
     "rouge_similarity": {
         "paths": [
@@ -118,7 +117,7 @@ FAIRNESS_METRICS = {
             "phase1_results.results.fairness.details.rouge_similarity",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "ROUGE Similarity"
+        "display_name": "ROUGE Similarity",
     },
     "gender_bias_detected": {
         "paths": [
@@ -134,7 +133,7 @@ FAIRNESS_METRICS = {
             "phase1_results.results.fairness.details.gender_bias_detected",  # Phase 1 evaluator results
         ],
         "default_value": False,
-        "display_name": "Gender Bias Detected"
+        "display_name": "Gender Bias Detected",
     },
     "racial_bias_detected": {
         "paths": [
@@ -150,7 +149,7 @@ FAIRNESS_METRICS = {
             "phase1_results.results.fairness.details.racial_bias_detected",  # Phase 1 evaluator results
         ],
         "default_value": False,
-        "display_name": "Racial Bias Detected"
+        "display_name": "Racial Bias Detected",
     },
 }
 
@@ -167,7 +166,7 @@ TOXICITY_METRICS = {
             "phase1_results.results.content_safety.details.toxic_fraction",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "Toxic Fraction"
+        "display_name": "Toxic Fraction",
     },
     "max_toxicity": {
         "paths": [
@@ -180,7 +179,7 @@ TOXICITY_METRICS = {
             "phase1_results.results.content_safety.details.max_toxicity",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "Max Toxicity"
+        "display_name": "Max Toxicity",
     },
     "toxicity_probability": {
         "paths": [
@@ -193,7 +192,7 @@ TOXICITY_METRICS = {
             "phase1_results.results.content_safety.details.toxicity_probability",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "Toxicity Probability"
+        "display_name": "Toxicity Probability",
     },
     "content_safety_score": {
         "paths": [
@@ -205,7 +204,7 @@ TOXICITY_METRICS = {
             "phase1_results.results.content_safety.score",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "Content Safety Score"
+        "display_name": "Content Safety Score",
     },
 }
 
@@ -221,7 +220,7 @@ STEREOTYPE_METRICS = {
             "phase1_results.results.fairness.details.stereotype_score",  # Phase 1 evaluator results
         ],
         "default_value": 0.0,
-        "display_name": "Stereotype Score"
+        "display_name": "Stereotype Score",
     },
     "gender_bias_detected": {
         "paths": [
@@ -233,7 +232,7 @@ STEREOTYPE_METRICS = {
             "phase1_results.results.fairness.details.gender_bias_detected",  # Phase 1 evaluator results
         ],
         "default_value": False,
-        "display_name": "Gender Bias Detected"
+        "display_name": "Gender Bias Detected",
     },
     "racial_bias_detected": {
         "paths": [
@@ -245,7 +244,7 @@ STEREOTYPE_METRICS = {
             "phase1_results.results.fairness.details.racial_bias_detected",  # Phase 1 evaluator results
         ],
         "default_value": False,
-        "display_name": "Racial Bias Detected"
+        "display_name": "Racial Bias Detected",
     },
     "bias_score": {
         "paths": [
@@ -256,7 +255,7 @@ STEREOTYPE_METRICS = {
             "bias_score",  # Direct at root level
         ],
         "default_value": 0.0,
-        "display_name": "Bias Score"
+        "display_name": "Bias Score",
     },
 }
 
@@ -270,7 +269,7 @@ PERFORMANCE_METRICS = {
             "latency_ms",  # Direct at root level
         ],
         "default_value": 0,
-        "display_name": "Latency (ms)"
+        "display_name": "Latency (ms)",
     },
     "tokens_per_second": {
         "paths": [
@@ -280,7 +279,7 @@ PERFORMANCE_METRICS = {
             "tokens_per_second",  # Direct at root level
         ],
         "default_value": 0,
-        "display_name": "Tokens Per Second"
+        "display_name": "Tokens Per Second",
     },
     "memory_usage_mb": {
         "paths": [
@@ -290,7 +289,7 @@ PERFORMANCE_METRICS = {
             "memory_usage_mb",  # Direct at root level
         ],
         "default_value": 0,
-        "display_name": "Memory Usage (MB)"
+        "display_name": "Memory Usage (MB)",
     },
 }
 
@@ -304,7 +303,7 @@ ACCURACY_METRICS = {
             "precision",  # Direct at root level
         ],
         "default_value": 0.0,
-        "display_name": "Precision"
+        "display_name": "Precision",
     },
     "recall": {
         "paths": [
@@ -314,7 +313,7 @@ ACCURACY_METRICS = {
             "recall",  # Direct at root level
         ],
         "default_value": 0.0,
-        "display_name": "Recall"
+        "display_name": "Recall",
     },
     "f1_score": {
         "paths": [
@@ -324,39 +323,28 @@ ACCURACY_METRICS = {
             "f1_score",  # Direct at root level
         ],
         "default_value": 0.0,
-        "display_name": "F1 Score"
+        "display_name": "F1 Score",
     },
 }
 
 # Combined metric configurations
 DEFAULT_METRIC_CONFIGS = {
-    "fairness": {
-        "display_name": "Fairness Metrics",
-        "metrics": FAIRNESS_METRICS
-    },
-    "toxicity": {
-        "display_name": "Toxicity Metrics",
-        "metrics": TOXICITY_METRICS
-    },
-    "stereotype": {
-        "display_name": "Stereotype Metrics",
-        "metrics": STEREOTYPE_METRICS
-    },
+    "fairness": {"display_name": "Fairness Metrics", "metrics": FAIRNESS_METRICS},
+    "toxicity": {"display_name": "Toxicity Metrics", "metrics": TOXICITY_METRICS},
+    "stereotype": {"display_name": "Stereotype Metrics", "metrics": STEREOTYPE_METRICS},
     "performance": {
         "display_name": "Performance Metrics",
-        "metrics": PERFORMANCE_METRICS
+        "metrics": PERFORMANCE_METRICS,
     },
-    "accuracy": {
-        "display_name": "Accuracy Metrics",
-        "metrics": ACCURACY_METRICS
-    }
+    "accuracy": {"display_name": "Accuracy Metrics", "metrics": ACCURACY_METRICS},
 }
+
 
 def get_default_metric_configs():
     """
     Get the default metric configurations.
-    
+
     Returns:
         dict: The default metric configurations.
     """
-    return DEFAULT_METRIC_CONFIGS 
+    return DEFAULT_METRIC_CONFIGS

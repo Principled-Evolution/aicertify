@@ -12,8 +12,11 @@ from aicertify.opa_core.policy_loader import PolicyLoader  # noqa: E402
 from aicertify.opa_core.evaluator import OpaEvaluator  # noqa: E402
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 def test_opa_integration():
     """Test the integration with OPA policies."""
@@ -43,8 +46,8 @@ def test_opa_integration():
             "evaluation": {
                 "fairness_score": 0.8,
                 "content_safety_score": 0.9,
-                "risk_management_score": 0.7
-            }
+                "risk_management_score": 0.7,
+            },
         }
 
         # Try evaluating with a policy if any are found
@@ -59,6 +62,7 @@ def test_opa_integration():
     except Exception as e:
         logger.error(f"OPA policy integration test failed: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = test_opa_integration()

@@ -14,7 +14,7 @@ from aicertify.models.contract import (
     create_contract,
     validate_contract,
     save_contract,
-    load_contract
+    load_contract,
 )
 
 from typing import List, Optional, Dict, Any
@@ -23,12 +23,13 @@ import logging
 
 # Import the ModelCard class
 from aicertify.models.model_card import ModelCard
+
 # Emit a deprecation warning when this module is imported
 warnings.warn(
     "The 'contract_models.py' module is deprecated and will be removed in a future release. "
     "Please use 'aicertify.models.contract' for new code.",
-    DeprecationWarning, 
-    stacklevel=2
+    DeprecationWarning,
+    stacklevel=2,
 )
 
 # Re-export models from the centralized location
@@ -44,17 +45,18 @@ __all__ = [
     "load_contract",
 ]
 
+
 def create_contract_with_model_card(
     application_name: str,
     model_card: ModelCard,
     interactions: List[Dict[str, Any]],
     final_output: Optional[str] = None,
     context: Optional[Dict[str, Any]] = None,
-    compliance_context: Optional[Dict[str, Any]] = None
+    compliance_context: Optional[Dict[str, Any]] = None,
 ) -> AiCertifyContract:
     """
     Create a contract with a detailed model card.
-    
+
     This is a specialized version of create_contract that puts model_card front and center,
     making it easier for developers to provide detailed model information for EU AI Act compliance.
 
@@ -71,30 +73,30 @@ def create_contract_with_model_card(
     """
     # Create minimal model_info from model_card
     model_info = {
-        'model_name': model_card.model_name,
-        'model_version': model_card.model_version,
-        'metadata': {
-            'model_type': model_card.model_type,
-            'organization': model_card.organization
-        }
+        "model_name": model_card.model_name,
+        "model_version": model_card.model_version,
+        "metadata": {
+            "model_type": model_card.model_type,
+            "organization": model_card.organization,
+        },
     }
-    
+
     # If context doesn't exist, initialize it
     if context is None:
         context = {}
-    
+
     # Add model card information to context
-    if 'eu_ai_act' not in context:
-        context['eu_ai_act'] = {}
-    
+    if "eu_ai_act" not in context:
+        context["eu_ai_act"] = {}
+
     # Include risk_category in context if available
     if model_card.risk_category:
-        context['eu_ai_act']['risk_category'] = model_card.risk_category
-    
+        context["eu_ai_act"]["risk_category"] = model_card.risk_category
+
     # Include relevant_articles in context if available
     if model_card.relevant_articles:
-        context['eu_ai_act']['relevant_articles'] = model_card.relevant_articles
-    
+        context["eu_ai_act"]["relevant_articles"] = model_card.relevant_articles
+
     return create_contract(
         application_name=application_name,
         model_info=model_info,
@@ -102,8 +104,9 @@ def create_contract_with_model_card(
         final_output=final_output,
         context=context,
         compliance_context=compliance_context,
-        model_card=model_card
+        model_card=model_card,
     )
+
 
 def aggregate_contracts(contract_files: List[str]) -> Dict[str, Any]:
     """
@@ -123,7 +126,7 @@ def aggregate_contracts(contract_files: List[str]) -> Dict[str, Any]:
         "total": len(contract_files),
         "valid": 0,
         "invalid": 0,
-        "contracts": []
+        "contracts": [],
     }
     for cf in contract_files:
         try:

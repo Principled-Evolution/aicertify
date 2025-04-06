@@ -7,5 +7,5 @@ This package provides evaluators for assessing documentation compliance as defin
 from aicertify.evaluators.documentation.model_card_evaluator import ModelCardEvaluator
 
 __all__ = [
-    'ModelCardEvaluator',
-] 
+    "ModelCardEvaluator",
+]
