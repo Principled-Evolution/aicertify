@@ -14,11 +14,11 @@ import asyncio
 import logging
 # dont expose CUDA
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
 from pathlib import Path
 from aicertify import regulations
 from aicertify import application
 
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -102,7 +102,7 @@ async def main():
     reports_dir = Path("reports")
     reports_dir.mkdir(exist_ok=True)
     
-    app1_results = await app1.evaluate(
+    await app1.evaluate(
         regulations=regulations_set,
         report_format="html",  # Changed to html format
         output_dir="reports"

@@ -6,15 +6,6 @@ Please use aicertify.models.contract and aicertify.models.evaluation for new cod
 """
 
 import warnings
-
-# Emit a deprecation warning when this module is imported
-warnings.warn(
-    "The 'evaluation_models.py' module is deprecated and will be removed in a future release. "
-    "Please use 'aicertify.models.contract' and 'aicertify.models.evaluation' for new code.",
-    DeprecationWarning, 
-    stacklevel=2
-)
-
 # Intentionally re-export models from the centralized location for backward compatibility
 from aicertify.models.contract import (
     ModelInfo,
@@ -29,6 +20,15 @@ from aicertify.models.evaluation import (
     AiComplianceInput,
     create_evaluation_result,
     create_compliance_input
+)
+
+
+# Emit a deprecation warning when this module is imported
+warnings.warn(
+    "The 'evaluation_models.py' module is deprecated and will be removed in a future release. "
+    "Please use 'aicertify.models.contract' and 'aicertify.models.evaluation' for new code.",
+    DeprecationWarning, 
+    stacklevel=2
 )
 
 # Define the public API for this module

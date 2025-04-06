@@ -5,12 +5,6 @@ A simple entry point for developers to integrate AICertify evaluation into their
 This module provides functions to evaluate AI interactions for compliance with various policies.
 """
 
-import logging
-
-# Configure logging
-logger = logging.getLogger(__name__)
-
-# Re-export public API from specialized modules
 from aicertify.api.core import (
     load_contract,
     CustomJSONEncoder
@@ -33,6 +27,12 @@ from aicertify.api.policy import (
     aicertify_app_for_policy
 )
 
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+# Re-export public API from specialized modules
 # Define the public API
 __all__ = [
     'load_contract',

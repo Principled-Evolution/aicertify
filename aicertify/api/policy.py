@@ -12,8 +12,6 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 
-# Configure logging
-logger = logging.getLogger(__name__)
 
 # Import models
 from aicertify.models.contract_models import AiCertifyContract
@@ -26,9 +24,10 @@ from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator
 
 # Import evaluators
-from aicertify.evaluators.evaluator_registry import get_default_registry
 from aicertify.evaluators import ComplianceEvaluator
 
+# Configure logging
+logger = logging.getLogger(__name__)
 # Create instances of key components for API functions
 debug_mode = os.environ.get("OPA_DEBUG", "0") == "1"
 opa_evaluator = OpaEvaluator(
