@@ -14,7 +14,7 @@ repos:
         args: [--fix]
 
 -   repo: https://github.com/psf/black
-    rev: 24.3.0
+    rev: 24.3.0  # Will be updated to 25.1.0 after running pre-commit autoupdate
     hooks:
     -   id: black
         language_version: python3.12
