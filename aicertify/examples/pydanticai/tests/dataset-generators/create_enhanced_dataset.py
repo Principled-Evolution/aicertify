@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 # Try to import required libraries
 try:
     from datasets import load_dataset, Dataset, DatasetDict
-    from huggingface_hub import login, HfApi
+    from huggingface_hub import login
     HUGGINGFACE_AVAILABLE = True
 except ImportError:
     logger.error("Required libraries not available. Install with: pip install datasets huggingface_hub")

@@ -185,8 +185,8 @@ def test_control_summary_calculation():
 def test_html_report_generation(tmp_path):
     """Test HTML report generation with our test data"""
     report = create_test_data()
-    output_path = tmp_path / "test_report.html"
-    report_data = create_report_data(report)
+    tmp_path / "test_report.html"
+    create_report_data(report)
     
     # Skip this test since generate_html_report has been moved or renamed
     pytest.skip("HTML report generation is not available in this version")

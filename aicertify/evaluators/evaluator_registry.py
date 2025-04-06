@@ -462,7 +462,7 @@ def initialize_evaluator_registry() -> None:
         logger.info(f"Discovered {len(evaluator_classes)} evaluator classes")
         
         # Count successful registrations
-        successful_registrations = sum(1 for evaluator_class in evaluator_classes if register_evaluator(evaluator_class))
+        sum(1 for evaluator_class in evaluator_classes if register_evaluator(evaluator_class))
         
         # Log the number of evaluators and metrics registered
         evaluator_count = registry.get_evaluators_count()

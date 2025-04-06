@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from datasets import Dataset, DatasetDict
-    from huggingface_hub import login, HfApi
+    from huggingface_hub import login
     HUGGINGFACE_AVAILABLE = True
 except ImportError:
     logger.error("Hugging Face libraries not found. Please install with:")

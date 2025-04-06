@@ -10,12 +10,12 @@ import os
 from typing import Dict, Any, Optional
 from datetime import datetime
 
-# Configure logging
-logger = logging.getLogger(__name__)
 
 # Import core utilities
 from aicertify.api.core import CustomJSONEncoder
 
+# Configure logging
+logger = logging.getLogger(__name__)
 def save_json(data: Dict[str, Any], file_path: str, ensure_dir: bool = True) -> bool:
     """
     Save data to a JSON file.

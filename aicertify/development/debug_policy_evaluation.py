@@ -7,8 +7,6 @@ part, skipping the AI agent interactions that generate the contract.
 """
 
 import os
-# Disable CUDA devices before importing any transformer libraries.
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 import sys
 import logging
@@ -25,6 +23,10 @@ from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from transformers import logging as hf_logging
 import colorlog
+# Import AICertify modules needed for evaluation
+from aicertify.models.contract_models import load_contract
+from aicertify.api import evaluate_contract_by_folder
+from aicertify.opa_core.evaluator import OpaEvaluator
 
 
 # Set OPA_DEBUG environment variable only if not already set
@@ -128,10 +130,6 @@ logging.getLogger("absl").setLevel(logging.WARNING)
 logging.getLogger("root").setLevel(logging.DEBUG)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
-# Import AICertify modules needed for evaluation
-from aicertify.models.contract_models import load_contract
-from aicertify.api import evaluate_contract_by_folder
-from aicertify.opa_core.evaluator import OpaEvaluator
 
 # Custom JSON encoder to handle UUID and datetime objects
 class CustomJSONEncoder(json.JSONEncoder):
@@ -382,7 +380,7 @@ async def evaluate_contract_only(contract_path: str, output_dir: str, report_for
                                     first_expr = first_result["expressions"][0]
                                     if "value" in first_expr:
                                         # Get the version from the path (e.g., v1)
-                                        version_name = version_folder.name
+                                        version_folder.name
                                         
                                         # Always add to the "v1" key to ensure compatibility with the extraction code
                                         if "v1" not in first_expr["value"]:
@@ -439,7 +437,7 @@ async def evaluate_contract_only(contract_path: str, output_dir: str, report_for
                                         policy_first_expr = policy_first_result["expressions"][0]
                                         if "value" in policy_first_expr:
                                             # Get the version from the path (e.g., v1)
-                                            version_name = version_folder.name
+                                            version_folder.name
                                             
                                             # Always add to the "v1" key to ensure compatibility with the extraction code
                                             if "v1" not in first_expr["value"]:
@@ -534,7 +532,7 @@ def main() -> None:
     os.environ["TRANSFORMERS_CACHE"] = cache_dir
 
     logger.info("About to load SentenceTransformer model...")
-    model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2", cache_folder=cache_dir)
+    SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2", cache_folder=cache_dir)
     logger.info("SentenceTransformer model loaded")
 
     script_dir = Path(os.path.dirname(os.path.abspath(__file__)))

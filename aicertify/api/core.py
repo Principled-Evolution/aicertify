@@ -11,11 +11,11 @@ from typing import Dict, Any
 from uuid import UUID
 from datetime import datetime
 
+# Import models
+from aicertify.models.contract_models import AiCertifyContract
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Import models
-from aicertify.models.contract_models import AiCertifyContract
 
 def load_contract(contract_path: str) -> AiCertifyContract:
     """

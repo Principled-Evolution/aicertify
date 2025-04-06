@@ -18,12 +18,12 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 
+# Import ToxicCareerCoachAI
+from .ToxicCareerCoachAI import ToxicCareerCoachAI
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-# Import ToxicCareerCoachAI
-from ToxicCareerCoachAI import ToxicCareerCoachAI
 
 # Try to import the AICertify evaluation API
 try:
@@ -34,7 +34,6 @@ try:
     
     from aicertify.evaluators.api import (
         AICertifyEvaluator, 
-        evaluate_conversations_from_logs,
         evaluate_application
     )
     AICERTIFY_API_AVAILABLE = True

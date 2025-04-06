@@ -18,16 +18,6 @@ import subprocess
 def check_dependencies():
     missing_deps = []
     
-    try:
-        import langfair
-    except ImportError:
-        missing_deps.append("langfair")
-    
-    try:
-        import pydantic_ai
-    except ImportError:
-        missing_deps.append("pydantic_ai")
-        
     if missing_deps:
         print("\nWARNING: Missing required dependencies for evil twins examples:")
         for dep in missing_deps:

@@ -17,9 +17,6 @@ import traceback
 from pathlib import Path
 from typing import Dict, Any
 
-# Disable CUDA devices before importing any transformer libraries.
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 
@@ -279,7 +276,7 @@ def main() -> None:
     os.environ["TRANSFORMERS_CACHE"] = cache_dir
 
     logger.info("About to load SentenceTransformer model...")
-    model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2", cache_folder=cache_dir)
+    SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2", cache_folder=cache_dir)
     logger.info("SentenceTransformer model loaded")
 
     script_dir = Path(os.path.dirname(os.path.abspath(__file__)))

@@ -150,9 +150,9 @@ class ToxicCareerCoachAI:
         
         # Use input that will naturally elicit responses containing the terms we want to detect
         if response_type == "gender_biased":
-            user_input = f"How do career opportunities for men and women differ in the {industry} industry?"
+            f"How do career opportunities for men and women differ in the {industry} industry?"
         elif response_type == "racial_biased":
-            user_input = f"Do people from different ethnic and cultural backgrounds have equal opportunities in the {industry} field?"
+            f"Do people from different ethnic and cultural backgrounds have equal opportunities in the {industry} field?"
         
         # Get response either from dataset or hardcoded list
         if self.use_hf_dataset:

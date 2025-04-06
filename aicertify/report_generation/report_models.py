@@ -10,13 +10,6 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-# Issue a deprecation warning
-warnings.warn(
-    "The module aicertify.report_generation.report_models is deprecated. "
-    "Please use aicertify.models.report and aicertify.models.evaluation instead.",
-    DeprecationWarning,
-    stacklevel=2
-)
 
 # Re-export models from the centralized location
 from aicertify.models.report import (
@@ -30,6 +23,13 @@ from aicertify.models.report import (
 
 # Re-export MetricValue from the centralized location
 from aicertify.models.evaluation import MetricValue
+# Issue a deprecation warning
+warnings.warn(
+    "The module aicertify.report_generation.report_models is deprecated. "
+    "Please use aicertify.models.report and aicertify.models.evaluation instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 # Define the public API
 __all__ = [

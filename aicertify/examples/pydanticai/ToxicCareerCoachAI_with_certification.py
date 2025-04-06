@@ -16,6 +16,8 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from dotenv import load_dotenv
+# Import the ToxicCareerCoachAI class
+from .ToxicCareerCoachAI import ToxicCareerCoachAI, HUGGINGFACE_AVAILABLE
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -28,8 +30,6 @@ with open(debug_log, "a") as f:
     import sys
     f.write(f"Python version: {sys.version}\n")
 
-# Import the ToxicCareerCoachAI class
-from ToxicCareerCoachAI import ToxicCareerCoachAI, HUGGINGFACE_AVAILABLE
 
 # Import AICertify components for contract creation and evaluation
 try:
@@ -41,7 +41,6 @@ try:
     logger.info(f"evaluate_contract imported from: {inspect.getmodule(evaluate_contract).__file__}")
     logger.info(f"evaluate_contract signature: {inspect.signature(evaluate_contract)}")
     
-    from aicertify.evaluators.api import AICertifyEvaluator
     AICERTIFY_AVAILABLE = True
 except ImportError as e:
     logger.warning(f"AICertify not available. Install with: pip install aicertify. Error: {e}")
@@ -160,7 +159,7 @@ class ToxicCareerCoachWithCertification:
         
         # For testing purposes, also try to load the contract back
         try:
-            loaded_contract = load_contract(self.contract_path)
+            load_contract(self.contract_path)
             logger.info("Successfully loaded the contract back for verification")
         except Exception as e:
             logger.error(f"Error loading contract: {e}")

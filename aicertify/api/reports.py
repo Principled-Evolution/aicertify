@@ -10,20 +10,12 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
-# Configure logging
-logger = logging.getLogger(__name__)
 
 # Import core utilities
 from aicertify.api.core import _ensure_valid_evaluation_structure
+# Configure logging
+logger = logging.getLogger(__name__)
 
-# Import report generation components
-try:
-    # Import our new data extraction module
-    from aicertify.report_generation.data_extraction import create_evaluation_report
-    REPORT_DATA_EXTRACTION_AVAILABLE = True
-except ImportError as e:
-    logger.warning(f"Report data extraction module not available: {e}")
-    REPORT_DATA_EXTRACTION_AVAILABLE = False
 
 async def generate_report(
     evaluation_result: Dict[str, Any],

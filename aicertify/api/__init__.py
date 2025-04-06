@@ -7,8 +7,6 @@ This module provides functions to evaluate AI interactions for compliance with v
 
 import logging
 
-# Configure logging
-logger = logging.getLogger(__name__)
 
 # Re-export public API from specialized modules
 from aicertify.api.core import (
@@ -34,6 +32,8 @@ from aicertify.api.policy import (
     aicertify_app_for_policy
 )
 
+# Configure logging
+logger = logging.getLogger(__name__)
 # Define the public API
 __all__ = [
     'load_contract',

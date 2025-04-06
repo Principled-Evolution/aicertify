@@ -12,8 +12,6 @@ import logging
 import os
 import sys
 from typing import Dict, Any, Optional
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
 
 from aicertify.api import aicertify_app_for_policy
 
@@ -26,8 +24,7 @@ logger = logging.getLogger("aicertify.cli")
 
 # Import AICertify modules
 try:
-    from aicertify.api import load_contract, evaluate_contract_by_folder
-    from aicertify.models.contract import AiCertifyContract
+    from aicertify.api import load_contract
 except ImportError as e:
     logger.error(f"Error importing AICertify modules: {e}")
     logger.error("Make sure AICertify is installed and in your PYTHONPATH")

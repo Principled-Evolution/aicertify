@@ -11,6 +11,16 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Any, Union
 from datetime import datetime
+from aicertify.opa_core.policy_loader import PolicyLoader
+from aicertify.opa_core.evaluator import OpaEvaluator
+from aicertify.report_generation.report_generator import ReportGenerator
+from aicertify.models.report import (
+    EvaluationReport, ApplicationDetails,
+    MetricGroup, PolicyResult
+)
+from aicertify.models.evaluation import MetricValue
+from aicertify.models import Interaction, AiCertifyContract, ModelInfo
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -27,16 +37,6 @@ try:
 except ImportError:
     logger.warning("Langfair metrics not available. Install with: pip install langfair")
     LANGFAIR_AVAILABLE = False
-
-from aicertify.opa_core.policy_loader import PolicyLoader
-from aicertify.opa_core.evaluator import OpaEvaluator
-from aicertify.report_generation.report_generator import ReportGenerator
-from aicertify.models.report import (
-    EvaluationReport, ApplicationDetails,
-    MetricGroup, PolicyResult
-)
-from aicertify.models.evaluation import MetricValue
-from aicertify.models import Interaction, AiCertifyContract, ModelInfo
 
 
 class AICertifyEvaluator:
@@ -104,7 +104,7 @@ class AICertifyEvaluator:
             model_version="unknown"
         )
         
-        contract = AiCertifyContract(
+        AiCertifyContract(
             application_name=app_name,
             model_info=model_info,
             interactions=interactions

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # Import AICertify contract functions
 try:
     from aicertify.models.contract_models import (
-        create_contract, save_contract, load_contract, ModelInfo, Interaction, AiCertifyContract
+        create_contract, save_contract, load_contract
     )
     logger.info("Successfully imported AICertify contract modules")
 except ImportError as e:

@@ -17,9 +17,6 @@ import os
 import asyncio
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-logger = logging.getLogger(__name__)
 
 # Import AICertify components
 from aicertify.models.contract_models import create_contract, save_contract
@@ -35,6 +32,9 @@ from aicertify.api import (
     evaluate_contract_comprehensive
 )
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 # Define some example interactions
 def create_sample_contract():
     """Create a sample contract for demonstration."""
@@ -209,7 +209,7 @@ async def main():
     logger.info(f"Saved contract to: {contract_path}")
     
     # Run individual evaluators
-    individual_results = await run_individual_evaluators(contract)
+    await run_individual_evaluators(contract)
     
     # Run compliance evaluator
     compliance_results, report = await run_compliance_evaluator(contract)

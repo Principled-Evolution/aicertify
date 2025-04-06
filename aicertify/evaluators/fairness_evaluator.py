@@ -540,7 +540,7 @@ class FairnessEvaluator(BaseEvaluator):
         # If we still need more, use a different technique to generate variations
         while len(augmented) < MIN_EXAMPLES_FOR_LANGFAIR:
             # Use a simple word replacement technique on a random response
-            original = random.choice(responses)
+            random.choice(responses)
             
             # Replace common words with synonyms, add filler words, etc.
             # This is a simplified version - in a full implementation, you'd use more

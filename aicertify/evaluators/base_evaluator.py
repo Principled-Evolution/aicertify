@@ -6,6 +6,7 @@ It provides a standard interface for all evaluation components in the AICertify 
 """
 
 import logging
+import json
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional
 from datetime import datetime

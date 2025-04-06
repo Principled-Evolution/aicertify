@@ -222,7 +222,7 @@ class ModelCardEvaluator(BaseEvaluator):
             }
             
             # Generate recommendations
-            recommendations = self._generate_recommendations(section_scores, section_feedback, section_quality)
+            self._generate_recommendations(section_scores, section_feedback, section_quality)
             
             return EvaluationResult(
                 evaluator_name="ModelCardEvaluator",

@@ -12,8 +12,6 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 
-# Configure logging
-logger = logging.getLogger(__name__)
 
 # Import models and evaluation components
 from aicertify.models.contract_models import AiCertifyContract, load_contract
@@ -25,7 +23,11 @@ from aicertify.evaluators import (
 
 # Import core utilities
 from aicertify.api.core import _ensure_valid_evaluation_structure
+# Import OPA components
+from aicertify.opa_core.evaluator import OpaEvaluator
 
+# Configure logging
+logger = logging.getLogger(__name__)
 # Try to import the full evaluator, but provide a fallback
 try:
     from aicertify.evaluators.api import AICertifyEvaluator
@@ -36,8 +38,6 @@ except ImportError as e:
 
 # Import the simplified evaluator that has minimal dependencies
 
-# Import OPA components
-from aicertify.opa_core.evaluator import OpaEvaluator
 
 async def evaluate_contract_object(
     contract: AiCertifyContract,
@@ -74,7 +74,7 @@ async def evaluate_contract_object(
         # ... existing code ...
         # This is a simplified version for the example
         if FULL_EVALUATOR_AVAILABLE:
-            evaluator = AICertifyEvaluator()
+            AICertifyEvaluator()
             # ... existing evaluation logic ...
             return {"status": "Using legacy evaluator"}
         else:

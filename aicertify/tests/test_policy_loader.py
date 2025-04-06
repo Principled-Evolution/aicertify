@@ -8,11 +8,11 @@ import sys
 import logging
 from pathlib import Path
 
+from aicertify.opa_core.policy_loader import PolicyLoader
 # Ensure the aicertify package is in the Python path
 parent_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(parent_dir))
 
-from aicertify.opa_core.policy_loader import PolicyLoader
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

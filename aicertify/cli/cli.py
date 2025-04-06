@@ -6,8 +6,6 @@ import datetime
 from decimal import Decimal
 from typing import Any, Dict, Union
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator
@@ -18,6 +16,8 @@ from aicertify.models.report import (
     MetricGroup, MetricValue, PolicyResult
 )
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 class CustomJSONEncoder(json.JSONEncoder):
     """Custom JSON encoder to handle Decimal and float values with full precision"""
@@ -161,7 +161,7 @@ def main():
     
     # Register the eval-evil-twins command
     try:
-        from aicertify.cli.evil_twins_command import register_evil_twins_command
+        from .evil_twins_command import register_evil_twins_command
         register_evil_twins_command(subparsers)
     except ImportError as e:
         logging.debug(f"Evil twins command not registered: {e}")
@@ -395,7 +395,7 @@ def main():
     elif args.command == "eval-evil-twins":
         # Run and evaluate evil twin examples
         try:
-            from aicertify.cli.evil_twins_command import handle_evil_twins_command
+            from .evil_twins_command import handle_evil_twins_command
             result = asyncio.run(handle_evil_twins_command(args))
             logging.info("Evil Twins Evaluation Result:")
             print_json_result(result)
