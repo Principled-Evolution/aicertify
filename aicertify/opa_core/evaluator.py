@@ -41,6 +41,7 @@ class OpaEvaluator:
         server_url: str = "http://localhost:8181",
         debug: bool = False,
         optimize: bool = False,
+        skip_opa_check: bool = False,
     ):
         """
         Initialize the OPA evaluator.
@@ -50,6 +51,7 @@ class OpaEvaluator:
             server_url: URL of the external OPA server
             debug: Whether to enable debug mode
             optimize: Whether to apply OPA optimization
+            skip_opa_check: Skip OPA installation verification (useful for CI environments)
         """
         # Check environment variable for debug mode override
         env_debug_value = os.environ.get("OPA_DEBUG", "")
@@ -61,16 +63,21 @@ class OpaEvaluator:
         ) and env_debug_value.lower() not in ("0", "false", "no", "off")
         self.debug = debug or env_debug
 
+        # Check if we're in a CI environment
+        ci_env = os.environ.get("CI", "false").lower() in ("1", "true", "yes")
+        skip_opa_check = skip_opa_check or ci_env
+
         logging.debug(
-            f"OPA Evaluator initialized with debug={self.debug} (env value: {env_debug_value}, env override: {env_debug})"
+            f"OPA Evaluator initialized with debug={self.debug} (env value: {env_debug_value}, env override: {env_debug}), skip_opa_check={skip_opa_check}"
         )
 
         self.policy_loader = PolicyLoader()
-        self.opa_path = None if use_external_server else self._verify_opa_installation()
+        self.opa_path = None if (use_external_server or skip_opa_check) else self._verify_opa_installation()
         self.use_external_server = use_external_server
         self.server_url = server_url
         self.policies_loaded = False
         self.optimize = optimize
+        self.skip_opa_check = skip_opa_check
 
         # Create a temporary directory for policy bundles
         self.temp_dir = tempfile.mkdtemp()
@@ -152,8 +159,16 @@ class OpaEvaluator:
             "4. Or set the OPA_PATH environment variable to the path of the OPA executable\n"
             f"Current PATH: {os.environ.get('PATH', '')}"
         )
-        logging.error(error_msg)
-        raise RuntimeError(error_msg)
+
+        # Check if we're in a CI environment
+        ci_env = os.environ.get("CI", "false").lower() in ("1", "true", "yes")
+
+        if ci_env or self.skip_opa_check:
+            logging.warning(f"{error_msg}\nRunning in CI environment or skip_opa_check=True, continuing without OPA.")
+            return None
+        else:
+            logging.error(error_msg)
+            raise RuntimeError(error_msg)
 
     def _evaluate_with_local_opa(
         self, policy_path: str, input_data: Dict[str, Any]
@@ -165,8 +180,17 @@ class OpaEvaluator:
             input_data: Input data for evaluation
 
         Returns:
-            Dict[str, Any]: Evaluation results
+            Dict[str, Any]: Evaluation results or mock results if OPA is not available
         """
+        # Check if OPA is available
+        if self.opa_path is None:
+            logging.warning("OPA is not available. Returning mock evaluation results.")
+            return {
+                "result": {
+                    "mock_result": True,
+                    "message": "This is a mock result because OPA is not available."
+                }
+            }
         # Check environment variable for debug mode override
         env_debug_value = os.environ.get("OPA_DEBUG", "")
         env_debug = env_debug_value.lower() in (

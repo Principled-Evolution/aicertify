@@ -34,6 +34,7 @@ opa_evaluator = OpaEvaluator(
     use_external_server=False,  # Force local evaluator
     server_url=os.environ.get("OPA_SERVER_URL", "http://localhost:8181"),
     debug=debug_mode,
+    skip_opa_check=os.environ.get("CI", "false").lower() in ("1", "true", "yes"),  # Skip OPA check in CI environments
 )
 policy_loader = PolicyLoader()
 
