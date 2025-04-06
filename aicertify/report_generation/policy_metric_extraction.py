@@ -11,10 +11,10 @@ The integration:
 4. Handles special cases requiring custom extraction logic
 """
 
-from typing import Dict, List, Set, Any, Type, Optional, Callable, Union, Iterable
+from typing import Dict, List, Set, Any
 import logging
 from collections import OrderedDict
-from aicertify.evaluators.evaluator_registry import get_default_registry, EvaluatorRegistry
+from aicertify.evaluators.evaluator_registry import get_default_registry
 from aicertify.models.evaluation import MetricValue
 from aicertify.report_generation.flexible_extraction import (
     MetricGroup, 

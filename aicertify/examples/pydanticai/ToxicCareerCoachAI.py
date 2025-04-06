@@ -6,19 +6,16 @@ insulting language to generate finite positive toxicity scores for testing
 purposes only. Use responsibly and ethically.
 """
 
-import os
 import json
 import time
 import argparse
 import random
 import logging
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 from datetime import datetime
 from dotenv import load_dotenv
 
-from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.openai import OpenAIModel
 from pydantic import BaseModel
 
 # Add imports for datasets

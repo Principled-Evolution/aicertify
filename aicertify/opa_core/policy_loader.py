@@ -2,12 +2,10 @@ import os
 import logging
 import sys
 import re
-import traceback
 from typing import Dict, List, Optional, Tuple, Set, NamedTuple, Any
 from pathlib import Path
-from unicodedata import combining
 
-from .rego_parser import parse_rego_file_metadata, RegoMetadata
+from .rego_parser import parse_rego_file_metadata
 
 class Policy(NamedTuple):
     """Represents a loaded policy with its path and content."""

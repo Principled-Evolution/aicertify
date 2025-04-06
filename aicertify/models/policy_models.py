@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Any, Iterator, TypeVar, Mapping, Union
+from typing import Dict, Optional, Any, Iterator, TypeVar, Mapping, Union
 from pydantic import BaseModel, RootModel
 from collections.abc import MutableMapping
 

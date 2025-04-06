@@ -6,7 +6,7 @@ the evaluator registry and the flexible extraction system.
 """
 
 import logging
-from typing import Dict, Any, List, Set, Optional
+from typing import Dict, Any, Optional
 from pprint import pformat
 
 from aicertify.evaluators.evaluator_registry import get_default_registry, initialize_evaluator_registry
@@ -15,7 +15,6 @@ from aicertify.report_generation.policy_metric_extraction import (
     extract_policy_required_metrics,
     _generate_extraction_paths
 )
-from aicertify.models.evaluation import MetricValue
 
 logger = logging.getLogger(__name__)
 

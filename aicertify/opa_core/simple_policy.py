@@ -7,7 +7,7 @@ fallback for environments without OPA.
 """
 
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

@@ -6,11 +6,10 @@ including both OPA policies and Phase 1 evaluators.
 """
 
 import json
-import asyncio
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 
 # Configure logging
@@ -18,21 +17,14 @@ logger = logging.getLogger(__name__)
 
 # Import models and evaluation components
 from aicertify.models.contract_models import AiCertifyContract, load_contract
-from aicertify.models.langfair_eval import ToxicityMetrics, StereotypeMetrics
 
 # Import the evaluators
 from aicertify.evaluators import (
-    BaseEvaluator, 
-    EvaluationResult, 
-    FairnessEvaluator,
-    ContentSafetyEvaluator,
-    RiskManagementEvaluator,
-    ComplianceEvaluator,
-    EvaluatorConfig
+    ComplianceEvaluator
 )
 
 # Import core utilities
-from aicertify.api.core import _ensure_valid_evaluation_structure, CustomJSONEncoder
+from aicertify.api.core import _ensure_valid_evaluation_structure
 
 # Try to import the full evaluator, but provide a fallback
 try:
@@ -43,10 +35,8 @@ except ImportError as e:
     FULL_EVALUATOR_AVAILABLE = False
 
 # Import the simplified evaluator that has minimal dependencies
-from aicertify.evaluators.simple_evaluator import evaluate_contract_simple
 
 # Import OPA components
-from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator
 
 async def evaluate_contract_object(

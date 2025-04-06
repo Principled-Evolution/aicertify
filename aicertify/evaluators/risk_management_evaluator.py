@@ -6,8 +6,7 @@ completeness and quality of risk management documentation and practices.
 """
 
 import logging
-import json
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Tuple
 import re
 
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult

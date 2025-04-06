@@ -7,9 +7,7 @@ contract loading, validation, and utility functions.
 
 import json
 import logging
-import os
-from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from uuid import UUID
 from datetime import datetime
 

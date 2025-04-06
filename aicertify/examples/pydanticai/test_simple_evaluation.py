@@ -9,14 +9,13 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Import necessary components
-from aicertify.models.contract_models import create_contract, save_contract, load_contract
+from aicertify.models.contract_models import create_contract, save_contract
 from aicertify.evaluators.simple_evaluator import evaluate_contract_simple
 from aicertify.opa_core.simple_policy import get_available_policies
 

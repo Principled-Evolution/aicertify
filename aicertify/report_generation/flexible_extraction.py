@@ -8,13 +8,11 @@ for flexible and extensible extraction of metrics from evaluation results.
 import json
 import logging
 import os
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
-from pydantic import BaseModel
 
 # Import models from centralized location
 from aicertify.models.evaluation import MetricValue
-from aicertify.models.report import PolicyResult
 
 # Import default metric configurations
 from aicertify.report_generation.metric_configs import get_default_metric_configs

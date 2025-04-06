@@ -1,4 +1,3 @@
-import langfair
 from langfair.metrics.counterfactual import CounterfactualMetrics
 from langfair.metrics.stereotype import StereotypeMetrics
 

@@ -15,8 +15,7 @@ import asyncio
 import logging
 import traceback
 from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any
 
 # Disable CUDA devices before importing any transformer libraries.
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -28,12 +27,9 @@ from sentence_transformers import SentenceTransformer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from aicertify.api import (
-    evaluate_contract_with_phase1_evaluators,
     evaluate_contract_by_folder,
     load_contract,
 )
-from aicertify.opa_core.evaluator import OpaEvaluator
-from aicertify.models.evaluation_models import AiCertifyContract
 
 
 # Set up logging

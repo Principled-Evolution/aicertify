@@ -15,7 +15,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, KeepTogether
 from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
 from typing import List, Dict, Any, Optional, Union
 from dataclasses import dataclass
 from jinja2 import Environment, BaseLoader

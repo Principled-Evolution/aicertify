@@ -6,24 +6,18 @@ against a set of regulations.
 """
 
 import os
-import asyncio
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Dict, List, Any, Optional, Union
-from pathlib import Path
-from uuid import uuid4, UUID
+from uuid import uuid4
 
 from aicertify.models.contract import (
-    AiCertifyContract, ModelInfo, Interaction,
-    create_contract, save_contract
+    AiCertifyContract, ModelInfo, Interaction
 )
-from aicertify.models.report import EvaluationReport
 from aicertify.regulations import RegulationSet
 from aicertify.api import (
-    aicertify_app_for_policy, 
-    evaluate_by_policy,
-    generate_reports
+    aicertify_app_for_policy
 )
 
 logger = logging.getLogger(__name__)

@@ -7,8 +7,7 @@ It provides a standard interface for all evaluation components in the AICertify 
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Dict, List, Any, Optional, Union
-from pathlib import Path
+from typing import Dict, List, Any, Optional
 from datetime import datetime
 
 from pydantic import BaseModel, Field

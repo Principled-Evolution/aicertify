@@ -3,7 +3,6 @@ Simple verification script for AICertify contract creation.
 This script tests the basic contract creation and loading functionality.
 """
 
-import json
 import logging
 from pathlib import Path
 

@@ -19,14 +19,13 @@ import glob
 import json
 from uuid import UUID
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict
 
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from transformers import logging as hf_logging
 import colorlog
 
-from aicertify.utils.logging_config import setup_colored_logging
 
 # Set OPA_DEBUG environment variable only if not already set
 if "OPA_DEBUG" not in os.environ:
@@ -131,7 +130,7 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 # Import AICertify modules needed for evaluation
 from aicertify.models.contract_models import load_contract
-from aicertify.api import evaluate_contract_comprehensive, evaluate_contract_by_folder
+from aicertify.api import evaluate_contract_by_folder
 from aicertify.opa_core.evaluator import OpaEvaluator
 
 # Custom JSON encoder to handle UUID and datetime objects

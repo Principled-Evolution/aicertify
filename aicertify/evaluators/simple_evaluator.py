@@ -7,18 +7,13 @@ a fallback when full evaluation capabilities aren't available.
 """
 
 import logging
-from typing import Dict, List, Any, Optional
-from pathlib import Path
-import json
+from typing import Dict, Any
 
 from aicertify.models.contract_models import AiCertifyContract, load_contract
 from aicertify.models.evaluation_models import AiEvaluationResult
 from aicertify.opa_core.simple_policy import (
-    evaluate_policy_simple, 
-    get_available_policies,
-    get_policy_description
+    evaluate_policy_simple
 )
-from aicertify.opa_core.extraction import extract_all_policy_results
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

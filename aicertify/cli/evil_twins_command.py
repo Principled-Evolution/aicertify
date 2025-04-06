@@ -10,9 +10,8 @@ import os
 import sys
 import json
 import logging
-import asyncio
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 import subprocess
 
 # First, check for dependencies and provide clear installation instructions

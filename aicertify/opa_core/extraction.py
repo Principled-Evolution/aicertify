@@ -8,15 +8,13 @@ particularly focusing on the standardized report_output format used by AICertify
 import logging
 import json
 import os
-from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, List, Optional, Tuple, Union
+from typing import Dict, Any, List, Optional, Tuple
 
 from aicertify.models.report import PolicyResult
 from ..models.opa_results import (
     OpaEvaluationResults,
-    ExtractedPolicyResult,
-    MetricValue
+    ExtractedPolicyResult
 )
 
 logger = logging.getLogger(__name__)

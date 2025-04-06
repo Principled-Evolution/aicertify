@@ -1,12 +1,7 @@
-from typing import Optional
 from functools import wraps
-from datetime import datetime
-from langchain.schema import AgentAction, LLMResult
 
 from ...models.evaluation_models import (
-    BehaviorEvaluation,
-    SystemType,
-    SystemInteraction
+    SystemType
 )
 from ..base import BaseDecorator
 

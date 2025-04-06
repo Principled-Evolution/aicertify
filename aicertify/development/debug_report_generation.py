@@ -8,7 +8,6 @@ import json
 import logging
 import os
 import sys
-from pprint import pformat
 
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -19,11 +18,9 @@ from aicertify.report_generation.data_extraction import (
     extract_toxicity_metrics,
     extract_stereotype_metrics,
     extract_policy_results,
-    create_evaluation_report,
-    process_extracted_policy_data
+    create_evaluation_report
 )
 from aicertify.report_generation.report_generator import ReportGenerator
-from aicertify.models.report import PolicyResult
 
 # Import flexible extraction system
 from aicertify.report_generation.flexible_extraction import extract_metrics as flexible_extract_metrics

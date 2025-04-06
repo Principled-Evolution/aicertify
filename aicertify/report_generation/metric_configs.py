@@ -6,7 +6,6 @@ backward compatibility with existing data structures while providing a flexible
 foundation for future extensions.
 """
 
-from typing import Dict, Any, List
 
 # Fairness metrics configuration
 FAIRNESS_METRICS = {

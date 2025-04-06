@@ -1,7 +1,6 @@
 import re
 import logging
 from typing import Dict, List, Optional, Any, NamedTuple
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 

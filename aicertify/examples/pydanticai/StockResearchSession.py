@@ -1,7 +1,6 @@
 import os
 import argparse
 import logging
-from datetime import datetime
 
 from dotenv import load_dotenv
 from colorama import Fore

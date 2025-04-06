@@ -7,9 +7,7 @@ This module provides utility functions for the AICertify API.
 import json
 import logging
 import os
-from pathlib import Path
 from typing import Dict, Any, Optional
-from uuid import UUID
 from datetime import datetime
 
 # Configure logging

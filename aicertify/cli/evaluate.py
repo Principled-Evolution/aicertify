@@ -1,6 +1,4 @@
-import os
 import json
-import asyncio
 import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -9,8 +7,6 @@ from datetime import datetime, timedelta
 
 from ..models.langfair_eval import AutoEvalInput
 from ..models.evaluation_models import (
-    BehaviorEvaluation,
-    SystemType,
     SystemInteraction
 )
 from ..evaluators.langfair_auto_eval import evaluate_ai_responses

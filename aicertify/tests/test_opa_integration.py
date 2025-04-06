@@ -5,10 +5,7 @@ Tests the interaction between the PolicyLoader, OpaEvaluator, and the policy str
 """
 
 import unittest
-import os
 import sys
-import json
-import tempfile
 import logging
 from pathlib import Path
 

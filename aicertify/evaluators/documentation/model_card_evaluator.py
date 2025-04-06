@@ -6,11 +6,9 @@ EU AI Act requirements for high-risk AI systems documentation.
 """
 
 import logging
-import re
 from typing import Dict, Any, List, Optional, Tuple
 
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
-from aicertify.models.model_card import ModelCard, get_compliance_level
 
 logger = logging.getLogger(__name__)
 

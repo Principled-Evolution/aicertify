@@ -6,17 +6,12 @@ for evaluating AI systems against fairness criteria.
 """
 
 import logging
-import json
-from typing import Dict, List, Any, Optional, Union, Tuple, Set
-import importlib.util
+from typing import Dict, List, Any, Tuple
 import random
 import re
-import os
-import time
-from uuid import uuid4
 
 # Import base evaluator components
-from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult, Report, EvaluatorConfig
+from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

@@ -7,7 +7,7 @@ extraction system to the new flexible extraction system.
 """
 
 import os
-from typing import Dict, Any
+from typing import Any
 
 # Feature flags
 FEATURE_FLAGS = {

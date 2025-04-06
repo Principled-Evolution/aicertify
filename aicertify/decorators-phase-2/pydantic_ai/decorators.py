@@ -1,14 +1,7 @@
-from typing import Optional
 from functools import wraps
-from datetime import datetime
-from pydantic_ai import ModelRetry, UsageLimitExceeded
 
 from ...models.evaluation_models import (
-    BehaviorEvaluation,
-    SystemType,
-    SystemInteraction,
-    MediaContent,
-    MediaType
+    SystemType
 )
 from ..base import BaseDecorator
 

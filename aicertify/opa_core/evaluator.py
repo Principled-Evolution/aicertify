@@ -5,16 +5,14 @@ import sys
 import os
 import json
 import copy  # Add import for deep copying
-from typing import Dict, Any, Optional, List, Union, Literal, Set, Type
+from typing import Dict, Any, Optional, List, Literal
 from pathlib import Path
-from .policy_loader import PolicyLoader, Policy
+from .policy_loader import PolicyLoader
 from uuid import UUID
 from datetime import datetime
 import tempfile
 import requests
 import atexit
-import re
-import time
 
 from ..models.contract_models import AiCertifyContract as Contract
 

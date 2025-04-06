@@ -9,9 +9,7 @@ This script shows how to use the enhanced PolicyLoader and OpaEvaluator to:
 4. Process evaluation results
 """
 
-import os
 import sys
-import json
 import logging
 from pathlib import Path
 from typing import Dict, Any

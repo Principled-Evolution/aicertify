@@ -5,9 +5,8 @@ This module contains models for representing evaluation results and metrics.
 """
 
 # Standard library imports
-from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union, ClassVar
+from typing import Any, Dict, Optional, Union
 
 # Third-party imports
 from pydantic import BaseModel, Field, field_validator

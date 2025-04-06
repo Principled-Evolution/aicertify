@@ -4,7 +4,6 @@ AICertify API Reports Module
 This module provides functions for generating evaluation reports in various formats.
 """
 
-import json
 import logging
 import os
 from pathlib import Path
@@ -15,10 +14,9 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 # Import core utilities
-from aicertify.api.core import _ensure_valid_evaluation_structure, CustomJSONEncoder
+from aicertify.api.core import _ensure_valid_evaluation_structure
 
 # Import report generation components
-from aicertify.report_generation.report_generator import ReportGenerator
 try:
     # Import our new data extraction module
     from aicertify.report_generation.data_extraction import create_evaluation_report

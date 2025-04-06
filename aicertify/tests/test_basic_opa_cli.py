@@ -1,9 +1,6 @@
 import unittest
-import os
 import sys
-import json
 import logging
-import tempfile
 from pathlib import Path
 
 # Configure logging

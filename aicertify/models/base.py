@@ -5,7 +5,7 @@ This module contains common base classes and utilities used across
 all model definitions in the AICertify system.
 """
 
-from typing import Any, Dict, Optional, Tuple, Union, NamedTuple, Type
+from typing import Any, Dict, Optional, NamedTuple, Type
 from pydantic import BaseModel, ValidationError
 import logging
 

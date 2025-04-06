@@ -4,7 +4,6 @@ Direct tests for the PolicyLoader class to diagnose issues.
 """
 
 import unittest
-import os
 import sys
 import logging
 from pathlib import Path

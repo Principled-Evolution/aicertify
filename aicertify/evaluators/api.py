@@ -6,12 +6,10 @@ allowing developers to integrate evaluation functionality directly into their ap
 """
 
 import os
-import sys
 import json
 import logging
-import asyncio
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Union
 from datetime import datetime
 
 # Configure logging

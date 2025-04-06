@@ -23,10 +23,9 @@ Usage:
     initialize_evaluator_registry()
 """
 
-from typing import Dict, List, Set, Any, Type, Optional, Union, Iterable
+from typing import Dict, List, Set, Type
 import logging
 import threading
-import sys
 from collections import defaultdict
 from aicertify.evaluators.base_evaluator import BaseEvaluator
 

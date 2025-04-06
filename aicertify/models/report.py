@@ -5,12 +5,11 @@ This module contains models for representing evaluation reports,
 including metric groups, policy results, and application details.
 """
 
-from typing import Dict, List, Optional, Any, Union
-from pydantic import BaseModel, Field, model_validator, field_validator
+from typing import Dict, List, Optional, Any
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, timezone
 
 # Import the MetricValue from evaluation
-from aicertify.models.evaluation import MetricValue
 
 
 class MetricGroup(BaseModel):

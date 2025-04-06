@@ -1,7 +1,5 @@
-import asyncio
 import logging
-from typing import Optional, Dict, Any, List
-import pandas as pd
+from typing import Dict, Any, List
 from openai import AsyncOpenAI
 from langfair.auto import AutoEval
 

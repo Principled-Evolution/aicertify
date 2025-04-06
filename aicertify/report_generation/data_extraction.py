@@ -7,22 +7,16 @@ evaluation results, ensuring reports are complete and accurate.
 
 import logging
 from typing import Dict, Any, List, Optional
-from datetime import datetime
-import os
 
 # Import from centralized models
 from aicertify.models.evaluation import MetricValue
 from aicertify.models.report import (
     EvaluationReport, ApplicationDetails,
-    MetricGroup, PolicyResult, create_metric_group
+   create_metric_group
 )
 
 # Import feature flag configuration
 from aicertify.opa_core.extraction import extract_all_policy_results
-from aicertify.report_generation.config import use_flexible_extraction
-
-# Import flexible extraction system
-from aicertify.report_generation.flexible_extraction import extract_metrics as flexible_extract_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -426,7 +420,6 @@ def create_evaluation_report(
     
     # First process direct metrics from eval_result
     if "metrics" in eval_result and eval_result["metrics"]:
-        direct_metrics = {}
         for metric_id, metric_data in eval_result["metrics"].items():
             # Determine category (default to "Model Quality")
             category = metric_data.get("category", "Model Quality")

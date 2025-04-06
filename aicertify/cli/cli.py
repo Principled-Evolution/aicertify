@@ -2,7 +2,6 @@ import argparse
 import asyncio
 import json
 import logging
-from pathlib import Path
 import datetime
 from decimal import Decimal
 from typing import Any, Dict, Union

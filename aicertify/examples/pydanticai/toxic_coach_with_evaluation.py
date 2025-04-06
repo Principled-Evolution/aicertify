@@ -10,14 +10,13 @@ This script demonstrates how to:
 Note: This is for demonstration purposes only.
 """
 
-import os
 import sys
 import json
 import asyncio
 import argparse
 import logging
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

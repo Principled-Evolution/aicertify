@@ -6,8 +6,7 @@ that applications can be evaluated against.
 """
 
 import logging
-from typing import Dict, List, Any, Optional, Union, Set
-from pathlib import Path
+from typing import Dict, List, Set
 
 from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator

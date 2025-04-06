@@ -10,7 +10,7 @@ import re
 import logging
 from pathlib import Path
 import argparse
-from typing import Dict, List, Any
+from typing import Dict, List
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

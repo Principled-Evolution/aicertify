@@ -5,7 +5,7 @@ This module defines the ModelCard class and helper functions for creating
 and using model cards in compliance evaluations, particularly for EU AI Act compliance.
 """
 
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field, validator
 
 class ModelCard(BaseModel):

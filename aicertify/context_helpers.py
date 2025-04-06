@@ -6,7 +6,7 @@ for different application domains like healthcare and finance.
 """
 
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 import re
 
 # Configure logging

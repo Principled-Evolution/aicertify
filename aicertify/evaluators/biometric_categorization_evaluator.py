@@ -6,7 +6,7 @@ which prohibits certain types of biometric categorization systems.
 """
 
 import logging
-from typing import Dict, Any, List, Optional, Tuple, Union
+from typing import Dict, Any, List, Union
 
 from deepeval.metrics import GEval
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams

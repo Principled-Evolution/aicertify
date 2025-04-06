@@ -6,7 +6,7 @@ Interaction, and AiCertifyContract, as well as helper functions for creating,
 validating, and managing contracts.
 """
 
-from typing import List, Optional, Dict, Any, ClassVar, Union
+from typing import List, Optional, Dict, Any
 from uuid import UUID, uuid4
 from datetime import datetime, timezone
 import json
@@ -16,8 +16,8 @@ from pathlib import Path
 from pydantic import BaseModel, Field, model_validator
 
 # Import from centralized models
-from aicertify.models.model_card import ModelCard, create_model_card
-from aicertify.models.base import ValidationResult, validate_model_data
+from aicertify.models.model_card import ModelCard
+from aicertify.models.base import validate_model_data
 
 logger = logging.getLogger(__name__)
 

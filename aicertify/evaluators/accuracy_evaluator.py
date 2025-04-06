@@ -6,10 +6,10 @@ which require AI systems to provide accurate information and avoid hallucination
 """
 
 import logging
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List
 
 from deepeval.metrics import HallucinationMetric, FaithfulnessMetric
-from deepeval.test_case import LLMTestCase, LLMTestCaseParams
+from deepeval.test_case import LLMTestCase
 
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
 
