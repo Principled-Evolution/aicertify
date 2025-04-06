@@ -50,7 +50,7 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 
 def _ensure_valid_evaluation_structure(
-    evaluation_result: Dict[str, Any]
+    evaluation_result: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
     Ensure the evaluation result has a valid structure for policy evaluation.

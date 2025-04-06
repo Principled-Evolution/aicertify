@@ -512,7 +512,7 @@ def get_logo_base64() -> str:
 
 
 def create_report_data(
-    report_data: Union[AggregatedReport, Dict[str, Any], EvaluationReport]
+    report_data: Union[AggregatedReport, Dict[str, Any], EvaluationReport],
 ) -> dict:
     """Convert report data to template-compatible format."""
     # Define standard terminology - using HTML tags directly since this is for HTML output

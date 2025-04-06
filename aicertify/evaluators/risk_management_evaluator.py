@@ -1,7 +1,7 @@
 """
 AICertify Risk Management Evaluator
 
-This module provides the RiskManagementEvaluator class for assessing the 
+This module provides the RiskManagementEvaluator class for assessing the
 completeness and quality of risk management documentation and practices.
 """
 

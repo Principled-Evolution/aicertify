@@ -1,24 +1,24 @@
 """
 Evaluator Registry Module
 
-This module implements a registry for evaluators in AICertify, mapping metric names 
+This module implements a registry for evaluators in AICertify, mapping metric names
 to the evaluator classes that can produce them. It provides functions to register
 evaluators with the metrics they produce and to discover which evaluators are needed
 to provide a set of required metrics.
 
 The registry design helps maintain a loosely coupled architecture where:
-1. Policy files can declare required metrics without needing to know which 
+1. Policy files can declare required metrics without needing to know which
    specific evaluators will provide them
 2. The system can dynamically determine which evaluators to run based on policy requirements
 
 Usage:
     # Register an evaluator for specific metrics
     register_evaluator_for_metrics(FairnessEvaluator, ["fairness.score", "gender_bias_detected"])
-    
+
     # Discover evaluators needed for a set of metrics
     required_metrics = {"fairness.score", "toxicity.score"}
     evaluator_classes = discover_evaluators_for_metrics(required_metrics)
-    
+
     # Initialize the registry with all available evaluators
     initialize_evaluator_registry()
 """

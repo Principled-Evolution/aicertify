@@ -1,7 +1,7 @@
 """
 Tests for the real evaluators using LangFair and DeepEval
 
-These tests validate that the evaluators work correctly when the libraries 
+These tests validate that the evaluators work correctly when the libraries
 are available, and gracefully degrade when they are not.
 """
 

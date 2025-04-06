@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_report_outputs(
-    opa_results: Dict[str, Any]
+    opa_results: Dict[str, Any],
 ) -> List[Tuple[List[str], Dict[str, Any]]]:
     """
     Extract standardized report_output structures from OPA evaluation results.
@@ -286,7 +286,7 @@ def extract_all_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult
 
 
 def extract_policy_results_with_schema(
-    opa_results: Dict[str, Any]
+    opa_results: Dict[str, Any],
 ) -> List[ExtractedPolicyResult]:
     """
     Extract policy results using strict schema validation with Pydantic.

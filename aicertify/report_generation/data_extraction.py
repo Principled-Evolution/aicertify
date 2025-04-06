@@ -1,7 +1,7 @@
 """
 Data extraction utilities for report generation.
 
-This module provides functions to extract metrics and other data from 
+This module provides functions to extract metrics and other data from
 evaluation results, ensuring reports are complete and accurate.
 """
 

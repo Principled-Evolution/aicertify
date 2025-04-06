@@ -4,7 +4,7 @@ ToxicCareerCoachAI with AICertify Integration
 This example demonstrates how to integrate an AI application with AICertify
 for evaluation and compliance checking with minimal code changes.
 
-WARNING: This file intentionally uses potentially toxic/biased content from 
+WARNING: This file intentionally uses potentially toxic/biased content from
 HuggingFace dataset for testing purposes only. Use responsibly and ethically.
 """
 

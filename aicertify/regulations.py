@@ -1,7 +1,7 @@
 """
 AICertify Regulations Module
 
-This module provides a simple interface for creating and managing regulation sets 
+This module provides a simple interface for creating and managing regulation sets
 that applications can be evaluated against.
 """
 

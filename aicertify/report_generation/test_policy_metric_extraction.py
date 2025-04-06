@@ -77,7 +77,7 @@ def test_extraction_path_generation() -> Dict[str, Any]:
 
 
 def test_custom_extraction_logic(
-    sample_result: Optional[Dict[str, Any]] = None
+    sample_result: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Test the custom extraction logic for OPA results.

@@ -2,7 +2,7 @@
 Simple Policy Module for AICertify
 
 This module provides a simplified policy checking mechanism that doesn't
-depend on external libraries or OPA installation. It's designed as a 
+depend on external libraries or OPA installation. It's designed as a
 fallback for environments without OPA.
 """
 

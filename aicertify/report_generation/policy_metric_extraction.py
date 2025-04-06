@@ -175,7 +175,7 @@ def register_policy_metrics_extractor() -> None:
 
 
 def extract_policy_required_metrics(
-    evaluation_result: Dict[str, Any]
+    evaluation_result: Dict[str, Any],
 ) -> List[MetricValue]:
     """
     Custom extractor for policy-required metrics.
