@@ -1,6 +1,6 @@
 [project]
 name = "aicertify"
-version = "0.1.0"
+version = "0.7.0"
 description = "AICertify is a standardized framework for validating and certifying AI applications against regulatory, compliance, and operational (AIOps) requirements. It leverages declarative policies via Open Policy Agent (OPA)—to ensure AI systems meet cost, fairness, validation, and acceptance criteria."
 authors = [
     {name = "kmadan",email = "kapil.madan@gmail.com"}
