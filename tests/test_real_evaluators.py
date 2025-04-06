@@ -7,9 +7,6 @@ are available, and gracefully degrade when they are not.
 
 import unittest
 from unittest.mock import patch, MagicMock
-import os
-import json
-from pathlib import Path
 
 from aicertify.evaluators.fairness_evaluator import FairnessEvaluator, LANGFAIR_AVAILABLE
 from aicertify.evaluators.content_safety_evaluator import ContentSafetyEvaluator, DEEPEVAL_AVAILABLE

@@ -1,5 +1,4 @@
 import pytest
-import asyncio
 
 from aicertify.models.contract_models import AiCertifyContract
 from aicertify.api import evaluate_contract_object

@@ -5,10 +5,8 @@ This script directly extracts the relevant context handling components
 without importing the full AICertify package.
 """
 import os
-import sys
 import json
-from pathlib import Path
-from typing import Dict, Any, Optional, List, Union
+from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 import uuid
 

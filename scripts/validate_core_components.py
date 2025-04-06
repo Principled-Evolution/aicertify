@@ -1,9 +1,7 @@
 import logging
 import asyncio
-from pydantic import BaseModel
 
 from aicertify.evaluators import (
-    BaseEvaluator,
     EvaluationResult,
     Report,
     FairnessEvaluator,

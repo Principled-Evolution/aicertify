@@ -1,8 +1,6 @@
-import os
 import sys
 import json
 import argparse
-from typing import Dict, Any, List, Optional
 from pathlib import Path
 import datetime
 
@@ -12,7 +10,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 # Import necessary modules from aicertify
 from aicertify.context_helpers import create_medical_context
 from aicertify.api import create_contract
-from aicertify.models.contract_models import Contract, Interaction
+from aicertify.models.contract_models import Interaction
 from aicertify.models.report_models import EvaluationReport
 
 # Import our external OPA evaluator

@@ -12,8 +12,10 @@ import json
 import asyncio
 import logging
 from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List, Optional
+
+# Import necessary modules
+from aicertify import regulations, application
+from aicertify.models.model_card import ModelCard, create_model_card
 
 # Configure logging
 logging.basicConfig(
@@ -29,9 +31,6 @@ logger = logging.getLogger("eu_ai_act_compliance_example")
 # Add the parent directory to the path so we can import from aicertify
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import necessary modules
-from aicertify import regulations, application
-from aicertify.models.model_card import ModelCard, create_model_card
 
 
 async def run_healthcare_example():

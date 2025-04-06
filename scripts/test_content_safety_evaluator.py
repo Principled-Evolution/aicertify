@@ -7,7 +7,6 @@ This verifies that the ContentSafetyEvaluator properly uses DeepEval for content
 import os
 import logging
 import json
-from typing import Dict, Any
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

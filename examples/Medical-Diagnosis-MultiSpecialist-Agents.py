@@ -21,13 +21,16 @@ from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from colorama import Fore
 
 from pydantic_ai import Agent, RunContext, ModelRetry
 from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic import BaseModel
 from dataclasses import dataclass
+
+# Import AICertify modules needed for contract creation and evaluation
+from aicertify.models.contract_models import create_contract, validate_contract, save_contract
+from aicertify.context_helpers import create_medical_context
 
 # Load environment variables
 load_dotenv()
@@ -43,69 +46,69 @@ case_description = """**Patient Case Report**
     - Name: Jeremy Irons, Jr. II
     - DoB: 01/01/1980
     - Sex: M
-    - Weight: 180 lbs (81.6 kg)  
-    - Height: 5'11" (180 cm)  
-    - BMI: 25.1 kg/m²  
+    - Weight: 180 lbs (81.6 kg)
+    - Height: 5'11" (180 cm)
+    - BMI: 25.1 kg/m²
     - Occupation: Office Manager
     - Chief Complaint: Chest pain
 
-    **History of Present Illness:**  
+    **History of Present Illness:**
     Jeremy Irons, Jr. II, a 45-year-old male, presented to the emergency department with complaints of intermittent chest pain over the past three days. The pain is described as a tightness in the center of the chest, radiating to the left arm and jaw. The episodes last approximately 10-15 minutes and occur both at rest and during exertion. He also reports mild shortness of breath and occasional dizziness. He denies nausea, vomiting, fever, or recent infections.
 
-    **Past Medical History:**  
-    - Hypertension (diagnosed 5 years ago)  
-    - Hyperlipidemia (diagnosed 3 years ago)  
-    - Mild gastroesophageal reflux disease (GERD)  
+    **Past Medical History:**
+    - Hypertension (diagnosed 5 years ago)
+    - Hyperlipidemia (diagnosed 3 years ago)
+    - Mild gastroesophageal reflux disease (GERD)
     - No prior history of myocardial infarction or stroke
 
-    **Family History:**  
-    - Father: Died at 67 from myocardial infarction  
-    - Mother: Alive, 79, history of hypertension  
-    - Sibling: One older brother (58), history of type 2 diabetes and coronary artery disease  
+    **Family History:**
+    - Father: Died at 67 from myocardial infarction
+    - Mother: Alive, 79, history of hypertension
+    - Sibling: One older brother (58), history of type 2 diabetes and coronary artery disease
 
-    **Lifestyle and Social History:**  
-    - Smoker: 1 pack per day for 30 years  
-    - Alcohol: Occasional, 2-3 drinks per week  
-    - Diet: High in processed foods, moderate red meat intake, low vegetable consumption  
-    - Exercise: Sedentary lifestyle, occasional walking  
-    - Stress: High occupational stress  
+    **Lifestyle and Social History:**
+    - Smoker: 1 pack per day for 30 years
+    - Alcohol: Occasional, 2-3 drinks per week
+    - Diet: High in processed foods, moderate red meat intake, low vegetable consumption
+    - Exercise: Sedentary lifestyle, occasional walking
+    - Stress: High occupational stress
 
-    **Medications:**  
-    - Amlodipine 10 mg daily  
-    - Atorvastatin 20 mg daily  
-    - Omeprazole 20 mg daily  
+    **Medications:**
+    - Amlodipine 10 mg daily
+    - Atorvastatin 20 mg daily
+    - Omeprazole 20 mg daily
 
-    **Physical Examination:**  
-    - General: Alert, mildly anxious  
+    **Physical Examination:**
+    - General: Alert, mildly anxious
     - Vital Signs:
       - Blood Pressure: 148/92 mmHg
       - Heart Rate: 88 bpm
       - Respiratory Rate: 18 breaths/min
       - Temperature: 98.6°F (37°C)
-      - Oxygen Saturation: 98% on room air  
-    - Cardiovascular: No murmurs, rubs, or gallops; regular rate and rhythm  
-    - Respiratory: Clear breath sounds bilaterally  
-    - Abdomen: Soft, non-tender, no hepatosplenomegaly  
-    - Extremities: No edema or cyanosis  
+      - Oxygen Saturation: 98% on room air
+    - Cardiovascular: No murmurs, rubs, or gallops; regular rate and rhythm
+    - Respiratory: Clear breath sounds bilaterally
+    - Abdomen: Soft, non-tender, no hepatosplenomegaly
+    - Extremities: No edema or cyanosis
 
-    **Laboratory Results:**  
-    - Complete Blood Count (CBC): Normal  
+    **Laboratory Results:**
+    - Complete Blood Count (CBC): Normal
     - Lipid Panel:
       - Total Cholesterol: 240 mg/dL (high)
       - LDL: 160 mg/dL (high)
       - HDL: 38 mg/dL (low)
-      - Triglycerides: 180 mg/dL (high)  
-    - Blood Glucose: 105 mg/dL (fasting, borderline high)  
-    - Hemoglobin A1C: 5.8% (prediabetes)  
-    - Troponin: 0.02 ng/mL (normal)  
-    - Electrolytes: Normal  
-    - Kidney Function: Normal creatinine and eGFR  
+      - Triglycerides: 180 mg/dL (high)
+    - Blood Glucose: 105 mg/dL (fasting, borderline high)
+    - Hemoglobin A1C: 5.8% (prediabetes)
+    - Troponin: 0.02 ng/mL (normal)
+    - Electrolytes: Normal
+    - Kidney Function: Normal creatinine and eGFR
 
-    **Diagnostic Tests:**  
-    - **Electrocardiogram (ECG):** Mild ST depression in lead II, III, and aVF  
-    - **Chest X-ray:** No acute abnormalities  
-    - **Echocardiogram:** Normal left ventricular function, no significant valve abnormalities  
-    - **Stress Test:** Positive for inducible ischemia  
+    **Diagnostic Tests:**
+    - **Electrocardiogram (ECG):** Mild ST depression in lead II, III, and aVF
+    - **Chest X-ray:** No acute abnormalities
+    - **Echocardiogram:** Normal left ventricular function, no significant valve abnormalities
+    - **Stress Test:** Positive for inducible ischemia
     - **Coronary Angiography:** Pending for Further Evaluation
 """
 
@@ -215,10 +218,7 @@ def result_validator_deps(ctx: RunContext[Deps], data: Diagnosis) -> Diagnosis:
         raise ModelRetry('Patient ID or Patient name mismatch.')
     return data
 
-# Import AICertify modules needed for contract creation and evaluation
-from aicertify.models.contract_models import create_contract, validate_contract, save_contract
-from aicertify.context_helpers import create_medical_context
-from aicertify.evaluators import ComplianceEvaluator
+
 
 # Import API module for evaluation if needed
 try:
@@ -229,7 +229,7 @@ except ImportError:
 def run_session(capture_contract: bool, contract_storage: str, report_format: str = "pdf") -> None:
     """
     Run a medical diagnosis session with multiple specialist agents.
-    
+
     Args:
         capture_contract: Whether to capture and evaluate the contract
         contract_storage: Directory to store the contract
@@ -247,7 +247,7 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
         weight=180,
         case_description=case_description
     )
-    
+
     deps = Deps(case=case)
     question = "What is the diagnosis?"
 
@@ -299,7 +299,7 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
             "output_text": primary_care_result.data.diagnosis,
             "metadata": {"agent": "Primary Care"}
         })
-        
+
         # Store the primary care result as final diagnosis
         final_diagnosis = primary_care_result.data.diagnosis
 
@@ -307,11 +307,11 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
         try:
             result = reasoning_agent.run_sync(question, deps=deps, message_history=message_history)
             logger.info(f'Reasoning Agent final report: {result.data}')
-            
+
             # If reasoning agent returns a diagnosis, use it as the final diagnosis
             if hasattr(result.data, 'diagnosis'):
                 final_diagnosis = result.data.diagnosis
-            
+
             captured_interactions.append({
                 "input_text": question,
                 "output_text": str(result.data),
@@ -323,7 +323,7 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
 
     except ModelRetry as e:
         logger.error(f'ModelRetry encountered: {e}')
-    except Exception as e:
+    except Exception:
         logger.exception('An error occurred during the session')
 
     # If contract capture is enabled, create and save a contract
@@ -340,21 +340,21 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
                     "specialists": ["Neurology", "Cardiology", "Gastroenterology", "Primary Care"]
                 }
             }
-            
+
             application_name = "Medical Diagnosis Multi-Specialist"
-            
+
             # Extract specialists involved
             specialists_involved = ["Neurology", "Cardiology", "Gastroenterology", "Primary Care"]
-            
+
             # Create domain-specific context
             medical_context = create_medical_context(case_description, specialists_involved)
-            
+
             # Create compliance context
             compliance_context = {
                 "jurisdictions": ["us", "eu"],
                 "frameworks": ["hipaa", "eu_ai_act", "healthcare"]
             }
-            
+
             # Create contract with enhanced context
             contract = create_contract(
                 application_name=application_name,
@@ -364,12 +364,12 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
                 context=medical_context,
                 compliance_context=compliance_context
             )
-            
+
             if validate_contract(contract):
                 # Save the contract
                 contract_path = save_contract(contract, contract_storage)
                 logger.info(f"Contract saved to: {contract_path}")
-                
+
                 # Evaluate using Phase 1 evaluators with comprehensive approach
                 try:
                     eval_result = asyncio.run(evaluate_contract_comprehensive(
@@ -379,12 +379,12 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
                         report_format=report_format,
                         output_dir=contract_storage
                     ))
-                    
+
                     # Log evaluation results
                     logger.info("Contract evaluation complete")
                     if eval_result.get('report_path'):
                         logger.info(f"Comprehensive evaluation report saved to: {eval_result.get('report_path')}")
-                        
+
                         # Add code to open the PDF report for viewing if desired
                         if report_format.lower() == 'pdf' and os.path.exists(eval_result.get('report_path')):
                             try:
@@ -396,7 +396,7 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
                                 subprocess.call(['open', eval_result.get('report_path')])
                     else:
                         logger.warning("No report path returned, checking for report content...")
-                        
+
                         # Check if report content is available directly
                         if eval_result.get('report'):
                             report_content = eval_result.get('report')
@@ -406,10 +406,10 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
                             with open(fallback_path, "w") as f:
                                 f.write(report_content)
                             logger.info(f"Report content saved to fallback location: {fallback_path}")
-                
+
                 except Exception as e:
                     logger.error(f"Error during evaluation: {str(e)}")
-                
+
             else:
                 logger.error("Contract validation failed")
         except Exception as ex:
@@ -427,7 +427,7 @@ def main() -> None:
 
     # Get the directory where this script is located
     script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
-    
+
     # Define default output directory relative to the script directory
     if args.contract_storage is None:
         # Create a subdirectory 'outputs/medical_diagnosis' within the examples directory
@@ -437,14 +437,14 @@ def main() -> None:
         contract_storage = Path(args.contract_storage)
         if not contract_storage.is_absolute():
             contract_storage = script_dir / args.contract_storage
-    
+
     # Ensure the output directory exists
     contract_storage.mkdir(parents=True, exist_ok=True)
-    
+
     # Make sure temp_reports is also in the right place (shared with other examples)
     temp_reports = script_dir / "outputs" / "temp_reports"
     temp_reports.mkdir(parents=True, exist_ok=True)
-    
+
     # Print useful diagnostic information
     logger.info(f"Current working directory: {os.getcwd()}")
     logger.info(f"Script directory: {script_dir}")
@@ -454,4 +454,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main() 
+    main()

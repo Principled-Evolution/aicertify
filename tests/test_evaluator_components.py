@@ -17,9 +17,7 @@ import unittest
 import asyncio
 import tempfile
 import json
-from pathlib import Path
 from unittest.mock import patch, MagicMock
-from datetime import datetime
 
 # Import core components
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
@@ -27,9 +25,8 @@ from aicertify.evaluators.fairness_evaluator import FairnessEvaluator
 from aicertify.evaluators.content_safety_evaluator import ContentSafetyEvaluator
 from aicertify.evaluators.risk_management_evaluator import RiskManagementEvaluator
 from aicertify.evaluators.compliance_evaluator import ComplianceEvaluator
-from aicertify.models.contract_models import AiCertifyContract, create_contract
+from aicertify.models.contract_models import create_contract
 from aicertify.opa_core.evaluator import OpaEvaluator as OPAPolicyEvaluator
-from pydantic import BaseModel, Field
 
 # Create a custom EvaluatorConfig class for testing
 class EvaluatorConfig(dict):

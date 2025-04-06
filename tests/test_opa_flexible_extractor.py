@@ -1,6 +1,4 @@
 import unittest
-from unittest.mock import patch, MagicMock
-import json
 
 from aicertify.opa_core.flexible_extractor import FlexibleExtractor
 from aicertify.models.report import PolicyResult

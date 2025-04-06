@@ -15,7 +15,6 @@ import sys
 import json
 import datetime
 import random
-from pathlib import Path
 
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -24,8 +23,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 try:
     from aicertify.context_helpers import create_medical_context, create_financial_context
     from aicertify.models.contract_models import create_contract
-    from aicertify.evaluators import fairness_evaluator, content_safety_evaluator, risk_management_evaluator
-    from aicertify.report_generators import generate_report
 except ImportError:
     print("Error: Required modules not found. Please make sure AICertify is installed correctly.")
     sys.exit(1)
@@ -75,9 +72,9 @@ def generate_sample_context(domain):
     """Generate sample context for the specified domain."""
     if domain == "medical":
         patient_case = """
-        45-year-old male presenting with central chest pain, described as pressure-like, 
-        radiating to the left arm. Associated symptoms include shortness of breath and fatigue. 
-        Patient has a history of hypertension and hypercholesterolemia. 
+        45-year-old male presenting with central chest pain, described as pressure-like,
+        radiating to the left arm. Associated symptoms include shortness of breath and fatigue.
+        Patient has a history of hypertension and hypercholesterolemia.
         Currently on lisinopril 10mg daily and atorvastatin 20mg daily.
         """
         return create_medical_context(
@@ -106,7 +103,7 @@ def generate_sample_contract(domain):
     """Generate a sample contract for the specified domain."""
     interactions = generate_sample_interactions(domain)
     context = generate_sample_context(domain)
-    
+
     if domain == "medical":
         final_output = "Recommend immediate medical attention for possible cardiac event. Patient should call emergency services (911) immediately."
         application_name = "Medical Diagnosis Assistant"
@@ -121,7 +118,7 @@ def generate_sample_contract(domain):
             "jurisdictions": ["us"],
             "frameworks": ["fair_lending", "consumer_protection"]
         }
-    
+
     return create_contract(
         application_name=application_name,
         model_info={"model_name": "gpt-4", "model_version": "latest"},
@@ -138,7 +135,7 @@ def evaluate_contract(contract, domain):
     fairness_score = random.uniform(0.80, 0.95)
     content_safety_score = random.uniform(0.85, 0.98)
     risk_management_score = random.uniform(0.75, 0.95)
-    
+
     # Determine compliance based on domain-specific thresholds
     if domain == "medical":
         fairness_threshold = 0.85
@@ -148,7 +145,7 @@ def evaluate_contract(contract, domain):
         fairness_threshold = 0.90
         content_safety_threshold = 0.85
         risk_management_threshold = 0.85
-    
+
     evaluation_results = {
         "fairness": {
             "score": fairness_score,
@@ -181,14 +178,14 @@ def evaluate_contract(contract, domain):
             }
         }
     }
-    
+
     # Calculate overall compliance
     overall_compliant = all([
         evaluation_results["fairness"]["compliant"],
         evaluation_results["content_safety"]["compliant"],
         evaluation_results["risk_management"]["compliant"]
     ])
-    
+
     return {
         "contract": contract,
         "evaluation_results": evaluation_results,
@@ -200,20 +197,20 @@ def evaluate_contract(contract, domain):
 def generate_sample_report(domain="medical", output_format="json"):
     """Generate a sample report for the specified domain and output format."""
     print(f"Generating sample {domain} report in {output_format} format...")
-    
+
     # Generate a sample contract
     contract = generate_sample_contract(domain)
-    
+
     # Evaluate the contract
     evaluation_results = evaluate_contract(contract, domain)
-    
+
     # Create the output directory if it doesn't exist
     os.makedirs("reports", exist_ok=True)
-    
+
     # Generate the report
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     output_filename = f"reports/sample_{domain}_report_{timestamp}.{output_format}"
-    
+
     if output_format == "json":
         with open(output_filename, "w") as f:
             json.dump(evaluation_results, f, indent=2)
@@ -223,7 +220,7 @@ def generate_sample_report(domain="medical", output_format="json"):
         with open(output_filename, "w") as f:
             json.dump(evaluation_results, f, indent=2)
         print(f"Note: {output_format} format not fully implemented. Generated JSON report instead.")
-    
+
     print(f"Sample report generated: {output_filename}")
     return output_filename
 
@@ -233,8 +230,8 @@ def main():
     parser.add_argument('--domain', choices=['medical', 'financial'], default='medical', help='Domain for the sample report')
     parser.add_argument('--output-format', choices=['json', 'pdf', 'html'], default='json', help='Output format for the report')
     args = parser.parse_args()
-    
+
     generate_sample_report(domain=args.domain, output_format=args.output_format)
 
 if __name__ == '__main__':
-    main() 
+    main()

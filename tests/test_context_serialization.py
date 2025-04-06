@@ -3,13 +3,11 @@
 Test script to verify context serialization in contracts
 """
 
-import os
 import json
 from pathlib import Path
 
 from aicertify.context_helpers import create_medical_context
 from aicertify.models.contract_models import create_contract, save_contract, load_contract
-from pydantic import BaseModel
 
 # Define a simple test case
 test_case = """**Patient Case Report**

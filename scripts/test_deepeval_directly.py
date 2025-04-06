@@ -4,11 +4,8 @@ Direct test of DeepEval's ToxicityMetric to diagnose initialization issues.
 This bypasses our evaluator wrapper to test DeepEval directly.
 """
 
-import sys
 import os
-import json
 import logging
-from typing import Dict, Any
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)

@@ -14,7 +14,6 @@ All outputs (contracts, reports) will be generated in the examples/outputs/loan_
 """
 
 import os
-import json
 import logging
 import argparse
 import asyncio
@@ -22,12 +21,15 @@ from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from colorama import Fore
 
 from pydantic_ai import Agent, RunContext, ModelRetry
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic import BaseModel
 from dataclasses import dataclass
+
+# Import AICertify modules needed for contract creation and evaluation
+from aicertify.models.contract_models import create_contract, validate_contract, save_contract
+from aicertify.context_helpers import create_financial_context
 
 # Load environment variables
 load_dotenv()
@@ -91,19 +93,16 @@ async def get_customer_risk_profile(ctx: RunContext[Deps]) -> str:
         system_prompt="Take the customer profile and return a risk profile for a loan application. The customer profile will be provided in the context.",
         deps_type=Deps
     )
-    
+
     @tool_agent.system_prompt
     def get_system_prompt(ctx: RunContext[str]) -> str:
         return f"The customer profile is {ctx.deps.customer}."
-    
+
     result = await tool_agent.run("Get the customer's risk profile.", deps=ctx.deps)
     logger.info(f"Customer risk profile: {result.data}")
     return f"The customer risk profile is: {result.data}"
 
-# Import AICertify modules needed for contract creation and evaluation
-from aicertify.models.contract_models import create_contract, validate_contract, save_contract
-from aicertify.context_helpers import create_financial_context
-from aicertify.evaluators import ComplianceEvaluator
+
 
 # Import API module for evaluation if needed
 try:
@@ -114,7 +113,7 @@ except ImportError:
 def run_session(capture_contract: bool, contract_storage: str, report_format: str = "pdf") -> None:
     """
     Run a loan application evaluation session with the AI agent.
-    
+
     Args:
         capture_contract: Whether to capture and evaluate the contract
         contract_storage: Directory to store the contract
@@ -170,24 +169,24 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
 
     except ModelRetry as e:
         logger.error(f"ModelRetry encountered: {e}")
-    except Exception as e:
+    except Exception:
         logger.exception("An error occurred during the loan evaluation session")
 
     if capture_contract:
         logger.info('Contract capture enabled. Generating contract...')
-        
+
         # Create financial domain-specific context
         financial_context = create_financial_context(
             customer_data=customer,
             loan_type="personal_loan"
         )
-        
+
         # Create compliance context
         compliance_context = {
             "jurisdictions": ["us", "eu"],
             "frameworks": ["fair_lending", "eu_ai_act", "financial"]
         }
-        
+
         # Create contract with enhanced context
         contract = create_contract(
             application_name="Loan Application Evaluator",
@@ -204,12 +203,12 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
             context=financial_context,
             compliance_context=compliance_context
         )
-        
+
         if validate_contract(contract):
             # Save the contract
             contract_path = save_contract(contract, contract_storage)
             logger.info(f"Contract saved to: {contract_path}")
-            
+
             # Evaluate using Phase 1 evaluators with comprehensive approach
             try:
                 eval_result = asyncio.run(evaluate_contract_comprehensive(
@@ -219,12 +218,12 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
                     report_format=report_format,
                     output_dir=contract_storage
                 ))
-                
+
                 # Log evaluation results
                 logger.info("Contract evaluation complete")
                 if eval_result.get('report_path'):
                     logger.info(f"Comprehensive evaluation report saved to: {eval_result.get('report_path')}")
-                    
+
                     # Add code to open the PDF report for viewing if desired
                     if report_format.lower() == 'pdf' and os.path.exists(eval_result.get('report_path')):
                         try:
@@ -236,7 +235,7 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
                             subprocess.call(['open', eval_result.get('report_path')])
                 else:
                     logger.warning("No report path returned, checking for report content...")
-                    
+
                     # Check if report content is available directly
                     if eval_result.get('report'):
                         report_content = eval_result.get('report')
@@ -246,10 +245,10 @@ def run_session(capture_contract: bool, contract_storage: str, report_format: st
                         with open(fallback_path, "w") as f:
                             f.write(report_content)
                         logger.info(f"Report content saved to fallback location: {fallback_path}")
-                
+
             except Exception as e:
                 logger.error(f"Error during evaluation: {str(e)}")
-                
+
         else:
             logger.error("Contract validation failed")
     else:
@@ -268,10 +267,10 @@ def main() -> None:
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
         logging.info("Debug logging enabled")
-    
+
     # Get the directory where this script is located
     script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
-    
+
     # Define default output directory relative to the script directory
     if args.contract_storage is None:
         # Create a subdirectory 'outputs/loan_evaluation' within the examples directory
@@ -281,14 +280,14 @@ def main() -> None:
         contract_storage = Path(args.contract_storage)
         if not contract_storage.is_absolute():
             contract_storage = script_dir / args.contract_storage
-    
+
     # Ensure the output directory exists
     contract_storage.mkdir(parents=True, exist_ok=True)
-    
+
     # Make sure temp_reports is also in the right place
     temp_reports = script_dir / "outputs" / "temp_reports"
     temp_reports.mkdir(parents=True, exist_ok=True)
-    
+
     # Print current working directory to help debug file paths
     logging.info(f"Current working directory: {os.getcwd()}")
     logging.info(f"Script directory: {script_dir}")
@@ -303,4 +302,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main() 
+    main()

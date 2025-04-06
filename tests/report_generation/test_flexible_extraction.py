@@ -5,8 +5,6 @@ This module contains tests for the flexible metric extraction system,
 ensuring that it correctly extracts metrics from evaluation results.
 """
 
-import pytest
-from typing import Dict, Any, List
 
 from aicertify.models.evaluation import MetricValue
 from aicertify.report_generation.flexible_extraction import (

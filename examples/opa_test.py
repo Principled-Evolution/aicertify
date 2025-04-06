@@ -8,7 +8,6 @@ import os
 import sys
 import shutil
 import subprocess
-from pathlib import Path
 import platform
 
 # Define potential OPA paths

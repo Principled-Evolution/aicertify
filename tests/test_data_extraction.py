@@ -2,9 +2,9 @@ import json
 import os
 import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from aicertify.report_generation.data_extraction import create_evaluation_report, extract_policy_results
+from aicertify.report_generation.data_extraction import create_evaluation_report
 from aicertify.models.report import PolicyResult, EvaluationReport
 
 

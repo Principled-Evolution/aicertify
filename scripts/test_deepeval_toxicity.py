@@ -5,9 +5,7 @@ This directly uses the DeepEval library without any fallbacks or pattern-based a
 """
 
 import os
-import json
 import logging
-from typing import Dict, Any
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

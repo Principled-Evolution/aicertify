@@ -4,7 +4,6 @@ Minimal test script for pattern-based content safety detection.
 """
 
 import sys
-import os
 import time 
 from aicertify.evaluators.content_safety_evaluator import ContentSafetyEvaluator
 

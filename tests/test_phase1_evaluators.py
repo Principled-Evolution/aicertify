@@ -9,7 +9,6 @@ This module contains unit tests for the Phase 1 evaluators:
 """
 
 import pytest
-import asyncio
 from unittest.mock import patch, MagicMock
 
 from aicertify.models.contract_models import create_contract

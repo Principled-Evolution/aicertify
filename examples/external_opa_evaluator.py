@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 from pathlib import Path
 
 # Add the parent directory to the path so we can import aicertify
