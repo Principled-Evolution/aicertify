@@ -27,7 +27,9 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install Dependencies
-        run: poetry install
+        run: |
+          poetry config virtualenvs.create true
+          poetry install --with dev
 
       - name: Run Code Linting
         run: |
