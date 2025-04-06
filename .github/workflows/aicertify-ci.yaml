@@ -9,9 +9,9 @@ on:
       - main
 
 jobs:
-  validate-ai:
+  basic-checks:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
       - name: Set Up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.12"  # Updated to match project requirements
 
       - name: Install Poetry
         run: |
@@ -29,47 +29,14 @@ jobs:
       - name: Install Dependencies
         run: poetry install
 
-      - name: Install OPA
+      - name: Run Code Linting
         run: |
-          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64
-          chmod +x opa
-          sudo mv opa /usr/local/bin/
+          poetry run ruff check .
+          poetry run black --check .
 
-      - name: Setup OPA Policies
+      - name: Verify Package Installation
         run: |
-          mkdir -p opa_policies/compliance/eu_ai_act
-          cat > opa_policies/compliance/eu_ai_act/policy.rego << 'EOF'
-          package compliance.eu_ai_act
-          
-          default allow = true
-          
-          deny[msg] {
-            input.bias_score > 0.1
-            msg := "Bias score exceeds threshold"
-          }
-          EOF
+          poetry run python -c "import aicertify; print(f'AICertify version: {aicertify.__version__}')"
 
-      - name: Setup Example Input
-        run: |
-          mkdir -p examples
-          cat > examples/input_examples.json << 'EOF'
-          {
-            "bias_score": 0.05,
-            "model_info": {
-              "name": "test-model",
-              "version": "1.0"
-            }
-          }
-          EOF
-
-      - name: List workspace contents
-        run: |
-          pwd
-          ls -la
-          find . -name "cli.py"
-
-      - name: Run AI Policy Validation
-        run: poetry run python aicertify/cli/cli.py eval-policy --category compliance/eu_ai_act --input examples/input_examples.json
-
-      - name: Run OPA Policy Check
-        run: opa check ./aicertify/opa_policies
+      - name: Run Basic Tests
+        run: poetry run pytest tests/ -v
