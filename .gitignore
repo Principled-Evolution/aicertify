@@ -214,3 +214,4 @@ reference-docs/
 **/*report*.jsonl.gz
 **/*report*.jsonl.gz.part
 **/*report*.jsonl.gz.part.1
+cline*.*

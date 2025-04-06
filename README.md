@@ -1,30 +1,33 @@
-# AICertify: Systematic Evaluation Framework
+# AICertify: AI Regulatory Compliance Framework
 
-## Phase 1 Implementation
+AICertify is a comprehensive open-source framework for evaluating AI systems against regulatory requirements and ethical standards. It provides a powerful set of tools for assessing AI applications, generating compliance reports, and identifying areas for improvement.
 
-AICertify is a comprehensive framework for evaluating AI systems for compliance with various regulations and standards. This repository contains the implementation of Phase 1 of the AICertify Systematic Evaluation Framework.
+## Core Components
 
-### Phase 1 Core Components
+1. **Application & Regulations API**
+   - High-level, intuitive interface for AI application evaluation
+   - Support for multiple regulatory frameworks
+   - Standardized report generation
 
-1. **Core Evaluator Framework**
-   - Standardized evaluator interface (`BaseEvaluator`)
-   - Contract parsing and validation
-   - Report generation capabilities
+2. **Specialized Evaluators**
+   - `FairnessEvaluator`: Assesses bias and fairness concerns
+   - `ContentSafetyEvaluator`: Evaluates harmful content detection
+   - `RiskManagementEvaluator`: Assesses risk documentation completeness
+   - Additional specialized evaluators for regulatory compliance
 
-2. **Essential Evaluators**
-   - `FairnessEvaluator`: Integrates with LangFair for bias and fairness assessment
-   - `ContentSafetyEvaluator`: Integrates with DeepEval for toxicity and content safety
-   - `RiskManagementEvaluator`: Evaluates risk documentation completeness and quality
-   - `ComplianceEvaluator`: Orchestrates multiple evaluators for comprehensive assessment
+3. **OPA Policy Engine**
+   - Integration with Open Policy Agent for policy evaluation
+   - Comprehensive policy library for AI regulations
+   - Support for custom policy creation
 
-3. **Developer Experience**
-   - Unified API for contract evaluation
-   - Support for both synchronous and asynchronous evaluation
-   - Multiple report formats (JSON, Markdown, PDF)
+4. **Report Generation**
+   - Detailed compliance reports in multiple formats (HTML, Markdown, PDF)
+   - Visualization of compliance metrics
+   - Actionable recommendations for improvement
 
-### Getting Started
+## Getting Started
 
-#### Installation
+### Installation
 
 ```bash
 # Clone the repository
@@ -35,74 +38,104 @@ cd aicertify
 pip install -e .
 ```
 
-#### Basic Usage
+### Basic Usage
 
 ```python
 import asyncio
-from aicertify.models.contract_models import create_contract
-from aicertify.api import evaluate_contract_with_phase1_evaluators
+from aicertify import regulations, application
 
-# Create a contract with your AI system's interactions
-contract = create_contract(
-    application_name="YourAIApp",
-    model_info={"model_name": "GPT-4", "model_version": "latest"},
-    interactions=[
-        {"input_text": "User question", "output_text": "AI response"},
-        # Add more interactions...
-    ],
-    context={"risk_documentation": "Your risk documentation..."}
-)
-
-# Evaluate the contract
-async def evaluate():
-    results = await evaluate_contract_with_phase1_evaluators(
-        contract=contract,
-        generate_report=True,
-        report_format="markdown",
+async def main():
+    # Create a regulations set for EU AI Act
+    regulations_set = regulations.create("eu_ai_act_evaluation")
+    regulations_set.add("eu_ai_act")
+    
+    # Create your AI application
+    app = application.create(
+        name="My AI Assistant",
+        model_name="GPT-4",
+        model_version="latest"
+    )
+    
+    # Add interactions to evaluate
+    app.add_interaction(
+        input_text="What is the capital of France?",
+        output_text="The capital of France is Paris."
+    )
+    
+    # Add additional context if needed
+    app.add_context({
+        "risk_documentation": "Our AI system underwent comprehensive risk assessment...",
+        "model_information": {
+            "training_data": "Publicly available datasets",
+            "intended_use": "Educational question answering"
+        }
+    })
+    
+    # Evaluate the application against regulations
+    results = await app.evaluate(
+        regulations=regulations_set,
+        report_format="html",
         output_dir="./reports"
     )
+    
     print(f"Report saved to: {results.get('report_path')}")
 
-asyncio.run(evaluate())
+# Run the evaluation
+asyncio.run(main())
 ```
 
-### Examples
+### Quickstart Example
 
-Check out the example scripts in the `aicertify/examples/` directory:
-
-- `evaluator_example.py`: Demonstrates how to use individual evaluators and the ComplianceEvaluator
-
-Run an example:
+For a complete example, check out `aicertify/examples/quickstart.py`:
 
 ```bash
-python -m aicertify.examples.evaluator_example
+python -m aicertify.examples.quickstart
 ```
 
-### Architecture
+## Architecture
 
-The AICertify framework is built with modularity and extensibility in mind:
+The AICertify framework follows a modular architecture with several key components:
 
-1. **BaseEvaluator Interface**: All evaluators implement a common interface with `evaluate()` and `evaluate_async()` methods.
+```
+Application Layer → API Layer → Evaluation Layer → OPA Policy Engine → Report Generation
+```
 
-2. **Evaluation Flow**:
-   - Each evaluator processes a contract object containing interactions and metadata
-   - Evaluators analyze interactions against domain-specific criteria
-   - Results include compliance status, score, and detailed feedback
+1. **Application Layer**: High-level interfaces for developers (`application.py`, `regulations.py`)
+2. **API Layer**: Public functions for evaluation and reporting (`api/` directory)
+3. **Evaluation Layer**: Evaluators and policy logic (`evaluators/`, `opa_core/`)
+4. **OPA Policy Engine**: Integration with Open Policy Agent for policy evaluation
+5. **Report Generation**: Transformation of evaluation results into formatted reports
 
-3. **ComplianceEvaluator**: Acts as an orchestrator for multiple domain-specific evaluators, producing a comprehensive compliance assessment.
+## OPA Policy Integration
 
-### Dependencies
+AICertify uses Open Policy Agent (OPA) for policy definition and evaluation. Policies are organized in the separate `gopal` repository (integrated as a Git submodule) with the following structure:
 
-- LangFair: For fairness evaluations
-- DeepEval: For toxicity and content safety evaluations
-- PyPDF2 (optional): For PDF report generation
+- `global/`: Globally applicable policies
+- `industry_specific/`: Industry-specific policies
+- `international/`: Policies for international regulations
+- `custom/`: Directory for user-defined policies
 
-### Future Work (Upcoming Phases)
+## Examples
 
-- Extended evaluator suite for additional compliance domains
-- Interactive dashboard for visualizing evaluation results
-- Integration with CI/CD pipelines for automated compliance checks
+Check out the examples directory for more usage scenarios:
+
+- `quickstart.py`: Simple end-to-end example
+- `EU_AI_Act_Compliance_Example.py`: Comprehensive EU AI Act evaluation
+- `Medical-Diagnosis-MultiSpecialist-Agents.py`: Evaluation of medical AI systems
+- `Loan-Application-Evaluator.py`: Financial AI system evaluation
+
+## Documentation
+
+For more detailed documentation, see the `docs/` directory:
+
+- `developer_guide.md`: Comprehensive guide for developers
+- `opa_policy_structure.md`: Overview of policy structure
+- `report_generation/`: Documentation for report customization
+
+## Contributing
+
+Contributions are welcome! See `CONTRIBUTING.md` for guidelines.
 
 ## License
 
-[License details here] 
+[License details here]

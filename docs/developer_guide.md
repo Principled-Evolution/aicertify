@@ -1,6 +1,6 @@
 ## AICertify Developer Guide
 
-Welcome to the AICertify Developer Guide. This document provides step-by-step instructions for integrating with AICertify using our two supported methods: file-based evaluation through the CLI and Python API integration. 
+Welcome to the AICertify Developer Guide. This document provides step-by-step instructions for integrating with AICertify using our supported methods: file-based evaluation through the CLI and the Python API.
 
 ## Table of Contents
 
@@ -9,8 +9,9 @@ Welcome to the AICertify Developer Guide. This document provides step-by-step in
   - [Workflow Diagram](#workflow-diagram)
   - [Step-by-Step Instructions](#step-by-step-instructions)
 - [2. Python API Integration](#2-python-api-integration)
+  - [Current Regulations/Application API](#current-regulationsapplication-api)
+  - [Legacy Contract-Based API](#legacy-contract-based-api)
   - [Workflow Diagram](#workflow-diagram-1)
-  - [Step-by-Step Instructions](#step-by-step-instructions-1)
 - [Tips for a Smooth Developer Experience](#tips-for-a-smooth-developer-experience)
 - [FAQ](#faq)
 - [Medical Diagnosis Example using the API](#medical-diagnosis-example-using-the-api)
@@ -39,7 +40,7 @@ AICertify supports two streamlined integration methods:
 
 1. **File-Based Evaluation (CLI)**: Developers create interaction files in JSON format and use our CLI to evaluate and generate reports.
 
-2. **Python API Integration**: Developers leverage our Python API to programmatically create contracts, perform evaluations, and generate reports directly within their applications.
+2. **Python API Integration**: Developers leverage our Python API to programmatically evaluate AI applications and generate reports directly within their applications.
 
 ---
 
@@ -52,20 +53,21 @@ Below is a Mermaid diagram illustrating the file-based evaluation process:
 ```mermaid
 graph TD
     A[Generate Interaction File] --> B[Invoke CLI Command]
-    B --> C[Load Contract from File]
-    C --> D[Evaluate Contract & Apply OPA Policies]
+    B --> C[Load Application from File]
+    C --> D[Evaluate Application & Apply Regulations]
     D --> E[Generate Markdown and/or PDF Report]
     E --> F[Output Report Files]
 ```
 
 ### Step-by-Step Instructions
 
-1. **Create an Interaction File**: Format your contract as a JSON file. See the example below:
+1. **Create an Interaction File**: Format your application as a JSON file. See the example below:
 
 ```json
 {
-  "contract_id": "12345",
-  "application_name": "MyApp",
+  "name": "MyApp",
+  "model_name": "GPT-4",
+  "model_version": "latest",
   "interactions": [
     {
       "input_text": "User prompt",
@@ -76,12 +78,12 @@ graph TD
 }
 ```
 
-Save this file in the `/examples` directory as `sample_contract.json`.
+Save this file in the `/examples` directory as `sample_application.json`.
 
 2. **Run the Evaluation CLI Command**: Use the command below to run the evaluation and generate reports:
 
 ```bash
-python -m aicertify.cli.evaluate --contract examples/sample_contract.json --policy-category eu_ai_act
+python -m aicertify.cli.evaluate --application examples/sample_application.json --regulation eu_ai_act
 ```
 
 3. **Examine the Generated Reports**: After execution, the CLI produces Markdown and/or PDF report files in the designated output directory.
@@ -90,70 +92,132 @@ python -m aicertify.cli.evaluate --contract examples/sample_contract.json --poli
 
 ## 2. Python API Integration
 
+AICertify provides two API approaches: the current Regulations/Application API (recommended) and the legacy Contract-Based API (maintained for backward compatibility).
+
+### Current Regulations/Application API
+
+The modern API uses higher-level abstractions for a more intuitive developer experience:
+
+```python
+import asyncio
+from aicertify import regulations, application
+
+async def main():
+    # Create a regulations set
+    regulations_set = regulations.create("eu_ai_act_evaluation")
+    regulations_set.add("eu_ai_act")
+    
+    # Create an application
+    app = application.create(
+        name="My AI Assistant",
+        model_name="GPT-4",
+        model_version="latest"
+    )
+    
+    # Add interactions
+    app.add_interaction(
+        input_text="What is the capital of France?",
+        output_text="The capital of France is Paris."
+    )
+    
+    # Add context information
+    app.add_context({
+        "risk_documentation": "Risk assessment documentation...",
+        "model_information": {
+            "training_data": "Publicly available datasets",
+            "intended_use": "Educational assistant"
+        }
+    })
+    
+    # Evaluate the application
+    results = await app.evaluate(
+        regulations=regulations_set,
+        report_format="html",
+        output_dir="./reports"
+    )
+    
+    print(f"Report saved to: {results.get('report_path')}")
+
+# Run the evaluation
+asyncio.run(main())
+```
+
+This approach is recommended for all new integrations as it provides a cleaner, more intuitive API with better abstraction of regulatory concepts.
+
+### Legacy Contract-Based API
+
+For backward compatibility, we maintain the original contract-based API:
+
+```python
+import asyncio
+from aicertify.models.contract_models import create_contract
+from aicertify.api import evaluate_contract_with_phase1_evaluators
+
+# Create a contract
+contract = create_contract(
+    application_name="MyApp",
+    model_info={"model_name": "GPT-4", "model_version": "latest"},
+    interactions=[
+        {"input_text": "User prompt", "output_text": "AI response", "metadata": {}}
+    ],
+    context={"risk_documentation": "Risk assessment documentation..."}
+)
+
+# Evaluate the contract
+async def evaluate():
+    results = await evaluate_contract_with_phase1_evaluators(
+        contract=contract,
+        generate_report=True,
+        report_format="markdown",
+        output_dir="./reports"
+    )
+    print(f"Report saved to: {results.get('report_path')}")
+
+asyncio.run(evaluate())
+```
+
+While this API is still supported, we recommend migrating to the Regulations/Application API for new development.
+
 ### Workflow Diagram
 
-This diagram shows how to integrate using the Python API:
+This diagram shows how to integrate using the recommended Regulations/Application API:
 
 ```mermaid
 graph TD
-    A[Create Contract Object in Code] --> B[Call Evaluation API]
-    B --> C[Evaluate Contract & Apply OPA Policies]
-    C --> D[Generate Evaluation Report]
-    D --> E[Return Report as Markdown/PDF]
+    A[Create Regulations Set] --> B[Create Application Object]
+    B --> C[Add Interactions and Context]
+    C --> D[Evaluate Application]
+    D --> E[Generate and Return Report]
 ```
-
-### Step-by-Step Instructions
-
-1. **Create a Contract Object**: Use our Pydantic models to construct a contract in your application code:
-
-```python
-from aicertify.models.contract_models import AiCertifyContract
-
-contract = AiCertifyContract(
-    contract_id='12345',
-    application_name='MyApp',
-    interactions=[
-        {
-            'input_text': 'User prompt',
-            'output_text': 'AI response',
-            'metadata': {}
-        }
-    ]
-)
-```
-
-2. **Evaluate the Contract**: Use the API function `evaluate_contract_object` to process the contract:
-
-```python
-from aicertify.api import evaluate_contract_object
-
-# Asynchronously evaluate the contract
-result = await evaluate_contract_object(contract, policy_category='eu_ai_act')
-print(result)
-```
-
-3. **Generate Reports**: The API call automatically generates reports (Markdown or PDF as specified) and returns the report paths along with evaluation results.
 
 ---
 
 ## Tips for a Smooth Developer Experience
 
-- **Naming Conventions**: Follow snake_case for your JSON keys and Python object fields. Ensure consistency with our provided examples.
-- **Ease of Use**: Rely on our detailed examples and diagrams to quickly integrate your evaluation flows.
-- **Time-to-Value**: The provided CLI and API methods are designed to require minimal configuration so you can achieve rapid compliance assessment.
+- **Use Current API**: The Regulations/Application API provides a more intuitive developer experience and is recommended for all new integrations.
+- **Naming Conventions**: Follow snake_case for your JSON keys and Python object fields.
+- **See Quickstart**: Check `aicertify/examples/quickstart.py` for a complete example using the current API.
 - **Troubleshooting**: Check logs for detailed error messages and review the sample files in `/examples` for reference.
 
 ---
 
 ## FAQ
 
-1. **Q: Where can I find a complete example?**
+1. **Q: Which API should I use for new projects?**
 
-   A: Check the `/examples` directory for `sample_contract.json` and sample code snippets in this guide.
+   A: Use the Regulations/Application API (`from aicertify import regulations, application`) for all new projects. It provides a more intuitive developer experience.
 
-2. **Q: What if I need additional report formats?**
+2. **Q: Is the legacy API still supported?**
 
-   A: Currently, Markdown and PDF reports are supported. Future releases plan to extend report customization.
+   A: Yes, we maintain backward compatibility with the legacy contract-based API, but recommend the current API for new development.
+
+3. **Q: Where can I find a complete example using the current API?**
+
+   A: Check `aicertify/examples/quickstart.py` for a complete example using the Regulations/Application API.
+
+4. **Q: What if I need additional report formats?**
+
+   A: Currently, HTML, Markdown, and PDF reports are supported. Future releases plan to extend report customization.
 
 ---
 
@@ -165,33 +229,49 @@ This section demonstrates how to integrate the AICertify API with a complex medi
 
 The [Medical-Diagnosis-MultiSpecialist-Agents.py](../examples/Medical-Diagnosis-MultiSpecialist-Agents.py) script demonstrates how to integrate AICertify into a complex medical application that uses multiple specialized AI agents (cardiology, neurology, gastroenterology, and primary care) to provide medical diagnosis.
 
-Here's the key integration code that evaluates the contract using the AICertify API:
+Here's an updated integration example using the current Regulations/Application API:
 
 ```python
-# After creating and saving the contract
+# After capturing AI interactions
+from aicertify import regulations, application
+import asyncio
+
+# Create a regulations set for EU AI Act
+regulations_set = regulations.create("medical_diagnosis_evaluation")
+regulations_set.add("eu_ai_act")
+
+# Create an application
+app = application.create(
+    name="Medical Diagnosis Session",
+    model_name="gpt-4o-mini",
+    model_metadata={"provider": "OpenAI"}
+)
+
+# Add captured interactions
+for interaction in captured_interactions:
+    app.add_interaction(
+        input_text=interaction["input_text"],
+        output_text=interaction["output_text"],
+        metadata=interaction["metadata"]
+    )
+
 try:
-    # Import AICertify evaluation API
-    from aicertify.api import evaluate_contract_object
-    import asyncio
-    
-    # Run the async evaluation function using asyncio
-    eval_result = asyncio.run(evaluate_contract_object(
-        contract=contract,
-        policy_category='eu_ai_act',
-        generate_report=True,
+    # Evaluate the application
+    eval_result = asyncio.run(app.evaluate(
+        regulations=regulations_set,
         report_format='markdown',
         output_dir=contract_storage
     ))
     
     # Log evaluation results
-    logger.info(f'Contract evaluation complete')
+    logger.info(f'Application evaluation complete')
     if eval_result.get('report_path'):
         logger.info(f'Evaluation report saved to: {eval_result.get("report_path")}')
     else:
         logger.info('Report generated but path not returned')
     
 except Exception as ex:
-    logger.exception(f'Error during contract evaluation: {ex}')
+    logger.exception(f'Error during application evaluation: {ex}')
 ```
 
 ### Integration Breakdown
@@ -206,38 +286,47 @@ except Exception as ex:
    })
    ```
 
-2. **Creating the Contract**: After capturing interactions, the application creates an AICertify contract:
+2. **Creating the Application**: After capturing interactions, create an AICertify application:
 
    ```python
-   from aicertify.models.contract_models import create_contract
+   from aicertify import application
    
-   contract = create_contract(
-       application_name="Medical Diagnosis Session",
-       model_info={
-           "model_name": "gpt-4o-mini",
-           "additional_info": {"provider": "OpenAI"}
-       },
-       interactions=captured_interactions
+   app = application.create(
+       name="Medical Diagnosis Session",
+       model_name="gpt-4o-mini",
+       model_metadata={"provider": "OpenAI"}
    )
+   
+   # Add interactions
+   for interaction in captured_interactions:
+       app.add_interaction(
+           input_text=interaction["input_text"],
+           output_text=interaction["output_text"],
+           metadata=interaction["metadata"]
+       )
    ```
 
-3. **Integration with AICertify API**: The minimal code needed to evaluate the contract and generate a report is:
+3. **Integration with AICertify API**: The minimal code needed to evaluate the application:
 
    ```python
-   # Simple integration for async evaluate_contract_object
-   from aicertify.api import evaluate_contract_object
+   # Simple integration using Regulations/Application API
+   from aicertify import regulations
    import asyncio
    
-   eval_result = asyncio.run(evaluate_contract_object(
-       contract=contract,
-       policy_category='eu_ai_act',
-       generate_report=True
+   # Create regulations set
+   regulations_set = regulations.create("medical_diagnosis_evaluation")
+   regulations_set.add("eu_ai_act")
+   
+   # Evaluate application
+   eval_result = asyncio.run(app.evaluate(
+       regulations=regulations_set,
+       report_format='markdown'
    ))
    ```
 
 ### Running the Example
 
-To run the full medical diagnosis example with contract evaluation:
+To run the full medical diagnosis example with application evaluation:
 
 ```bash
 python examples/Medical-Diagnosis-MultiSpecialist-Agents.py --capture-contract
@@ -245,8 +334,8 @@ python examples/Medical-Diagnosis-MultiSpecialist-Agents.py --capture-contract
 
 This will:
 1. Run the medical diagnosis session with multiple AI agents
-2. Create an AICertify contract from the captured interactions
-3. Evaluate the contract using the AICertify API
+2. Create an AICertify application from the captured interactions
+3. Evaluate the application using the AICertify API
 4. Generate a compliance report in the `examples/outputs/medical_diagnosis` directory
 
 All example scripts in the AICertify repository generate outputs in a consistent subfolder structure:
@@ -260,10 +349,12 @@ This ensures all outputs are contained within the examples directory for easy ac
 To integrate AICertify in your own application:
 
 1. **Capture AI Interactions**: Record all AI inputs and outputs in your application
-2. **Create a Contract**: Use the `create_contract` function to formalize your AI interactions
-3. **Evaluate Compliance**: Use `evaluate_contract_object` to verify compliance and generate reports
+2. **Create a Regulations Set**: Define which regulations to evaluate against
+3. **Create an Application**: Use the `application.create()` function to define your AI application
+4. **Add Interactions**: Add all captured interactions to your application
+5. **Evaluate Compliance**: Use `app.evaluate()` to verify compliance and generate reports
 
-This simplicity of integration—just a few lines of code—showcases how easily AICertify can be incorporated into complex, real-world AI applications.
+The simplicity of integration—just a few lines of code—showcases how easily AICertify can be incorporated into complex, real-world AI applications.
 
 ### Handling External Model Dependencies
 
@@ -342,21 +433,43 @@ captured_interactions.append({
 
 #### 3. PDF Report Generation
 
-Unlike the medical example, this example defaults to PDF report generation for formal documentation:
+Using the Regulations/Application API with PDF report generation:
 
 ```python
-eval_result = asyncio.run(evaluate_contract_object(
-    contract=contract,
-    policy_category='eu_ai_act',
-    generate_report=True,
-    report_format="pdf",  # Generate PDF instead of markdown
+from aicertify import regulations, application
+import asyncio
+
+# Create regulations set
+regulations_set = regulations.create("loan_evaluation")
+regulations_set.add("eu_ai_act")
+
+# Create application
+app = application.create(
+    name="Loan Application Evaluation",
+    model_name="gpt-4o-mini"
+)
+
+# Add interactions
+for interaction in captured_interactions:
+    app.add_interaction(
+        input_text=interaction["input_text"],
+        output_text=interaction["output_text"],
+        metadata=interaction["metadata"]
+    )
+
+# Evaluate application with PDF report
+eval_result = asyncio.run(app.evaluate(
+    regulations=regulations_set,
+    report_format="pdf",
     output_dir=contract_storage
 ))
+
+print(f"PDF report saved to: {eval_result.get('report_path')}")
 ```
 
 ### Running the Example
 
-To run the loan application example with contract evaluation and PDF reporting:
+To run the loan application example with evaluation and PDF reporting:
 
 ```bash
 python examples/Loan-Application-Evaluator.py --capture-contract --report-format pdf
@@ -364,8 +477,8 @@ python examples/Loan-Application-Evaluator.py --capture-contract --report-format
 
 This will:
 1. Run the loan evaluation with a simulated customer profile
-2. Create an AICertify contract from the captured interaction
-3. Evaluate the contract using the AICertify API
+2. Create an AICertify application from the captured interaction
+3. Evaluate the application using the AICertify API
 4. Generate a PDF compliance report in the `examples/outputs/loan_evaluation` directory
 
 You can specify a custom output directory with the `--contract-storage` parameter:
@@ -379,24 +492,32 @@ python examples/Loan-Application-Evaluator.py --capture-contract --report-format
 Here's the minimal code needed to integrate AICertify for PDF report generation:
 
 ```python
-from aicertify.models.contract_models import create_contract
-from aicertify.api import evaluate_contract_object
+from aicertify import regulations, application
 import asyncio
 
-# Create a contract from interactions
-contract = create_contract(
-    application_name="Loan Application Evaluation",
-    model_info={"model_name": "gpt-4o-mini"},
-    interactions=captured_interactions
+# Create regulations set
+regulations_set = regulations.create("loan_evaluation")
+regulations_set.add("eu_ai_act")
+
+# Create application
+app = application.create(
+    name="Loan Application Evaluation",
+    model_name="gpt-4o-mini"
 )
 
-# Evaluate and generate PDF report
-eval_result = asyncio.run(evaluate_contract_object(
-    contract=contract,
-    policy_category='eu_ai_act',
-    generate_report=True,
+# Add interactions from captured data
+for interaction in captured_interactions:
+    app.add_interaction(
+        input_text=interaction["input_text"],
+        output_text=interaction["output_text"],
+        metadata=interaction["metadata"]
+    )
+
+# Evaluate application with PDF report
+eval_result = asyncio.run(app.evaluate(
+    regulations=regulations_set,
     report_format="pdf",
-    output_dir="contracts"
+    output_dir="reports"
 ))
 
 print(f"PDF report saved to: {eval_result.get('report_path')}")
@@ -470,44 +591,56 @@ model_card = ModelCard(
 
 ### Simplified Evaluation for EU AI Act
 
-For EU AI Act compliance evaluation, we provide a simplified interface that focuses specifically on EU AI Act requirements:
+For EU AI Act compliance evaluation, we provide a simplified interface using the Regulations/Application API:
 
 ```python
-from aicertify.models.contract_models import create_contract_with_model_card
-from aicertify.api import evaluate_eu_ai_act_compliance
+from aicertify import regulations, application
+from aicertify.models.model_card import create_model_card
 import asyncio
 
-# Create a contract with a model card
-contract = create_contract_with_model_card(
-    application_name="Healthcare Assistant",
-    model_card=model_card,
-    interactions=[
-        {
-            "input_text": "What are the symptoms of pneumonia?",
-            "output_text": "Pneumonia symptoms include chest pain, cough, fatigue, fever, and shortness of breath.",
-            "metadata": {"topic": "medical_information"}
-        }
-    ]
+# Create a model card
+model_card = create_model_card(
+    model_name="HealthcareGPT",
+    model_type="text-generation",
+    organization="Health AI Inc.",
+    primary_uses=["Medical diagnosis assistance"],
+    description="Healthcare assistant AI"
+)
+
+# Create a regulations set specifically for EU AI Act
+regulations_set = regulations.create("eu_ai_act_evaluation")
+regulations_set.add("eu_ai_act", focus_areas=["prohibited_practices", "documentation"])
+
+# Create an application with the model card
+app = application.create(
+    name="Healthcare Assistant",
+    model_name="HealthcareGPT",
+    model_version="1.0.0",
+    model_card=model_card
+)
+
+# Add interactions
+app.add_interaction(
+    input_text="What are the symptoms of pneumonia?",
+    output_text="Pneumonia symptoms include chest pain, cough, fatigue, fever, and shortness of breath.",
+    metadata={"topic": "medical_information"}
 )
 
 # Evaluate EU AI Act compliance
-result = asyncio.run(evaluate_eu_ai_act_compliance(
-    contract=contract,
-    focus_areas=["prohibited_practices", "documentation"],
-    generate_report=True,
+result = asyncio.run(app.evaluate(
+    regulations=regulations_set,
     report_format="pdf",
     output_dir="reports"
 ))
 
 # Print the compliance result
 print(f"Overall compliance: {result.get('overall_compliant', False)}")
-print(f"Model card compliance level: {result.get('model_card_compliance_level', 'N/A')}")
 print(f"Report path: {result.get('report_path', 'No report generated')}")
 ```
 
 ### Focus Areas for EU AI Act Compliance
 
-When using `evaluate_eu_ai_act_compliance`, you can specify focus areas to target specific aspects of EU AI Act compliance:
+When configuring the EU AI Act regulation, you can specify focus areas to target specific aspects of compliance:
 
 - `"prohibited_practices"`: Evaluates for manipulative techniques, vulnerability exploitation, social scoring, and emotion recognition
 - `"documentation"`: Assesses technical documentation via model card evaluation
@@ -542,4 +675,4 @@ This information will be used in the evaluation to apply the appropriate level o
 
 Happy Evaluating!
 
-For further details, refer to the [README](../README.md) and our further API documentation. 
+For further details, refer to the [README](../README.md) and our further API documentation.
