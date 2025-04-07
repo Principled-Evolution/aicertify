@@ -15,8 +15,9 @@ from uuid import uuid4
 from aicertify.models.contract import AiCertifyContract, ModelInfo, Interaction
 from aicertify.regulations import RegulationSet
 from aicertify.api import aicertify_app_for_policy
+from aicertify.utils.logging_config import get_logger, info, success, warning, error, spinner, debug
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Application:
@@ -83,9 +84,7 @@ class Application:
             input_text=input_text, output_text=output_text, metadata=metadata or {}
         )
         self.contract.interactions.append(interaction)
-        logger.debug(
-            f"Added interaction {len(self.contract.interactions)} to application '{self.name}'"
-        )
+        debug(f"Added interaction {len(self.contract.interactions)} to application '{self.name}'", category="INTERACTION", logger=logger)
 
     def add_interactions(self, interactions: List[Dict[str, Any]]) -> None:
         """
@@ -101,9 +100,7 @@ class Application:
                 output_text=interaction_data["output_text"],
                 metadata=interaction_data.get("metadata", {}),
             )
-        logger.info(
-            f"Added {len(interactions)} interactions to application '{self.name}'"
-        )
+        info(f"Added {len(interactions)} interactions to application '{self.name}'", category="INTERACTION", logger=logger)
 
     def save_contract(self, output_dir: str = "contracts") -> str:
         """
@@ -127,7 +124,7 @@ class Application:
         with open(file_path, "w") as f:
             json.dump(self.contract.dict(), f, indent=2, default=str)
 
-        logger.info(f"Saved contract to {file_path}")
+        info(f"Saved contract to {file_path}", category="FILE", logger=logger)
         return file_path
 
     async def evaluate(
@@ -152,9 +149,7 @@ class Application:
         results = {}
 
         if not self.contract.interactions:
-            logger.warning(
-                f"No interactions in application '{self.name}'. Evaluation may be incomplete."
-            )
+            warning(f"No interactions in application '{self.name}'. Evaluation may be incomplete.", category="APPLICATION", logger=logger)
 
         # If no output directory specified, create one
         if output_dir is None:
@@ -168,9 +163,7 @@ class Application:
             # Extract regulation name from folder path
             regulation_name = policy_folder.split("/")[-1]
 
-            logger.info(
-                f"Evaluating application '{self.name}' against regulation '{regulation_name}'"
-            )
+            info(f"Evaluating application '{self.name}' against regulation '{regulation_name}'", category="EVALUATION", logger=logger)
 
             try:
                 # Evaluate the contract against the regulation
@@ -189,10 +182,10 @@ class Application:
                 if "report_path" in result:
                     self.report_paths[regulation_name] = result["report_path"]
 
-                logger.info(f"Completed evaluation against '{regulation_name}'")
+                success(f"Completed evaluation against '{regulation_name}'", category="EVALUATION", logger=logger)
 
             except Exception as e:
-                logger.error(f"Error evaluating against '{regulation_name}': {e}")
+                error(f"Error evaluating against '{regulation_name}': {e}", category="EVALUATION", logger=logger)
                 results[regulation_name] = {"error": str(e)}
 
         # Store evaluation results
@@ -216,7 +209,7 @@ class Application:
             if regulation_name in self.report_paths:
                 return self.report_paths[regulation_name]
             else:
-                logger.warning(f"No report found for regulation '{regulation_name}'")
+                warning(f"No report found for regulation '{regulation_name}'", category="REPORT", logger=logger)
                 return ""
         else:
             return self.report_paths
