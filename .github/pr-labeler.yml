@@ -1,0 +1,31 @@
+# PR Labeler Configuration
+# This file defines labels to apply to PRs based on the files changed
+
+'📝 documentation':
+  - 'docs/**/*'
+  - '**/*.md'
+  - 'README.md'
+  - 'CONTRIBUTING.md'
+
+'🚀 enhancement':
+  - 'aicertify/**/*.py'
+  - 'examples/**/*.py'
+  - '!aicertify/tests/**/*'
+
+'🐞 bug':
+  - 'aicertify/tests/**/*'
+  - '.github/workflows/**/*'
+
+'🤝 good first issue':
+  - 'examples/**/*'
+  - 'docs/**/*'
+
+'🔄 needs testing':
+  - 'aicertify/tests/**/*'
+  - '**/*.test.py'
+  - '**/*.spec.py'
+
+'🛡️ security':
+  - '.github/workflows/**/*'
+  - 'aicertify/opa_core/**/*'
+  - 'aicertify/opa_policies/**/*'
