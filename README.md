@@ -1,10 +1,20 @@
+<div align="center">
+  <img src="aicertify/assets/aic.png" alt="AICertify Logo" width="200"/>
+</div>
+
 # AICertify: AI Regulatory Compliance Framework
 
+[![Build Status](https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml/badge.svg)](https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Linting: ruff](https://img.shields.io/badge/linting-ruff-yellow.svg)](https://github.com/astral-sh/ruff)
+[![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Status: Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/Principled-Evolution/aicertify)
 [![Version: 0.7.0](https://img.shields.io/badge/version-0.7.0-brightgreen.svg)](https://github.com/Principled-Evolution/aicertify)
+[![Poetry](https://img.shields.io/badge/poetry-managed-blue)](https://python-poetry.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
 
-AICertify is a library for evaluating AI applications against various compliance frameworks and regulations.
+AICertify is a comprehensive open-source framework for evaluating AI systems against regulatory requirements and ethical standards. It provides a powerful set of tools for assessing AI applications, generating compliance reports, and identifying areas for improvement.
 
 > **Note:** AICertify is currently in beta stage (v0.7.0). The API may change between versions as we work toward a stable 1.0.0 release.
 
