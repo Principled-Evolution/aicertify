@@ -1,8 +1,7 @@
 import logging
-import sys
 import time
 import threading
-from typing import Optional, List, Dict, Any, Callable
+from typing import Optional
 
 import colorlog
 from rich.console import Console
@@ -20,7 +19,6 @@ EMOJIS = {
     "WARNING": "⚠️",
     "ERROR": "❌",
     "CRITICAL": "🚨",
-
     # Categories
     "POLICY": "📜",
     "EVALUATION": "🧪",
@@ -37,8 +35,9 @@ EMOJIS = {
     "INTERACTION": "💬",
     "MODEL": "🧠",
     "FILE": "📄",
-    "CONFIG": "⚙️"
+    "CONFIG": "⚙️",
 }
+
 
 # Spinner for long-running tasks
 class Spinner:
@@ -53,7 +52,7 @@ class Spinner:
         self.progress = Progress(
             SpinnerColumn(),
             TextColumn("[bold green]{task.description}"),
-            console=console
+            console=console,
         )
         self.task_id = None
 
@@ -128,7 +127,12 @@ def get_logger(name: str, level: int = logging.INFO) -> logging.Logger:
     return logger
 
 
-def log(level: str, message: str, category: Optional[str] = None, logger: Optional[logging.Logger] = None):
+def log(
+    level: str,
+    message: str,
+    category: Optional[str] = None,
+    logger: Optional[logging.Logger] = None,
+):
     """Log a message with the appropriate emoji and formatting"""
     level = level.upper()
 
@@ -173,32 +177,56 @@ def log(level: str, message: str, category: Optional[str] = None, logger: Option
             console.print(f"[bold green]✅ {message}[/bold green]")
 
 
-def info(message: str, category: Optional[str] = None, logger: Optional[logging.Logger] = None):
+def info(
+    message: str,
+    category: Optional[str] = None,
+    logger: Optional[logging.Logger] = None,
+):
     """Log an info message"""
     log("INFO", message, category, logger)
 
 
-def debug(message: str, category: Optional[str] = None, logger: Optional[logging.Logger] = None):
+def debug(
+    message: str,
+    category: Optional[str] = None,
+    logger: Optional[logging.Logger] = None,
+):
     """Log a debug message"""
     log("DEBUG", message, category, logger)
 
 
-def warning(message: str, category: Optional[str] = None, logger: Optional[logging.Logger] = None):
+def warning(
+    message: str,
+    category: Optional[str] = None,
+    logger: Optional[logging.Logger] = None,
+):
     """Log a warning message"""
     log("WARNING", message, category, logger)
 
 
-def error(message: str, category: Optional[str] = None, logger: Optional[logging.Logger] = None):
+def error(
+    message: str,
+    category: Optional[str] = None,
+    logger: Optional[logging.Logger] = None,
+):
     """Log an error message"""
     log("ERROR", message, category, logger)
 
 
-def critical(message: str, category: Optional[str] = None, logger: Optional[logging.Logger] = None):
+def critical(
+    message: str,
+    category: Optional[str] = None,
+    logger: Optional[logging.Logger] = None,
+):
     """Log a critical message"""
     log("CRITICAL", message, category, logger)
 
 
-def success(message: str, category: Optional[str] = None, logger: Optional[logging.Logger] = None):
+def success(
+    message: str,
+    category: Optional[str] = None,
+    logger: Optional[logging.Logger] = None,
+):
     """Log a success message"""
     log("SUCCESS", message, category, logger)
 
@@ -220,4 +248,6 @@ def print_banner():
 [/bold red]    """
     console.print(banner)
     console.print("[bold]AI Certification Framework[/bold]")
-    console.print("[italic]Validate and certify AI applications against regulatory requirements[/italic]\n")
+    console.print(
+        "[italic]Validate and certify AI applications against regulatory requirements[/italic]\n"
+    )

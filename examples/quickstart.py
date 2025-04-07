@@ -11,20 +11,12 @@ Steps:
 """
 
 import asyncio
-import logging
 import os
 from pathlib import Path
 
 from aicertify import regulations
 from aicertify import application
-from aicertify.utils.logging_config import (
-    print_banner,
-    info,
-    success,
-    warning,
-    error,
-    spinner
-)
+from aicertify.utils.logging_config import print_banner, info, success, error, spinner
 
 # Don't expose CUDA
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -57,7 +49,10 @@ async def main():
     except ValueError as e:
         error(f"Error adding regulation: {e}")
 
-    info(f"Regulations in set: {regulations_set.get_regulations()}", category="REGULATION")
+    info(
+        f"Regulations in set: {regulations_set.get_regulations()}",
+        category="REGULATION",
+    )
 
     # Step 3: Create your application(s)
     info("\nCreating applications...", category="APPLICATION")

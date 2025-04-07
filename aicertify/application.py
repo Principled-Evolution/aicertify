@@ -7,7 +7,6 @@ against a set of regulations.
 
 import os
 import json
-import logging
 from datetime import datetime
 from typing import Dict, List, Any, Optional, Union
 from uuid import uuid4
@@ -15,7 +14,14 @@ from uuid import uuid4
 from aicertify.models.contract import AiCertifyContract, ModelInfo, Interaction
 from aicertify.regulations import RegulationSet
 from aicertify.api import aicertify_app_for_policy
-from aicertify.utils.logging_config import get_logger, info, success, warning, error, spinner, debug
+from aicertify.utils.logging_config import (
+    get_logger,
+    info,
+    success,
+    warning,
+    error,
+    debug,
+)
 
 logger = get_logger(__name__)
 
@@ -84,7 +90,11 @@ class Application:
             input_text=input_text, output_text=output_text, metadata=metadata or {}
         )
         self.contract.interactions.append(interaction)
-        debug(f"Added interaction {len(self.contract.interactions)} to application '{self.name}'", category="INTERACTION", logger=logger)
+        debug(
+            f"Added interaction {len(self.contract.interactions)} to application '{self.name}'",
+            category="INTERACTION",
+            logger=logger,
+        )
 
     def add_interactions(self, interactions: List[Dict[str, Any]]) -> None:
         """
@@ -100,7 +110,11 @@ class Application:
                 output_text=interaction_data["output_text"],
                 metadata=interaction_data.get("metadata", {}),
             )
-        info(f"Added {len(interactions)} interactions to application '{self.name}'", category="INTERACTION", logger=logger)
+        info(
+            f"Added {len(interactions)} interactions to application '{self.name}'",
+            category="INTERACTION",
+            logger=logger,
+        )
 
     def save_contract(self, output_dir: str = "contracts") -> str:
         """
@@ -149,7 +163,11 @@ class Application:
         results = {}
 
         if not self.contract.interactions:
-            warning(f"No interactions in application '{self.name}'. Evaluation may be incomplete.", category="APPLICATION", logger=logger)
+            warning(
+                f"No interactions in application '{self.name}'. Evaluation may be incomplete.",
+                category="APPLICATION",
+                logger=logger,
+            )
 
         # If no output directory specified, create one
         if output_dir is None:
@@ -163,7 +181,11 @@ class Application:
             # Extract regulation name from folder path
             regulation_name = policy_folder.split("/")[-1]
 
-            info(f"Evaluating application '{self.name}' against regulation '{regulation_name}'", category="EVALUATION", logger=logger)
+            info(
+                f"Evaluating application '{self.name}' against regulation '{regulation_name}'",
+                category="EVALUATION",
+                logger=logger,
+            )
 
             try:
                 # Evaluate the contract against the regulation
@@ -182,10 +204,18 @@ class Application:
                 if "report_path" in result:
                     self.report_paths[regulation_name] = result["report_path"]
 
-                success(f"Completed evaluation against '{regulation_name}'", category="EVALUATION", logger=logger)
+                success(
+                    f"Completed evaluation against '{regulation_name}'",
+                    category="EVALUATION",
+                    logger=logger,
+                )
 
             except Exception as e:
-                error(f"Error evaluating against '{regulation_name}': {e}", category="EVALUATION", logger=logger)
+                error(
+                    f"Error evaluating against '{regulation_name}': {e}",
+                    category="EVALUATION",
+                    logger=logger,
+                )
                 results[regulation_name] = {"error": str(e)}
 
         # Store evaluation results
@@ -209,7 +239,11 @@ class Application:
             if regulation_name in self.report_paths:
                 return self.report_paths[regulation_name]
             else:
-                warning(f"No report found for regulation '{regulation_name}'", category="REPORT", logger=logger)
+                warning(
+                    f"No report found for regulation '{regulation_name}'",
+                    category="REPORT",
+                    logger=logger,
+                )
                 return ""
         else:
             return self.report_paths
