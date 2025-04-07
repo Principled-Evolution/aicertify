@@ -1,41 +1,42 @@
 import logging
 import time
 import threading
-from typing import Optional
+from typing import Optional, Dict, List, Any
+from collections import defaultdict
 
 import colorlog
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.live import Live
+from rich.panel import Panel
+from rich.text import Text
 
 # Global console for rich output
 console = Console()
 
+# AICertify branding
+AIC_LOGO = "🔰"  # Shield with leaf - representing certification and growth
+AIC_COLOR = "blue"  # Primary brand color
+
 # Emoji mapping for different log levels and categories
 EMOJIS = {
     # Log levels
-    "DEBUG": "🔍",
-    "INFO": "ℹ️",
-    "SUCCESS": "✅",
-    "WARNING": "⚠️",
-    "ERROR": "❌",
-    "CRITICAL": "🚨",
-    # Categories
+    "DEBUG": "·",
+    "INFO": AIC_LOGO,
+    "SUCCESS": "✓",
+    "WARNING": "!",
+    "ERROR": "✗",
+    "CRITICAL": "!!",
+
+    # Categories - using minimal set for cleaner output
     "POLICY": "📜",
     "EVALUATION": "🧪",
     "REPORT": "📊",
     "APPLICATION": "🤖",
     "REGULATION": "⚖️",
-    "SYSTEM": "🔧",
-    "SECURITY": "🔒",
-    "COMPLIANCE": "✓",
-    "NON_COMPLIANCE": "✗",
     "LOADING": "⏳",
-    "COMPLETE": "🏁",
-    "METRICS": "📏",
+    "COMPLETE": "✓",
     "INTERACTION": "💬",
-    "MODEL": "🧠",
-    "FILE": "📄",
-    "CONFIG": "⚙️",
 }
 
 
@@ -140,11 +141,17 @@ def log(
     level_emoji = EMOJIS.get(level, "")
     category_emoji = EMOJIS.get(category, "") if category else ""
 
-    # Format the message
-    if category:
-        formatted_message = f"{level_emoji} {category_emoji} {message}"
+    # Format the message with AICertify branding for important messages
+    if level in ["INFO", "SUCCESS"]:
+        if category:
+            formatted_message = f"{AIC_LOGO} {category_emoji} {message}"
+        else:
+            formatted_message = f"{AIC_LOGO} {message}"
     else:
-        formatted_message = f"{level_emoji} {message}"
+        if category:
+            formatted_message = f"{level_emoji} {category_emoji} {message}"
+        else:
+            formatted_message = f"{level_emoji} {message}"
 
     # Log the message
     if logger:
@@ -160,13 +167,13 @@ def log(
             logger.critical(formatted_message)
         elif level == "SUCCESS":
             # Success is a custom level, map to info
-            logger.info(f"✅ {message}")
+            logger.info(f"{EMOJIS['SUCCESS']} {message}")
     else:
         # Use rich console directly
         if level == "DEBUG":
-            console.print(f"[cyan]{formatted_message}[/cyan]")
+            console.print(f"[dim]{formatted_message}[/dim]")
         elif level == "INFO":
-            console.print(f"[green]{formatted_message}[/green]")
+            console.print(f"[{AIC_COLOR}]{formatted_message}[/{AIC_COLOR}]")
         elif level == "WARNING":
             console.print(f"[yellow]{formatted_message}[/yellow]")
         elif level == "ERROR":
@@ -174,7 +181,7 @@ def log(
         elif level == "CRITICAL":
             console.print(f"[red on white]{formatted_message}[/red on white]")
         elif level == "SUCCESS":
-            console.print(f"[bold green]✅ {message}[/bold green]")
+            console.print(f"[bold {AIC_COLOR}]{EMOJIS['SUCCESS']} {message}[/bold {AIC_COLOR}]")
 
 
 def info(
@@ -236,18 +243,72 @@ def spinner(message: str, emoji: str = "⏳") -> Spinner:
     return Spinner(message, emoji)
 
 
+# Message grouping utilities
+class MessageGroup:
+    """A utility for grouping similar messages and showing a summary"""
+
+    def __init__(self, title: str, color: str = AIC_COLOR):
+        self.title = title
+        self.color = color
+        self.messages = defaultdict(int)
+        self.total_count = 0
+        self.live = None
+        self.is_active = False
+
+    def add(self, message: str) -> None:
+        """Add a message to the group"""
+        self.messages[message] += 1
+        self.total_count += 1
+        if self.is_active:
+            self._update_display()
+
+    def _create_panel(self) -> Panel:
+        """Create a panel with the current messages"""
+        content = Text()
+        content.append(f"{AIC_LOGO} {self.title}: {self.total_count} items\n", style=f"bold {self.color}")
+
+        # Show top 3 most frequent messages
+        top_messages = sorted(self.messages.items(), key=lambda x: x[1], reverse=True)[:3]
+        for msg, count in top_messages:
+            content.append(f"  • {msg}: {count}\n", style=self.color)
+
+        if len(self.messages) > 3:
+            content.append(f"  • ... and {len(self.messages) - 3} more", style=f"dim {self.color}")
+
+        return Panel(content, border_style=self.color)
+
+    def _update_display(self) -> None:
+        """Update the live display"""
+        if self.live:
+            self.live.update(self._create_panel())
+
+    def __enter__(self):
+        """Start displaying the message group"""
+        self.live = Live(self._create_panel(), refresh_per_second=4)
+        self.live.start()
+        self.is_active = True
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Stop displaying the message group"""
+        if self.live:
+            self.live.stop()
+        self.is_active = False
+
+        # Print a summary
+        console.print(f"[{self.color}]{AIC_LOGO} {self.title} complete: {self.total_count} items processed[/{self.color}]")
+
+
 def print_banner():
     """Print the AICertify banner"""
-    banner = """
-    [bold blue]    _    _[/bold blue][bold green] ___[/bold green][bold yellow]            _   _  __[/bold yellow][bold red]
-[/bold red]    [bold blue]/ \  (_)[/bold blue][bold green]/ __\[/bold green][bold yellow]  ___ _ __| |_(_)/ _|[/bold yellow][bold red]_   _
-[/bold red]    [bold blue]/ _ \ | [/bold blue][bold green]/ /[/bold green][bold yellow] / _ \ '__| __| | |_[/bold yellow][bold red]| | | |
-[/bold red]    [bold blue]/ ___ \| [/bold blue][bold green]/ /[/bold green][bold yellow]|  __/ |  | |_| |  _[/bold yellow][bold red]| |_| |
-[/bold red]    [bold blue]/_/   \_\_[/bold blue][bold green]\/[/bold green][bold yellow] \___|_|   \__|_|_|[/bold yellow][bold red] \__, |
-[/bold red]    [bold blue]           [/bold blue][bold green]  [/bold green][bold yellow]                [/bold yellow][bold red]|___/
-[/bold red]    """
+    banner = f"""
+    [bold {AIC_COLOR}]    _    _  ___            _   _  __
+    / \\  (_)/ __\\  ___ _ __| |_(_)/ _|_   _
+    / _ \\ | / /  / _ \\ '__| __| | |_| | | |
+    / ___ \\| / / |  __/ |  | |_| |  _| |_| |
+    /_/   \\_\\_\\/  \\___|_|   \\__|_|_| \\__, |
+                                   |___/  [/bold {AIC_COLOR}]
+    """
     console.print(banner)
-    console.print("[bold]AI Certification Framework[/bold]")
-    console.print(
-        "[italic]Validate and certify AI applications against regulatory requirements[/italic]\n"
-    )
+    console.print(f"[bold {AIC_COLOR}]{AIC_LOGO} AI Certification Framework[/bold {AIC_COLOR}]")
+    console.print(f"[{AIC_COLOR}]Validate and certify AI applications against regulatory requirements[/{AIC_COLOR}]\n")

@@ -16,7 +16,10 @@ from pathlib import Path
 
 from aicertify import regulations
 from aicertify import application
-from aicertify.utils.logging_config import print_banner, info, success, error, spinner
+from aicertify.utils.logging_config import (
+    print_banner, info, success, error, spinner,
+    MessageGroup, AIC_LOGO
+)
 
 # Don't expose CUDA
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -31,9 +34,9 @@ async def main():
         regulations_set = regulations.create("my_regulations")
 
     # Print available regulations
-    info("Available regulations:", category="REGULATION")
-    for reg in regulations_set.list_available():
-        info(f"  • {reg}")
+    with MessageGroup("Available regulations") as reg_group:
+        for reg in regulations_set.list_available():
+            reg_group.add(reg)
 
     # Step 2: Select target regulations
     info("\nAdding regulations to the set...", category="REGULATION")
@@ -112,16 +115,30 @@ async def main():
     success("Created comparison application with 1 interaction")
 
     # Step 4: Evaluate applications against regulations
-    info("\nEvaluating applications against regulations...", category="EVALUATION")
+    info(f"\n{AIC_LOGO} Starting evaluation process", category="EVALUATION")
     reports_dir = Path("reports")
     reports_dir.mkdir(exist_ok=True)
 
-    with spinner("Evaluating AI Assistant against EU AI Act", emoji="🧪"):
-        await app1.evaluate(
-            regulations=regulations_set,
-            report_format="html",  # Changed to html format
-            output_dir="reports",
-        )
+    # Use message grouping for evaluation logs
+    with MessageGroup("Evaluation progress") as eval_group:
+        with spinner("Evaluating AI Assistant against EU AI Act", emoji="🧪"):
+            # Add some messages to the group to simulate grouped logging
+            eval_group.add("Initializing evaluators")
+            eval_group.add("Loading policy files")
+            eval_group.add("Running fairness evaluator")
+            eval_group.add("Running content safety evaluator")
+            eval_group.add("Running social scoring evaluator")
+
+            await app1.evaluate(
+                regulations=regulations_set,
+                report_format="html",  # Changed to html format
+                output_dir="reports",
+            )
+
+            # Add final messages
+            eval_group.add("Generating HTML report")
+            eval_group.add("Saving results")
+
     success("Evaluation completed successfully")
 
     # Step 5: Get the reports and open in browser
