@@ -38,6 +38,8 @@ jobs:
         run: |
           poetry run python -c "import aicertify; print(f'AICertify version: {aicertify.__version__}')"
 
-      # Temporarily disabled until we have more reliable tests
+      # TODO: Re-enable tests once reliability issues are fixed
+      # See GitHub issue #26 for tracking this task
+      # Temporarily disabled due to flaky tests and OPA dependency issues
       # - name: Run Basic Tests
       #   run: poetry run pytest tests/ -v
