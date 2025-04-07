@@ -17,8 +17,13 @@ from pathlib import Path
 from aicertify import regulations
 from aicertify import application
 from aicertify.utils.logging_config import (
-    print_banner, info, success, error, spinner,
-    MessageGroup, AIC_LOGO
+    print_banner,
+    info,
+    success,
+    error,
+    spinner,
+    MessageGroup,
+    AIC_LOGO,
 )
 
 # Don't expose CUDA

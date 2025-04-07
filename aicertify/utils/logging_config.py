@@ -1,7 +1,7 @@
 import logging
 import time
 import threading
-from typing import Optional, Dict, List, Any
+from typing import Optional
 from collections import defaultdict
 
 import colorlog
@@ -27,7 +27,6 @@ EMOJIS = {
     "WARNING": "!",
     "ERROR": "✗",
     "CRITICAL": "!!",
-
     # Categories - using minimal set for cleaner output
     "POLICY": "📜",
     "EVALUATION": "🧪",
@@ -181,7 +180,9 @@ def log(
         elif level == "CRITICAL":
             console.print(f"[red on white]{formatted_message}[/red on white]")
         elif level == "SUCCESS":
-            console.print(f"[bold {AIC_COLOR}]{EMOJIS['SUCCESS']} {message}[/bold {AIC_COLOR}]")
+            console.print(
+                f"[bold {AIC_COLOR}]{EMOJIS['SUCCESS']} {message}[/bold {AIC_COLOR}]"
+            )
 
 
 def info(
@@ -265,15 +266,22 @@ class MessageGroup:
     def _create_panel(self) -> Panel:
         """Create a panel with the current messages"""
         content = Text()
-        content.append(f"{AIC_LOGO} {self.title}: {self.total_count} items\n", style=f"bold {self.color}")
+        content.append(
+            f"{AIC_LOGO} {self.title}: {self.total_count} items\n",
+            style=f"bold {self.color}",
+        )
 
         # Show top 3 most frequent messages
-        top_messages = sorted(self.messages.items(), key=lambda x: x[1], reverse=True)[:3]
+        top_messages = sorted(self.messages.items(), key=lambda x: x[1], reverse=True)[
+            :3
+        ]
         for msg, count in top_messages:
             content.append(f"  • {msg}: {count}\n", style=self.color)
 
         if len(self.messages) > 3:
-            content.append(f"  • ... and {len(self.messages) - 3} more", style=f"dim {self.color}")
+            content.append(
+                f"  • ... and {len(self.messages) - 3} more", style=f"dim {self.color}"
+            )
 
         return Panel(content, border_style=self.color)
 
@@ -296,7 +304,9 @@ class MessageGroup:
         self.is_active = False
 
         # Print a summary
-        console.print(f"[{self.color}]{AIC_LOGO} {self.title} complete: {self.total_count} items processed[/{self.color}]")
+        console.print(
+            f"[{self.color}]{AIC_LOGO} {self.title} complete: {self.total_count} items processed[/{self.color}]"
+        )
 
 
 def print_banner():
@@ -310,5 +320,9 @@ def print_banner():
                                    |___/  [/bold {AIC_COLOR}]
     """
     console.print(banner)
-    console.print(f"[bold {AIC_COLOR}]{AIC_LOGO} AI Certification Framework[/bold {AIC_COLOR}]")
-    console.print(f"[{AIC_COLOR}]Validate and certify AI applications against regulatory requirements[/{AIC_COLOR}]\n")
+    console.print(
+        f"[bold {AIC_COLOR}]{AIC_LOGO} AI Certification Framework[/bold {AIC_COLOR}]"
+    )
+    console.print(
+        f"[{AIC_COLOR}]Validate and certify AI applications against regulatory requirements[/{AIC_COLOR}]\n"
+    )
