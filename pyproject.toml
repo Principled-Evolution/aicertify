@@ -32,7 +32,8 @@ dependencies = [
     "h11>=0.14.0",
     "torch>=2.7.0",
     "transformers>=4.50.0",
-    "setuptools>=78.1.1"
+    "setuptools>=78.1.1",
+    "pycares (>=4.9.0,<5.0.0)"
 ]
 
 
