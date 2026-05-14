@@ -21,9 +21,10 @@
 </p>
 
 <p align="center">
+  <a href="https://pypi.org/project/aicertify/"><img src="https://img.shields.io/pypi/v/aicertify?style=flat-square&color=blue" alt="PyPI"></a>
+  <a href="https://pepy.tech/project/aicertify"><img src="https://img.shields.io/pepy/dt/aicertify?style=flat-square" alt="Downloads"></a>
   <a href="https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml"><img src="https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml/badge.svg" alt="CI"></a>
   <a href="https://github.com/Principled-Evolution/aicertify/stargazers"><img src="https://img.shields.io/github/stars/Principled-Evolution/aicertify?style=flat-square" alt="Stars"></a>
-  <a href="https://github.com/Principled-Evolution/aicertify/releases"><img src="https://img.shields.io/badge/version-0.7.0-brightgreen.svg?style=flat-square" alt="Version 0.7.0"></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12%2B-blue.svg?style=flat-square" alt="Python 3.12+"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="Apache 2.0"></a>
   <a href="https://www.openpolicyagent.org/"><img src="https://img.shields.io/badge/built%20on-OPA-7D4698.svg?style=flat-square" alt="Built on OPA"></a>
@@ -59,13 +60,26 @@ AICertify is part of the [Open Policy Agent ecosystem](https://www.openpolicyage
 ## Quick Start
 
 ```bash
+pip install aicertify
+```
+
+To run the canonical demo (clone the repo for the sample contract + examples):
+
+```bash
 git clone https://github.com/Principled-Evolution/aicertify.git
 cd aicertify
-pip install -e .
 python examples/quickstart.py
 ```
 
 The quickstart wires a sample AI application through the EU AI Act policy set and writes a compliance report into `reports/`. Open it. That's what your audit deliverable looks like — generated, not handwritten.
+
+### For development
+
+```bash
+git clone https://github.com/Principled-Evolution/aicertify.git
+cd aicertify
+pip install -e .
+```
 
 ### Minimal Python usage
 

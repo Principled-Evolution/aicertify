@@ -21,9 +21,10 @@
 </p>
 
 <p align="center">
+  <a href="https://pypi.org/project/aicertify/"><img src="https://img.shields.io/pypi/v/aicertify?style=flat-square&color=blue" alt="PyPI"></a>
+  <a href="https://pepy.tech/project/aicertify"><img src="https://img.shields.io/pepy/dt/aicertify?style=flat-square" alt="下载量"></a>
   <a href="https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml"><img src="https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml/badge.svg" alt="持续集成"></a>
   <a href="https://github.com/Principled-Evolution/aicertify/stargazers"><img src="https://img.shields.io/github/stars/Principled-Evolution/aicertify?style=flat-square" alt="Star 数"></a>
-  <a href="https://github.com/Principled-Evolution/aicertify/releases"><img src="https://img.shields.io/badge/version-0.7.0-brightgreen.svg?style=flat-square" alt="版本 0.7.0"></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12%2B-blue.svg?style=flat-square" alt="Python 3.12+"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="Apache 2.0 许可证"></a>
   <a href="https://www.openpolicyagent.org/"><img src="https://img.shields.io/badge/built%20on-OPA-7D4698.svg?style=flat-square" alt="基于 OPA 构建"></a>
@@ -47,13 +48,26 @@
 ## 快速开始
 
 ```bash
+pip install aicertify
+```
+
+运行内置演示(克隆仓库以获取示例合约和示例代码):
+
+```bash
 git clone https://github.com/Principled-Evolution/aicertify.git
 cd aicertify
-pip install -e .
 python examples/quickstart.py
 ```
 
 quickstart 会将一个示例 AI 应用接入 EU AI Act 策略集,并将合规报告写入 `reports/`。打开看看 —— 这就是您的审计交付物的样貌:由系统生成,而非手工撰写。
+
+### 用于开发
+
+```bash
+git clone https://github.com/Principled-Evolution/aicertify.git
+cd aicertify
+pip install -e .
+```
 
 ### 最简 Python 用法
 
