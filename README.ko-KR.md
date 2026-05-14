@@ -21,9 +21,10 @@
 </p>
 
 <p align="center">
+  <a href="https://pypi.org/project/aicertify/"><img src="https://img.shields.io/pypi/v/aicertify?style=flat-square&color=blue" alt="PyPI"></a>
+  <a href="https://pepy.tech/project/aicertify"><img src="https://img.shields.io/pepy/dt/aicertify?style=flat-square" alt="다운로드"></a>
   <a href="https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml"><img src="https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml/badge.svg" alt="CI"></a>
   <a href="https://github.com/Principled-Evolution/aicertify/stargazers"><img src="https://img.shields.io/github/stars/Principled-Evolution/aicertify?style=flat-square" alt="Stars"></a>
-  <a href="https://github.com/Principled-Evolution/aicertify/releases"><img src="https://img.shields.io/badge/version-0.7.0-brightgreen.svg?style=flat-square" alt="Version 0.7.0"></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12%2B-blue.svg?style=flat-square" alt="Python 3.12+"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="Apache 2.0"></a>
   <a href="https://www.openpolicyagent.org/"><img src="https://img.shields.io/badge/built%20on-OPA-7D4698.svg?style=flat-square" alt="Built on OPA"></a>
@@ -47,13 +48,26 @@
 ## 빠른 시작
 
 ```bash
+pip install aicertify
+```
+
+샘플 계약과 예시를 함께 실행하려면 저장소를 클론하세요:
+
+```bash
 git clone https://github.com/Principled-Evolution/aicertify.git
 cd aicertify
-pip install -e .
 python examples/quickstart.py
 ```
 
 빠른 시작 스크립트는 샘플 AI 애플리케이션을 EU AI Act 정책 세트에 통과시키고 컴플라이언스 리포트를 `reports/`에 작성합니다. 파일을 열어 보세요. 이것이 바로 여러분의 감사 산출물의 모습입니다 — 손으로 작성하지 않고 생성된 리포트입니다.
+
+### 개발용 설치
+
+```bash
+git clone https://github.com/Principled-Evolution/aicertify.git
+cd aicertify
+pip install -e .
+```
 
 ### 최소 Python 사용 예시
 
