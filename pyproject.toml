@@ -1,13 +1,48 @@
 [project]
 name = "aicertify"
 version = "0.7.0"
-description = "AICertify is a standardized framework for validating and certifying AI applications against regulatory, compliance, and operational (AIOps) requirements. It leverages declarative policies via Open Policy Agent (OPA)—to ensure AI systems meet cost, fairness, validation, and acceptance criteria."
+description = "Compliance-as-code for AI systems. Audit your AI against the EU AI Act, NIST AI RMF, and 13+ regulatory frameworks using Open Policy Agent (OPA) — and produce audit-ready PDF, Markdown, JSON, or HTML reports."
 authors = [
-    {name = "kmadan",email = "kapil.madan@gmail.com"}
+    {name = "Kapil Madan", email = "kapil.madan@gmail.com"},
+    {name = "Principled Evolution", email = "info@principledevolution.ai"},
 ]
-license = {text = "\"Apache-2.0\""}
+license = "Apache-2.0"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
+keywords = [
+    "ai-governance",
+    "ai-compliance",
+    "ai-act",
+    "eu-ai-act",
+    "nist-ai-rmf",
+    "responsible-ai",
+    "open-policy-agent",
+    "opa",
+    "rego",
+    "regulatory-compliance",
+    "ai-audit",
+    "ai-safety",
+    "fairness",
+    "policy-as-code",
+    "ai-evaluation",
+    "ai-certification",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Legal Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+]
 dependencies = [
     "langfair @ git+https://github.com/mantric/langfair-mantric.git@python-3.12-support",
     "fastapi>=0.115.8,<0.116.0",
@@ -32,36 +67,27 @@ dependencies = [
     "h11>=0.14.0",
     "torch>=2.7.0",
     "transformers>=4.50.0",
-    "setuptools>=78.1.1"
+    "setuptools>=78.1.1",
+    "pycares (>=4.9.0,<5.0.0)",
 ]
 
+[project.urls]
+Homepage = "https://github.com/Principled-Evolution/aicertify"
+Repository = "https://github.com/Principled-Evolution/aicertify"
+Documentation = "https://github.com/Principled-Evolution/aicertify#readme"
+Issues = "https://github.com/Principled-Evolution/aicertify/issues"
+Changelog = "https://github.com/Principled-Evolution/aicertify/blob/main/CHANGELOG.md"
+"Policy Library (gopal)" = "https://github.com/Principled-Evolution/gopal"
+
+[project.scripts]
+aicertify = "aicertify.cli:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "aicertify"
-version = "0.1.0"
-description = "A framework for validating and certifying AI applications"
-authors = ["kmadan <kapil.madan@gmail.com>"]
-license = "Apache-2.0"
-readme = "README.md"
-repository = "https://github.com/mantric/aicertify"
-
-# ✅ This ensures Poetry installs the package correctly
 packages = [{ include = "aicertify" }]
-
-[tool.poetry.dependencies]
-python = ">=3.12,<3.13"
-fastapi = ">=0.115.8,<0.116.0"
-uvicorn = ">=0.34.0,<0.35.0"
-requests = ">=2.32.3,<3.0.0"
-opa-python-client = ">=0.1.0"
-langfair = {git = "https://github.com/mantric/langfair-mantric.git", branch = "python-3.12-support"}
-python-dotenv = ">=1.0.0"
-pandas = ">=2.2.0"
-langchain-openai = ">=0.0.5"
 
 [tool.poetry.group.dev.dependencies]
 pytest-asyncio = "^0.25.3"
@@ -70,7 +96,7 @@ pre-commit = "^4.2.0"
 black = ">=25.1.0,<26.0.0"
 
 [tool.ruff]
-line-length = 88  # Match black's default
+line-length = 88
 target-version = "py312"
 select = ["E", "F", "I"]
 ignore = []
@@ -79,6 +105,6 @@ ignore = []
 "__init__.py" = ["F401"]
 
 [tool.black]
-line-length = 88  # Default black line length
+line-length = 88
 target-version = ["py312"]
 include = '\.pyi?$'
