@@ -1,5 +1,8 @@
 <div align="center">
-  <img src="aicertify/assets/aic.png" alt="AICertify" width="180"/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/hero_banner_dark.svg">
+    <img src="diagrams/hero_banner_light.svg" alt="AICertify — Compliance-as-code for AI systems" width="100%">
+  </picture>
 </div>
 
 <h1 align="center">AICertify</h1>
@@ -32,7 +35,10 @@
 </p>
 
 <p align="center">
-  <img src="diagrams/diagram1_hero_flow.png" alt="AI ऐप से ऑडिट-तैयार रिपोर्ट तक: AI Application -> AICertify Contract -> OPA Policy Evaluation -> Compliance Report" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram1_hero_flow_dark.svg">
+    <img src="diagrams/diagram1_hero_flow_light.svg" alt="AI ऐप से ऑडिट-तैयार रिपोर्ट तक: AI Application -> AICertify Contract -> OPA Policy Evaluation -> Compliance Report" width="85%" />
+  </picture>
 </p>
 
 <br>
@@ -108,10 +114,6 @@ await app.evaluate(regulations=regs, report_format="pdf", output_dir="reports")
 
 AICertify उसी आर्टिफैक्ट के लिए बनाया गया है।
 
-<p align="center">
-  <img src="diagrams/diagram4_comparison.png" alt="AICertify बनाम विकल्प: AICertify एकमात्र ओपन-सोर्स, policy-as-code विकल्प है जिसमें नामित रेगुलेटरी फ्रेमवर्क्स, इंडस्ट्री वर्टिकल्स, और बॉक्स से बाहर ऑडिट-तैयार रिपोर्ट्स हैं" width="85%" />
-</p>
-
 | | AICertify | Fairlearn / AIF360 | MS RAI Toolbox | Credo AI |
 |---|---|---|---|---|
 | ओपन सोर्स | ✅ Apache 2.0 | ✅ MIT | ✅ MIT | ❌ क्लोज़्ड |
@@ -127,7 +129,10 @@ AICertify उसी आर्टिफैक्ट के लिए बनाय
 ## यह कैसे काम करता है
 
 <p align="center">
-  <img src="diagrams/diagram2_architecture.png" alt="AICertify आर्किटेक्चर: आपका AI ऐप एक Contract को फीड करता है, जो Evaluators (Fairness, ContentSafety, RiskManagement, Compliance) के माध्यम से 94 Rego पॉलिसीज़ वाले OPA Engine में जाता है, और Report Generator के द्वारा एक ऑडिट डिलिवरेबल तैयार करता है" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram2_architecture_dark.svg">
+    <img src="diagrams/diagram2_architecture_light.svg" alt="AICertify आर्किटेक्चर: आपका AI ऐप एक Contract को फीड करता है, जो Evaluators (Fairness, ContentSafety, RiskManagement, Compliance) के माध्यम से 94 Rego पॉलिसीज़ वाले OPA Engine में जाता है, और Report Generator के द्वारा एक ऑडिट डिलिवरेबल तैयार करता है" width="85%" />
+  </picture>
 </p>
 
 1. **Contract** — आपके AI एप्लिकेशन का एक JSON विवरण: model, version, कैप्चर की गई interactions, metadata।
@@ -142,7 +147,10 @@ AICertify उसी आर्टिफैक्ट के लिए बनाय
 ## रेगुलेटरी कवरेज
 
 <p align="center">
-  <img src="diagrams/diagram3_regulatory_coverage.png" alt="रेगुलेटरी कवरेज: 15+ फ्रेमवर्क्स और 5 इंडस्ट्रीज़ में 94 पॉलिसीज़ -- EU AI Act, NIST AI RMF, India DPDP, Brazil AI Bill, RTCA DO-365/366, FAA Part 107, EASA SORA, ICAO Doc 10019, Healthcare, Banking and Financial Services, Automotive, Education, Global, Aviation, AIOps, Corporate" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram3_regulatory_coverage_dark.svg">
+    <img src="diagrams/diagram3_regulatory_coverage_light.svg" alt="रेगुलेटरी कवरेज: 15+ फ्रेमवर्क्स और 5 इंडस्ट्रीज़ में 94 पॉलिसीज़ -- EU AI Act, NIST AI RMF, India DPDP, Brazil AI Bill, RTCA DO-365/366, FAA Part 107, EASA SORA, ICAO Doc 10019, Healthcare, Banking and Financial Services, Automotive, Education, Global, Aviation, AIOps, Corporate" width="85%" />
+  </picture>
 </p>
 
 AICertify [gopal](https://github.com/Principled-Evolution/gopal) पॉलिसी लाइब्रेरी के विरुद्ध चलता है — इन फ्रेमवर्क्स में **94 प्रोडक्शन OPA पॉलिसीज़**:
@@ -198,7 +206,10 @@ python -m aicertify.cli \
 ## सैंपल रिपोर्ट्स
 
 <p align="center">
-  <img src="diagrams/diagram5_report_anatomy.png" alt="एक ऑडिट-तैयार रिपोर्ट की संरचना: फ्रेमवर्क नाम, एप्लिकेशन, मॉडल और दिनांक के साथ हेडर; executive summary; policy results table; risk assessment bar chart; remediation guidance; AICertify v0.7.0 का श्रेय देने वाला फुटर" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram5_report_anatomy_dark.svg">
+    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="एक ऑडिट-तैयार रिपोर्ट की संरचना: फ्रेमवर्क नाम, एप्लिकेशन, मॉडल और दिनांक के साथ हेडर; executive summary; policy results table; risk assessment bar chart; remediation guidance; AICertify v0.7.0 का श्रेय देने वाला फुटर" width="85%" />
+  </picture>
 </p>
 
 `examples/outputs/` डायरेक्टरी में वास्तविक मूल्यांकनों से जनरेट की गई रिपोर्ट्स हैं जिन्हें आप कुछ भी चलाने से पहले देख सकते हैं:

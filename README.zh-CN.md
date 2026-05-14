@@ -1,5 +1,8 @@
 <div align="center">
-  <img src="aicertify/assets/aic.png" alt="AICertify" width="180"/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/hero_banner_dark.svg">
+    <img src="diagrams/hero_banner_light.svg" alt="AICertify — Compliance-as-code for AI systems" width="100%">
+  </picture>
 </div>
 
 <h1 align="center">AICertify</h1>
@@ -32,7 +35,10 @@
 </p>
 
 <p align="center">
-  <img src="diagrams/diagram1_hero_flow.png" alt="从 AI 应用到审计就绪的报告：AI 应用 -> AICertify 合约 -> OPA 策略评估 -> 合规报告" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram1_hero_flow_dark.svg">
+    <img src="diagrams/diagram1_hero_flow_light.svg" alt="从 AI 应用到审计就绪的报告：AI 应用 -> AICertify 合约 -> OPA 策略评估 -> 合规报告" width="85%" />
+  </picture>
 </p>
 
 <br>
@@ -108,10 +114,6 @@ await app.evaluate(regulations=regs, report_format="pdf", output_dir="reports")
 
 AICertify 正是为这份交付物而生。
 
-<p align="center">
-  <img src="diagrams/diagram4_comparison.png" alt="AICertify 与同类工具对比:AICertify 是唯一开箱即用、采用策略即代码、覆盖具名法规框架与行业垂直领域并生成审计就绪报告的开源选项" width="85%" />
-</p>
-
 | | AICertify | Fairlearn / AIF360 | MS RAI Toolbox | Credo AI |
 |---|---|---|---|---|
 | 开源 | ✅ Apache 2.0 | ✅ MIT | ✅ MIT | ❌ 闭源 |
@@ -127,7 +129,10 @@ AICertify 正是为这份交付物而生。
 ## 工作原理
 
 <p align="center">
-  <img src="diagrams/diagram2_architecture.png" alt="AICertify 架构:您的 AI 应用提供合约,合约流经评估器(Fairness、ContentSafety、RiskManagement、Compliance)进入承载 94 条 Rego 策略的 OPA 引擎,并通过报告生成器产出审计交付物" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram2_architecture_dark.svg">
+    <img src="diagrams/diagram2_architecture_light.svg" alt="AICertify 架构:您的 AI 应用提供合约,合约流经评估器(Fairness、ContentSafety、RiskManagement、Compliance)进入承载 94 条 Rego 策略的 OPA 引擎,并通过报告生成器产出审计交付物" width="85%" />
+  </picture>
 </p>
 
 1. **合约(Contract)** —— 用 JSON 描述您的 AI 应用:模型、版本、采集的交互、元数据。
@@ -142,7 +147,10 @@ AICertify 正是为这份交付物而生。
 ## 法规覆盖
 
 <p align="center">
-  <img src="diagrams/diagram3_regulatory_coverage.png" alt="法规覆盖:94 条策略,横跨 15+ 框架与 5 个行业 —— EU AI Act、NIST AI RMF、India DPDP、Brazil AI Bill、RTCA DO-365/366、FAA Part 107、EASA SORA、ICAO Doc 10019、医疗、银行金融服务、汽车、教育、全球、航空、AIOps、企业" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram3_regulatory_coverage_dark.svg">
+    <img src="diagrams/diagram3_regulatory_coverage_light.svg" alt="法规覆盖:94 条策略,横跨 15+ 框架与 5 个行业 —— EU AI Act、NIST AI RMF、India DPDP、Brazil AI Bill、RTCA DO-365/366、FAA Part 107、EASA SORA、ICAO Doc 10019、医疗、银行金融服务、汽车、教育、全球、航空、AIOps、企业" width="85%" />
+  </picture>
 </p>
 
 AICertify 运行于 [gopal](https://github.com/Principled-Evolution/gopal) 策略库之上 —— **94 条生产级 OPA 策略**,覆盖以下框架:
@@ -201,7 +209,10 @@ python -m aicertify.cli \
 ## 示例报告
 
 <p align="center">
-  <img src="diagrams/diagram5_report_anatomy.png" alt="审计就绪报告的结构:含框架名称、应用、模型与日期的页眉;执行摘要;策略结果表;风险评估柱状图;整改建议;以及标注 AICertify v0.7.0 的页脚" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram5_report_anatomy_dark.svg">
+    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="审计就绪报告的结构:含框架名称、应用、模型与日期的页眉;执行摘要;策略结果表;风险评估柱状图;整改建议;以及标注 AICertify v0.7.0 的页脚" width="85%" />
+  </picture>
 </p>
 
 `examples/outputs/` 目录中包含来自真实评估的生成报告,您可以在运行前先行查阅:

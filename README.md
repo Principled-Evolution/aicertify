@@ -1,5 +1,8 @@
 <div align="center">
-  <img src="aicertify/assets/aic.png" alt="AICertify" width="180"/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/hero_banner_dark.svg">
+    <img src="diagrams/hero_banner_light.svg" alt="AICertify — Compliance-as-code for AI systems" width="100%">
+  </picture>
 </div>
 
 <h1 align="center">AICertify</h1>
@@ -32,7 +35,10 @@
 </p>
 
 <p align="center">
-  <img src="diagrams/diagram1_hero_flow.png" alt="From AI app to audit-ready report: AI Application -> AICertify Contract -> OPA Policy Evaluation -> Compliance Report" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram1_hero_flow_dark.svg">
+    <img src="diagrams/diagram1_hero_flow_light.svg" alt="From AI app to audit-ready report: AI Application -> AICertify Contract -> OPA Policy Evaluation -> Compliance Report" width="85%" />
+  </picture>
 </p>
 
 <br>
@@ -120,10 +126,6 @@ Neither produces the document a regulator actually asks for: *evidence that you 
 
 AICertify is built for that artifact.
 
-<p align="center">
-  <img src="diagrams/diagram4_comparison.png" alt="AICertify vs alternatives: AICertify is the only open-source, policy-as-code option with named regulatory frameworks, industry verticals, and audit-ready reports out of the box" width="85%" />
-</p>
-
 | | AICertify | Fairlearn / AIF360 | MS RAI Toolbox | Credo AI |
 |---|---|---|---|---|
 | Open source | ✅ Apache 2.0 | ✅ MIT | ✅ MIT | ❌ Closed |
@@ -139,7 +141,10 @@ AICertify is built for that artifact.
 ## How It Works
 
 <p align="center">
-  <img src="diagrams/diagram2_architecture.png" alt="AICertify architecture: Your AI App feeds a Contract, which flows through Evaluators (Fairness, ContentSafety, RiskManagement, Compliance) into the OPA Engine with 94 Rego policies, producing an audit deliverable via the Report Generator" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram2_architecture_dark.svg">
+    <img src="diagrams/diagram2_architecture_light.svg" alt="AICertify architecture: Your AI App feeds a Contract, which flows through Evaluators (Fairness, ContentSafety, RiskManagement, Compliance) into the OPA Engine with 94 Rego policies, producing an audit deliverable via the Report Generator" width="85%" />
+  </picture>
 </p>
 
 1. **Contract** — A JSON description of your AI application: model, version, captured interactions, metadata.
@@ -154,7 +159,10 @@ Because the policies are declarative Rego, they version, diff, and review like a
 ## Regulatory Coverage
 
 <p align="center">
-  <img src="diagrams/diagram3_regulatory_coverage.png" alt="Regulatory coverage: 94 policies across 15+ frameworks and 5 industries -- EU AI Act, NIST AI RMF, India DPDP, Brazil AI Bill, RTCA DO-365/366, FAA Part 107, EASA SORA, ICAO Doc 10019, Healthcare, Banking and Financial Services, Automotive, Education, Global, Aviation, AIOps, Corporate" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram3_regulatory_coverage_dark.svg">
+    <img src="diagrams/diagram3_regulatory_coverage_light.svg" alt="Regulatory coverage: 94 policies across 15+ frameworks and 5 industries -- EU AI Act, NIST AI RMF, India DPDP, Brazil AI Bill, RTCA DO-365/366, FAA Part 107, EASA SORA, ICAO Doc 10019, Healthcare, Banking and Financial Services, Automotive, Education, Global, Aviation, AIOps, Corporate" width="85%" />
+  </picture>
 </p>
 
 AICertify runs against the [gopal](https://github.com/Principled-Evolution/gopal) policy library — **94 production OPA policies** across these frameworks:
@@ -217,7 +225,10 @@ You don't have to install anything to see what AICertify produces. Pre-generated
 - [examples/outputs/medical_diagnosis/](examples/outputs/medical_diagnosis/) — a clinical-decision-support model evaluated for patient safety
 
 <p align="center">
-  <img src="diagrams/diagram5_report_anatomy.png" alt="Anatomy of an audit-ready report: header with framework name, application, model and date; executive summary; policy results table; risk assessment bar chart; remediation guidance; footer attributing AICertify v0.7.0" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram5_report_anatomy_dark.svg">
+    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="Anatomy of an audit-ready report: header with framework name, application, model and date; executive summary; policy results table; risk assessment bar chart; remediation guidance; footer attributing AICertify v0.7.0" width="85%" />
+  </picture>
 </p>
 
 Open the PDFs. That's what your auditor wants.
