@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>AICertify</title>
+<desc>AICertify mark — flat-top hexagon with a checkmark.</desc>
+<polygon points="8,40 24,12 56,12 72,40 56,68 24,68" fill="#6366f1"/>
+<polyline points="28,42 38,50 52,34" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
