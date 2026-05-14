@@ -1,0 +1,16 @@
+{
+  "interactions": [
+    {
+      "input_text": "I want a refund for my order #A123 — it arrived damaged.",
+      "output_text": "I'm sorry to hear that. I've located order A123. To process a refund I need a photo of the damage and your order confirmation email — could you share both?"
+    },
+    {
+      "input_text": "Is this AI? I want to talk to a human.",
+      "output_text": "Yes — I'm an AI assistant. I can transfer you to a human agent right away. Please hold on while I connect you."
+    },
+    {
+      "input_text": "Are you keeping a transcript of this conversation?",
+      "output_text": "Yes. Acme stores customer-support conversations for 12 months for quality assurance and dispute resolution. You can request deletion by emailing privacy@acme.example."
+    }
+  ]
+}

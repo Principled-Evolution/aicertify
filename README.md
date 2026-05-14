@@ -42,6 +42,18 @@ Regulators are moving faster than your governance docs. The EU AI Act is in forc
 
 It's the missing link between *"we have a responsible-AI policy"* and *"we can prove it."*
 
+**Use it when you need to:**
+
+- turn AI governance policies into executable checks
+- produce audit-ready compliance evidence on every release
+- evaluate AI interactions against named regulatory frameworks (EU AI Act, NIST AI RMF, FERPA, fair-lending, FAA/EASA aviation, …)
+- generate Markdown, JSON, HTML, or PDF reports your auditor can read
+- integrate AI compliance checks into CI/CD
+
+AICertify is part of the [Open Policy Agent ecosystem](https://www.openpolicyagent.org/ecosystem/entry/principled-evolution) — built on the same policy engine that powers Kubernetes admission, microservice authorisation, and infrastructure governance at scale.
+
+> ⭐ **If AICertify helps you, please star the repo.** It helps AI governance and policy-as-code practitioners discover the project.
+
 ---
 
 ## Quick Start
@@ -183,17 +195,18 @@ See [`examples/quickstart.py`](examples/quickstart.py) for the full Python API.
 
 ---
 
-## Sample Reports
+## See the output
+
+You don't have to install anything to see what AICertify produces. Pre-generated reports are committed to the repo:
+
+- **[demo-report-eu-ai-act.pdf](docs/demo-report-eu-ai-act.pdf)** — a customer-support agent evaluated against the EU AI Act
+- [examples/outputs/eu_ai_act/](examples/outputs/eu_ai_act/) — the canonical full output
+- [examples/outputs/loan_evaluation/](examples/outputs/loan_evaluation/) — a credit-scoring model evaluated for fair lending
+- [examples/outputs/medical_diagnosis/](examples/outputs/medical_diagnosis/) — a clinical-decision-support model evaluated for patient safety
 
 <p align="center">
   <img src="diagrams/diagram5_report_anatomy.png" alt="Anatomy of an audit-ready report: header with framework name, application, model and date; executive summary; policy results table; risk assessment bar chart; remediation guidance; footer attributing AICertify v0.7.0" width="85%" />
 </p>
-
-The `examples/outputs/` directory contains generated reports from real evaluations you can inspect before running anything:
-
-- `eu_ai_act/` — A customer-support agent evaluated against the EU AI Act
-- `loan_evaluation/` — A credit-scoring model evaluated for fair lending
-- `medical_diagnosis/` — A clinical-decision-support model evaluated for patient safety
 
 Open the PDFs. That's what your auditor wants.
 
@@ -214,6 +227,56 @@ Track progress in the [policy library roadmap](https://github.com/Principled-Evo
 
 ---
 
+## For OPA / Rego users
+
+If you already use OPA for Kubernetes admission, microservice authorisation, or infrastructure governance, AICertify is the AI-system slot in your existing policy strategy.
+
+- **Bring your own Rego policies.** Drop a `.rego` file into the policy folder and it evaluates alongside the bundled set.
+- **Evaluate AI interactions through OPA.** Captured inputs, outputs, and metrics flow into your policies via the standard OPA `input` document.
+- **Generate audit-ready evidence.** PDF / Markdown / JSON / HTML, one command.
+- **Use [gopal](https://github.com/Principled-Evolution/gopal) as the policy library underneath.** 94 production Rego policies covering EU AI Act, NIST AI RMF, aviation safety, FERPA, fair lending, and more.
+
+AICertify is listed in the [Open Policy Agent ecosystem](https://www.openpolicyagent.org/ecosystem/entry/principled-evolution) as the AI-governance entry alongside Gopal.
+
+---
+
+## Why AICertify?
+
+Most AI governance programs live in PDFs, spreadsheets, and policy documents. They describe what *should* happen but do not prove what *did*.
+
+AICertify turns governance rules into executable policy checks.
+
+Instead of saying:
+
+> "Our chatbot follows our responsible AI policy."
+
+You can produce:
+
+> "Here is the captured interaction, the policy version, the OPA evaluation result, and the generated audit report."
+
+AICertify is for AI teams, governance teams, auditors, and platform engineers who need AI compliance evidence that can be **read, run, reviewed, and repeated**.
+
+See the full positioning in [docs/why-aicertify.md](docs/why-aicertify.md).
+
+---
+
+## Who should contribute?
+
+AICertify is especially useful for:
+
+- **AI engineers** building regulated AI systems
+- **Governance, risk, and compliance (GRC) teams** producing audit evidence
+- **Auditors and model risk professionals** evaluating third-party AI
+- **OPA / Rego users** interested in AI-specific policy authoring
+- **Responsible AI researchers** wanting reproducible benchmarks
+- **Python developers** interested in compliance automation
+
+**Non-code contributions are welcome:** examples, policy mappings, docs, tests, report templates, and regulatory notes.
+
+A good place to start is the [`good first issue`](https://github.com/Principled-Evolution/aicertify/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and [`help wanted`](https://github.com/Principled-Evolution/aicertify/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) labels.
+
+---
+
 ## Contributing
 
 We welcome:
@@ -222,8 +285,11 @@ We welcome:
 - Industry-specific policies you've battle-tested
 - New evaluators (fairness, safety, robustness — see `aicertify/evaluators/`)
 - Bug reports with a minimal reproducing contract
+- Documentation, examples, and tutorials
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
+Start with [CONTRIBUTING.md](CONTRIBUTING.md), the [Code of Conduct](CODE_OF_CONDUCT.md), and the open [contributor issues](https://github.com/Principled-Evolution/aicertify/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+
+For security issues, please follow the [Security Policy](SECURITY.md) — report privately to [security@principledevolution.ai](mailto:security@principledevolution.ai), not via public issue.
 
 ---
 
@@ -238,5 +304,12 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE).
+
+---
+
+<p align="center">
+  <strong>⭐ If AICertify is useful to you, please star the repo and share it with one colleague.</strong><br>
+  <sub>Every star helps AI governance and policy-as-code practitioners discover the project.</sub>
+</p>
 
 <p align="center"><sub>Built by <a href="https://github.com/Principled-Evolution">Principled Evolution</a> · Policies you can read, run, and prove.</sub></p>

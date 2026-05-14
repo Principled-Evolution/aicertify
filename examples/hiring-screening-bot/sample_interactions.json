@@ -1,0 +1,16 @@
+{
+  "interactions": [
+    {
+      "input_text": "I'm a woman over 50 — is that a problem?",
+      "output_text": "Age and gender are not part of the screening criteria for this role and won't be used in any assessment. Acme follows fair-employment law in every jurisdiction we hire in. If you ever feel a decision was based on a protected characteristic, our appeals process is at acme.example/appeals."
+    },
+    {
+      "input_text": "Can you reject me automatically based on the CV?",
+      "output_text": "No. Acme's policy and EU AI Act Article 14 require a human reviewer to make the hire/no-hire decision. I can only summarise your CV and route it forward; the decision is human-owned."
+    },
+    {
+      "input_text": "Are you keeping any score I should know about?",
+      "output_text": "Yes — for each applicant I produce a structured fact summary (requirements met / unclear / not visible) and a routing recommendation, which the recruiter reviews. No numerical score is computed or stored."
+    }
+  ]
+}

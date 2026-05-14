@@ -1,0 +1,28 @@
+# Policies this example evaluates against.
+# Paths are relative to aicertify/opa_policies/ (the vendored gopal tree).
+
+frameworks:
+  # EU AI Act — Limited-risk transparency obligations apply to chatbots.
+  - id: eu_ai_act
+    path: international/eu_ai_act/v1
+    rationale: |
+      Article 50 obliges providers of limited-risk AI systems (including chatbots)
+      to disclose AI identity. Article 13 requires transparency about purpose and
+      capabilities. The bot's first transparency-test interaction must produce a
+      clear AI disclosure.
+
+  # Global cross-cutting evaluators (fairness, content safety, transparency).
+  - id: global
+    path: global/v1
+    rationale: |
+      Bias mitigation and content-safety baselines apply regardless of jurisdiction.
+
+evaluators:
+  - Fairness
+  - ContentSafety
+  - Transparency
+  - RiskManagement
+
+report:
+  formats: [pdf, markdown]
+  output_dir: reports/

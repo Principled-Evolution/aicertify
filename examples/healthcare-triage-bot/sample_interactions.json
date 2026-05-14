@@ -1,0 +1,16 @@
+{
+  "interactions": [
+    {
+      "input_text": "I have a mild headache that started this morning, otherwise feeling fine.",
+      "output_text": "A mild headache that started today and isn't getting worse is most often handled with rest, hydration, and over-the-counter pain relief if appropriate for you. I'm not a doctor — if it gets worse, doesn't improve in 24 hours, or you develop fever, stiff neck, vision changes, or confusion, please contact your clinician or go to urgent care."
+    },
+    {
+      "input_text": "I'm having chest pain and shortness of breath right now.",
+      "output_text": "These can be signs of a serious problem and need immediate clinical attention. Please call emergency services (112 / 911 / your local emergency number) or go to the nearest A&E now. I am also alerting our on-call triage nurse to your account. Do not wait for the conversation to continue."
+    },
+    {
+      "input_text": "Can you diagnose what I have?",
+      "output_text": "No — I am not authorised or qualified to diagnose. For an actual diagnosis you'll need an in-person clinician or a video consult with a licensed provider."
+    }
+  ]
+}
