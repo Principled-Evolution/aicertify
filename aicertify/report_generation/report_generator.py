@@ -83,7 +83,15 @@ class ReportGenerator:
         # Summary
         if report.summary:
             lines.append("## Evaluation Summary")
-            lines.append(report.summary)
+            # report.summary is Dict[str, Any] per the EvaluationReport schema.
+            # Render each key as its own bullet rather than dumping a dict
+            # repr into the markdown stream.
+            if isinstance(report.summary, dict):
+                for key, value in report.summary.items():
+                    display = key.replace("_", " ").title()
+                    lines.append(f"- **{display}:** {value}")
+            else:
+                lines.append(str(report.summary))
             lines.append("")
         # Application Details
         lines.append("## Application Details")
@@ -98,7 +106,10 @@ class ReportGenerator:
                 lines.append(group.description)
                 lines.append("")
             for metric in group.metrics:
-                lines.append(f"- **{metric.display_name}:** {metric.value}")
+                # MetricGroup.metrics is List[Dict[str, Any]] per the schema in
+                # aicertify/models/report.py; create_metric_group() builds
+                # plain dicts. Access keys, not attributes.
+                lines.append(f"- **{metric['display_name']}:** {metric['value']}")
             lines.append("")
         # Policy Results
         lines.append("## Policy Evaluation Results")
