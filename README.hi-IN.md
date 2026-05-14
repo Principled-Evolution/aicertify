@@ -5,18 +5,12 @@
   </picture>
 </div>
 
-<h1 align="center">AICertify</h1>
-
 <p align="center">
   <a href="README.md">English</a> |
   <a href="README.zh-CN.md">简体中文</a> |
   <a href="README.ja-JP.md">日本語</a> |
   <a href="README.ko-KR.md">한국어</a> |
   <strong>हिन्दी</strong>
-</p>
-
-<p align="center">
-  <strong>AI सिस्टम्स के लिए Compliance-as-code।</strong>
 </p>
 
 <p align="center">
