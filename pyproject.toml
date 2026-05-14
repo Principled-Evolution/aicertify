@@ -48,17 +48,17 @@ dependencies = [
     "fastapi>=0.115.8,<0.116.0",
     "uvicorn>=0.34.0,<0.35.0",
     "opa-python-client>=0.1.0",
-    "requests>=2.32.3,<3.0.0",
-    "python-dotenv>=1.0.0",
+    "requests>=2.33.0,<3.0.0",
+    "python-dotenv>=1.2.2",
     "pandas>=2.2.0",
     "langchain-openai>=0.0.5",
     "pydantic-ai (>=0.0.24,<0.0.25)",
-    "markdown (>=3.7,<4.0)",
+    "markdown (>=3.8.1,<4.0)",
     "reportlab (>=4.3.1,<5.0.0)",
     "yfinance (>=0.2.54,<0.3.0)",
     "pytest (>=8.3.4,<9.0.0)",
     "datasets (>=3.3.2,<4.0.0)",
-    "huggingface-hub (>=0.29.1,<0.30.0)",
+    "huggingface-hub (>=0.34.0,<1.0)",
     "deepeval (>=2.4.8,<3.0.0)",
     "colorlog (>=6.9.0,<7.0.0)",
     "pydantic (>=2.10.6,<3.0.0)",
@@ -66,9 +66,36 @@ dependencies = [
     "black (>=25.1.0,<26.0.0)",
     "h11>=0.14.0",
     "torch>=2.7.0",
-    "transformers>=4.50.0",
+    "transformers>=4.53.0",
     "setuptools>=78.1.1",
     "pycares (>=4.9.0,<5.0.0)",
+    # Explicit lower bounds for transitive dependencies that ship security
+    # fixes Dependabot has flagged. Each is the minimum version with the
+    # named CVE/GHSA addressed; upper bounds are intentionally loose so
+    # the parent libraries (langchain*, deepeval, transformers, etc.) can
+    # continue to resolve their own pins.
+    "aiohttp>=3.13.4",             # 13 advisories (incl. zip bomb, SSRF, header smuggling)
+    "urllib3>=2.7.0",              # 4 advisories (decompression bombs, cross-origin header leak)
+    "pillow>=12.2.0",              # 4 advisories (PSD OOB write, FITS GZIP bomb, font overflow)
+    "pypdf>=6.10.2",               # 14 advisories (multiple RAM-exhaust, infinite-loop fixes)
+    "nltk>=3.9.4",                 # 1 critical zip slip + 4 high (downloader path traversal, AFO, XSS)
+    "langchain-core>=0.3.85,<0.4",  # 1 critical serialization injection + 4 high; stay on 0.3.x stable
+    "langchain>=0.3.30,<0.4",       # 1 high (unsafe deserialization); match langchain-core line
+    "langchain-text-splitters>=0.3.9,<0.4",  # 1 high XXE + SSRF in HTMLHeaderTextSplitter
+    "langchain-community>=0.3.27,<0.4", # 1 high XXE
+    "langsmith>=0.7.31",            # 1 high deserialization + token-redaction bypass
+    "pyasn1>=0.6.3",                # 2 high DoS (unbounded recursion)
+    "protobuf>=5.29.6,<6",          # 1 high JSON recursion depth bypass; pin to 5.x to avoid major bump
+    "banks>=2.4.2",                # 1 critical RCE via Jinja2 SSTI
+    # starlette upgrade deferred — fastapi 0.115.x caps starlette<0.47;
+    # the range-header DoS (GHSA-7f5h-v6xp-fcq8) requires bumping fastapi too.
+    "sentencepiece>=0.2.1",        # 1 high heap overflow
+    "orjson>=3.11.6",              # 1 high unbounded recursion
+    "brotli>=1.2.0",               # 1 high DoS
+    "marshmallow>=3.26.2",         # Schema.load(many) DoS
+    "filelock>=3.20.3",            # TOCTOU symlink fixes
+    "virtualenv>=20.36.1",         # TOCTOU directory-creation fix
+    "Pygments>=2.20.0",            # ReDoS in GUID regex
 ]
 
 [project.urls]
