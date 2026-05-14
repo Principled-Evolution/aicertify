@@ -58,18 +58,19 @@ AICertify is part of the [Open Policy Agent ecosystem](https://www.openpolicyage
 ## Quick Start
 
 ```bash
+# 1. Install AICertify (~3–5 min on first install; pulls langchain + transformers)
 pip install aicertify
+
+# 2. Install the OPA binary, one-time (~80 MB)
+curl -L https://openpolicyagent.org/downloads/latest/opa_linux_amd64 -o /usr/local/bin/opa && sudo chmod +x /usr/local/bin/opa
+
+# 3. Run the bundled demo — no contract file, no API keys, ~10 seconds
+aicertify demo
 ```
 
-To run the canonical demo (clone the repo for the sample contract + examples):
+`aicertify demo` loads a bundled sample contract, evaluates it against the EU AI Act policy set via OPA, and writes `aicertify_demo_report.md` to the current directory. Open the report — that's what your audit deliverable looks like.
 
-```bash
-git clone https://github.com/Principled-Evolution/aicertify.git
-cd aicertify
-python examples/quickstart.py
-```
-
-The quickstart wires a sample AI application through the EU AI Act policy set and writes a compliance report into `reports/`. Open it. That's what your audit deliverable looks like — generated, not handwritten.
+For richer evaluations (LangFair fairness metrics, DeepEval content-safety scoring, PDF reports), see [`examples/quickstart.py`](examples/quickstart.py) and the [forkable example bots](examples/) — each ships an `input_contract.json`, a `policy_config.yaml`, and a `run.py`.
 
 ### For development
 

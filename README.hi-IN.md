@@ -46,18 +46,18 @@
 ## Quick Start
 
 ```bash
-pip install aicertify
+pip install aicertify       # पहली बार इंस्टॉल में लगभग 3–5 मिनट (langchain + transformers डाउनलोड होते हैं)
+
+# OPA बाइनरी एक बार इंस्टॉल करें (~80 MB)
+curl -L https://openpolicyagent.org/downloads/latest/opa_linux_amd64 -o /usr/local/bin/opa && sudo chmod +x /usr/local/bin/opa
+
+# बंडल्ड डेमो चलाएँ — कोई कॉन्ट्रैक्ट फ़ाइल नहीं, कोई API key नहीं, ~10 सेकंड
+aicertify demo
 ```
 
-बंडल्ड डेमो चलाने के लिए (सैंपल कॉन्ट्रैक्ट + examples के लिए रिपॉज़िटरी क्लोन करें):
+`aicertify demo` एक बंडल्ड सैंपल कॉन्ट्रैक्ट लोड करता है, उसे OPA के माध्यम से EU AI Act पॉलिसी सेट पर मूल्यांकित करता है, और मौजूदा डायरेक्टरी में `aicertify_demo_report.md` लिखता है। रिपोर्ट खोलिए — यही आपके ऑडिट डिलिवरेबल का स्वरूप है।
 
-```bash
-git clone https://github.com/Principled-Evolution/aicertify.git
-cd aicertify
-python examples/quickstart.py
-```
-
-यह क्विकस्टार्ट एक सैंपल AI एप्लिकेशन को EU AI Act पॉलिसी सेट के माध्यम से जोड़ता है और `reports/` में एक कंप्लायंस रिपोर्ट लिखता है। उसे खोलिए। यही आपके ऑडिट डिलिवरेबल का स्वरूप है — हाथ से नहीं, जनरेट होकर।
+विस्तृत मूल्यांकन (LangFair फेयरनेस मेट्रिक्स, DeepEval कंटेंट-सेफ़्टी स्कोरिंग, PDF रिपोर्ट) के लिए [`examples/quickstart.py`](examples/quickstart.py) और [फ़ोर्क-योग्य उदाहरण बॉट्स](examples/) देखें — हर उदाहरण में `input_contract.json`, `policy_config.yaml` और `run.py` शामिल हैं।
 
 ### डेवलपमेंट के लिए
 
