@@ -1,13 +1,19 @@
 [project]
 name = "aicertify"
-version = "0.7.2"
+version = "0.7.3"
 description = "Compliance-as-code for AI systems. Audit your AI against the EU AI Act, NIST AI RMF, and 13+ regulatory frameworks using Open Policy Agent (OPA) — and produce audit-ready PDF, Markdown, JSON, or HTML reports."
 authors = [
     {name = "Kapil Madan", email = "kapil.madan@gmail.com"},
     {name = "Principled Evolution", email = "info@principledevolution.ai"},
 ]
 license = "Apache-2.0"
-readme = "README.md"
+# README-pypi.md is the hand-maintained PyPI-facing variant: same shape as
+# README.md but with all relative image / link paths rewritten to absolute
+# https://raw.githubusercontent.com / https://github.com URLs so PyPI renders
+# the banner, diagram, demo GIF, and cross-links correctly. See README-pypi.md
+# top-matter — keep both files in sync when updating Quick Start, comparison
+# table, or examples list.
+readme = "README-pypi.md"
 requires-python = ">=3.12,<3.13"
 keywords = [
     "ai-governance",
