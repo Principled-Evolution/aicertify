@@ -45,25 +45,25 @@ classifiers = [
 ]
 dependencies = [
     "langfair @ git+https://github.com/mantric/langfair-mantric.git@python-3.12-support",
-    "fastapi>=0.115.8,<0.116.0",
+    "fastapi>=0.119.0,<1.0",
     "uvicorn>=0.34.0,<0.35.0",
     "opa-python-client>=0.1.0",
     "requests>=2.33.0,<3.0.0",
     "python-dotenv>=1.2.2",
     "pandas>=2.2.0",
-    "langchain-openai>=0.0.5",
+    "langchain-openai>=0.3.0,<0.4",
     "pydantic-ai (>=0.0.24,<0.0.25)",
     "markdown (>=3.8.1,<4.0)",
     "reportlab (>=4.3.1,<5.0.0)",
     "yfinance (>=0.2.54,<0.3.0)",
-    "pytest (>=8.3.4,<9.0.0)",
+    "pytest (>=9.0.3,<10.0.0)",
     "datasets (>=3.3.2,<4.0.0)",
     "huggingface-hub (>=0.34.0,<1.0)",
     "deepeval (>=2.4.8,<3.0.0)",
     "colorlog (>=6.9.0,<7.0.0)",
     "pydantic (>=2.10.6,<3.0.0)",
     "rich (>=13.9.4,<14.0.0)",
-    "black (>=25.1.0,<26.0.0)",
+    "black (>=26.3.1,<27.0.0)",
     "h11>=0.14.0",
     "torch>=2.7.0",
     "transformers>=4.53.0",
@@ -79,16 +79,20 @@ dependencies = [
     "pillow>=12.2.0",              # 4 advisories (PSD OOB write, FITS GZIP bomb, font overflow)
     "pypdf>=6.10.2",               # 14 advisories (multiple RAM-exhaust, infinite-loop fixes)
     "nltk>=3.9.4",                 # 1 critical zip slip + 4 high (downloader path traversal, AFO, XSS)
-    "langchain-core>=0.3.85,<0.4",  # 1 critical serialization injection + 4 high; stay on 0.3.x stable
+    # LangChain ecosystem stays on 0.3.x because langfair-mantric pins langchain ^0.3.7.
+    # The 1.x advisories (langchain-core <1.2.22, langchain-text-splitters <1.1.2,
+    # langchain-openai <1.1.14) are upstream-blocked until langfair is updated to
+    # allow LangChain 1.x. Tracked separately.
+    "langchain-core>=0.3.85,<0.4",  # 1 critical serialization + 1 high (overly-broad load allowlists)
     "langchain>=0.3.30,<0.4",       # 1 high (unsafe deserialization); match langchain-core line
-    "langchain-text-splitters>=0.3.9,<0.4",  # 1 high XXE + SSRF in HTMLHeaderTextSplitter
+    "langchain-text-splitters>=0.3.9,<0.4",  # XXE fix on the 0.3.x line
     "langchain-community>=0.3.27,<0.4", # 1 high XXE
     "langsmith>=0.7.31",            # 1 high deserialization + token-redaction bypass
     "pyasn1>=0.6.3",                # 2 high DoS (unbounded recursion)
     "protobuf>=5.29.6,<6",          # 1 high JSON recursion depth bypass; pin to 5.x to avoid major bump
     "banks>=2.4.2",                # 1 critical RCE via Jinja2 SSTI
-    # starlette upgrade deferred — fastapi 0.115.x caps starlette<0.47;
-    # the range-header DoS (GHSA-7f5h-v6xp-fcq8) requires bumping fastapi too.
+    "starlette>=0.49.1",            # 1 high O(n^2) range-header DoS + 1 medium multipart DoS
+    "langchain-openai>=0.3.0,<0.4",     # 1 low SSRF (image token counting DNS rebinding bypass)
     "sentencepiece>=0.2.1",        # 1 high heap overflow
     "orjson>=3.11.6",              # 1 high unbounded recursion
     "brotli>=1.2.0",               # 1 high DoS
@@ -117,10 +121,10 @@ build-backend = "poetry.core.masonry.api"
 packages = [{ include = "aicertify" }]
 
 [tool.poetry.group.dev.dependencies]
-pytest-asyncio = "^0.25.3"
+pytest-asyncio = ">=1.0.0,<2.0.0"
 ruff = "^0.5.5"
 pre-commit = "^4.2.0"
-black = ">=25.1.0,<26.0.0"
+black = ">=26.3.1,<27.0.0"
 
 [tool.ruff]
 line-length = 88
