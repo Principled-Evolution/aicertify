@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] — 2026-05-14
+
+### Fixed
+
+- **PyPI README rendering.** The PyPI project page previously showed broken images and broken `docs/` / `examples/` cross-links because PyPI doesn't resolve relative paths against the source repo. `pyproject.toml`'s `readme` field now points at a new **`README-pypi.md`** — a hand-maintained, slightly-trimmed variant of `README.md` with every image and cross-link rewritten to absolute `https://raw.githubusercontent.com/...` or `https://github.com/...` URLs. The hero banner, diagram1, `docs/demo.gif`, and every cross-link now render correctly on <https://pypi.org/project/aicertify/>. The GitHub `README.md` is unchanged — keep both files in sync when updating Quick Start, comparison table, or examples list.
+
 ## [0.7.2] — 2026-05-14
 
 ### Changed
