@@ -51,7 +51,7 @@ dependencies = [
     "requests>=2.33.0,<3.0.0",
     "python-dotenv>=1.2.2",
     "pandas>=2.2.0",
-    "langchain-openai>=0.3.0,<0.4",
+    "langchain-openai>=1.1.14",
     "pydantic-ai (>=0.0.24,<0.0.25)",
     "markdown (>=3.8.1,<4.0)",
     "reportlab (>=4.3.1,<5.0.0)",
@@ -79,20 +79,19 @@ dependencies = [
     "pillow>=12.2.0",              # 4 advisories (PSD OOB write, FITS GZIP bomb, font overflow)
     "pypdf>=6.10.2",               # 14 advisories (multiple RAM-exhaust, infinite-loop fixes)
     "nltk>=3.9.4",                 # 1 critical zip slip + 4 high (downloader path traversal, AFO, XSS)
-    # LangChain ecosystem stays on 0.3.x because langfair-mantric pins langchain ^0.3.7.
-    # The 1.x advisories (langchain-core <1.2.22, langchain-text-splitters <1.1.2,
-    # langchain-openai <1.1.14) are upstream-blocked until langfair is updated to
-    # allow LangChain 1.x. Tracked separately.
-    "langchain-core>=0.3.85,<0.4",  # 1 critical serialization + 1 high (overly-broad load allowlists)
-    "langchain>=0.3.30,<0.4",       # 1 high (unsafe deserialization); match langchain-core line
-    "langchain-text-splitters>=0.3.9,<0.4",  # XXE fix on the 0.3.x line
-    "langchain-community>=0.3.27,<0.4", # 1 high XXE
-    "langsmith>=0.7.31",            # 1 high deserialization + token-redaction bypass
+    # LangChain ecosystem on 1.x — unlocked by langfair-mantric@python-3.12-support
+    # which now allows langchain >=0.3.7,<2.0 (only imports langchain_core, which is
+    # API-compatible across the 0.3 -> 1.x transition).
+    "langchain-core>=1.2.22",       # 1 high path traversal (load_prompt) + 1 low SSRF
+    "langchain>=1.0.0",             # match langchain-core 1.x line
+    "langchain-text-splitters>=1.1.2",  # 1 high XXE + 1 medium SSRF in HTMLHeaderTextSplitter
+    "langchain-community>=0.3.27",  # 1 high XXE (community remained on 0.3.x — not yet ported to 1.x)
+    "langsmith>=0.8.0",             # 1 high deserialization + token-redaction bypass
     "pyasn1>=0.6.3",                # 2 high DoS (unbounded recursion)
     "protobuf>=5.29.6,<6",          # 1 high JSON recursion depth bypass; pin to 5.x to avoid major bump
     "banks>=2.4.2",                # 1 critical RCE via Jinja2 SSTI
     "starlette>=0.49.1",            # 1 high O(n^2) range-header DoS + 1 medium multipart DoS
-    "langchain-openai>=0.3.0,<0.4",     # 1 low SSRF (image token counting DNS rebinding bypass)
+    "langchain-openai>=1.1.14",     # 1 low SSRF (image token counting DNS rebinding bypass)
     "sentencepiece>=0.2.1",        # 1 high heap overflow
     "orjson>=3.11.6",              # 1 high unbounded recursion
     "brotli>=1.2.0",               # 1 high DoS
