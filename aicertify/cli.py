@@ -211,8 +211,13 @@ def _inject_evaluate_for_legacy_invocation(argv: list) -> list:
 
 
 def main() -> int:
+    # Quiet by default. CLI tools should not flood the terminal with INFO-level
+    # chatter from downstream libraries (langfair, deepeval, transformers, the
+    # OPA policy loader, …) unless the user opts in via --verbose. Note: this
+    # runs BEFORE argparse so it's in effect when the (deferred) aicertify
+    # package imports happen inside the subcommand handlers.
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.WARNING,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
@@ -222,6 +227,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.verbose:
+        logging.getLogger().setLevel(logging.INFO)
         logging.getLogger("aicertify").setLevel(logging.DEBUG)
 
     if not hasattr(args, "func"):

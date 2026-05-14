@@ -222,9 +222,19 @@ class PolicyLoader:
 
                 # Skip legacy paths or unexpected structures
                 if parts[0] not in policies:
-                    logging.warning(
-                        f"Skipping policy file in unrecognized category: {policy_file}"
-                    )
+                    # ``helper_functions/`` holds shared Rego helpers
+                    # (reporting.rego, validation.rego, …) — not policies,
+                    # so don't warn on them. Same for the version-tracking
+                    # ``.github/``, ``.regal/`` etc. dotfile dirs.
+                    if parts[0] in ("helper_functions",) or parts[0].startswith("."):
+                        logging.debug(
+                            f"Skipping shared-helper / config file (not a policy): "
+                            f"{policy_file}"
+                        )
+                    else:
+                        logging.warning(
+                            f"Skipping policy file in unrecognized category: {policy_file}"
+                        )
                     continue
 
                 category = parts[0]  # global, international, etc.
