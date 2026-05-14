@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] — 2026-05-14
+
 ### Changed
 
 - **`aicertify demo` rewritten for the canonical rich-UX flow.** The previous demo runner produced plain `print()` output; it now mirrors [`examples/quickstart.py`](examples/quickstart.py) exactly — uses the high-level `application.create()` + `app.evaluate()` API and wraps each step in `print_banner`, `spinner`, `MessageGroup`, and `success` markers from `aicertify.utils.logging_config`. Visually identical to the canonical SDK experience.
