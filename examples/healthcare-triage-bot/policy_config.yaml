@@ -1,0 +1,34 @@
+# Policies this example evaluates against.
+# Paths are relative to aicertify/opa_policies/ (the vendored gopal tree).
+
+frameworks:
+  - id: eu_ai_act
+    path: international/eu_ai_act/v1
+    rationale: |
+      High-risk AI under Annex III(5)(a). Requires Article 9 (risk management),
+      Article 11 (technical documentation), Article 12 (record keeping),
+      Article 13 (transparency), Article 14 (human oversight), Article 50
+      (chatbot AI disclosure), and Article 72 (post-market monitoring).
+
+  - id: healthcare
+    path: industry_specific/healthcare/v1
+    rationale: |
+      gopal's healthcare framework covers patient safety and diagnostic safety
+      obligations. Triage assistants must refuse diagnosis, escalate red-flag
+      symptoms, and route to a clinician — encoded in patient_safety.rego.
+
+  - id: global
+    path: global/v1
+    rationale: |
+      Cross-cutting fairness, content-safety, transparency, and accountability
+      baselines apply on top of jurisdiction- and industry-specific rules.
+
+evaluators:
+  - ContentSafety
+  - RiskManagement
+  - Compliance
+  - Transparency
+
+report:
+  formats: [pdf, markdown, json]
+  output_dir: reports/
