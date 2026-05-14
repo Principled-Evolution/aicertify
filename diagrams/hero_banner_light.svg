@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+<title>AICertify</title>
+<desc>AICertify hero banner with logo, wordmark, tagline, and framework badges.</desc>
+<polygon points="40,88 56,60 88,60 104,88 88,116 56,116" fill="#4f46e5"/>
+<polyline points="60,90 70,98 84,82" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="128" y="100" font-size="38" font-weight="500" fill="#0f172a" letter-spacing="-0.02em">AICertify</text>
+<text x="128" y="126" font-size="15" font-weight="500" fill="#4f46e5">Compliance-as-code for AI systems</text>
+<text x="128" y="148" font-size="12" font-weight="400" fill="#64748b">One contract. One command. Audit-ready reports.</text>
+
+<g>
+<rect x="562" y="52" width="78" height="24" rx="12" fill="#eef2ff"/>
+<text x="601" y="64" font-size="11" font-weight="500" fill="#4338ca" text-anchor="middle" dominant-baseline="central">EU AI Act</text>
+</g>
+<g>
+<rect x="546" y="84" width="94" height="24" rx="12" fill="#eef2ff"/>
+<text x="593" y="96" font-size="11" font-weight="500" fill="#4338ca" text-anchor="middle" dominant-baseline="central">NIST AI RMF</text>
+</g>
+<g>
+<rect x="528" y="116" width="112" height="24" rx="12" fill="#fef3c7"/>
+<text x="584" y="128" font-size="11" font-weight="500" fill="#b45309" text-anchor="middle" dominant-baseline="central">ICAO Doc 10019</text>
+</g>
+</svg>

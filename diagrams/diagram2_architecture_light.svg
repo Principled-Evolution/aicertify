@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 680 400" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+<title>AICertify architecture</title>
+<desc>Contract feeds four evaluators, which feed the OPA policy engine, producing an audit report.</desc>
+<defs><marker id="a2l" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g>
+<rect x="240" y="24" width="200" height="56" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<g transform="translate(284, 40)" fill="none" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M4 1 L15 1 L20 6 L20 23 L4 23 Z"/><path d="M15 1 L15 6 L20 6"/>
+<line x1="8" y1="11" x2="17" y2="11"/><line x1="8" y1="15" x2="17" y2="15"/><line x1="8" y1="19" x2="13" y2="19"/>
+</g>
+<text x="318" y="48" font-size="14" font-weight="500" fill="#0f172a">Contract</text>
+<text x="318" y="66" font-size="11" fill="#64748b">JSON definition</text>
+</g>
+
+<line x1="340" y1="80" x2="340" y2="92" stroke="#94a3b8" stroke-width="1.5"/>
+<line x1="97" y1="92" x2="583" y2="92" stroke="#94a3b8" stroke-width="1.5"/>
+<line x1="97" y1="92" x2="97" y2="108" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2l)"/>
+<line x1="259" y1="92" x2="259" y2="108" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2l)"/>
+<line x1="421" y1="92" x2="421" y2="108" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2l)"/>
+<line x1="583" y1="92" x2="583" y2="108" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2l)"/>
+
+<g>
+<rect x="28" y="108" width="138" height="80" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<g transform="translate(86, 122)" fill="none" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<line x1="11" y1="3" x2="11" y2="18"/><line x1="3" y1="7" x2="19" y2="7"/>
+<line x1="3" y1="7" x2="3" y2="11"/><line x1="19" y1="7" x2="19" y2="11"/>
+<circle cx="3" cy="13" r="2"/><circle cx="19" cy="13" r="2"/>
+<line x1="8" y1="19" x2="14" y2="19"/>
+</g>
+<text x="97" y="160" font-size="13" font-weight="500" fill="#0f172a" text-anchor="middle">Fairness</text>
+<text x="97" y="176" font-size="11" fill="#64748b" text-anchor="middle">Bias &amp; equity</text>
+</g>
+
+<g>
+<rect x="190" y="108" width="138" height="80" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<g transform="translate(248, 122)" fill="none" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<ellipse cx="11" cy="11" rx="9" ry="5"/><circle cx="11" cy="11" r="2.5"/>
+</g>
+<text x="259" y="160" font-size="13" font-weight="500" fill="#0f172a" text-anchor="middle">Content safety</text>
+<text x="259" y="176" font-size="11" fill="#64748b" text-anchor="middle">Toxicity, PII</text>
+</g>
+
+<g>
+<rect x="352" y="108" width="138" height="80" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<g transform="translate(410, 122)" fill="none" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M11 4 L19 18 L3 18 Z"/><line x1="11" y1="9" x2="11" y2="13"/>
+<circle cx="11" cy="16" r="0.8" fill="#4f46e5" stroke="none"/>
+</g>
+<text x="421" y="160" font-size="13" font-weight="500" fill="#0f172a" text-anchor="middle">Risk mgmt</text>
+<text x="421" y="176" font-size="11" fill="#64748b" text-anchor="middle">NIST controls</text>
+</g>
+
+<g>
+<rect x="514" y="108" width="138" height="80" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<g transform="translate(572, 122)" fill="none" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<rect x="5" y="5" width="12" height="14" rx="1"/><rect x="8" y="3" width="6" height="4" rx="1"/>
+<polyline points="8,12 10,14 14,9"/>
+</g>
+<text x="583" y="160" font-size="13" font-weight="500" fill="#0f172a" text-anchor="middle">Compliance</text>
+<text x="583" y="176" font-size="11" fill="#64748b" text-anchor="middle">Framework checks</text>
+</g>
+
+<line x1="97" y1="188" x2="97" y2="204" stroke="#94a3b8" stroke-width="1.5"/>
+<line x1="259" y1="188" x2="259" y2="204" stroke="#94a3b8" stroke-width="1.5"/>
+<line x1="421" y1="188" x2="421" y2="204" stroke="#94a3b8" stroke-width="1.5"/>
+<line x1="583" y1="188" x2="583" y2="204" stroke="#94a3b8" stroke-width="1.5"/>
+<line x1="97" y1="204" x2="583" y2="204" stroke="#94a3b8" stroke-width="1.5"/>
+<line x1="340" y1="204" x2="340" y2="220" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2l)"/>
+
+<g>
+<rect x="150" y="220" width="380" height="80" rx="10" fill="#eef2ff" stroke="#c7d2fe"/>
+<g transform="translate(194, 248)" fill="none" stroke="#4338ca" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<path d="M14 3 L22 6 L22 14 C22 19 18 23 14 25 C10 23 6 19 6 14 L6 6 Z"/>
+<polyline points="10,14 13,17 18,11"/>
+</g>
+<text x="228" y="255" font-size="15" font-weight="500" fill="#0f172a">OPA policy engine</text>
+<text x="228" y="275" font-size="11" fill="#4338ca">94 production Rego policies · gopal library</text>
+</g>
+
+<line x1="340" y1="300" x2="340" y2="320" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2l)"/>
+
+<g>
+<rect x="240" y="320" width="200" height="56" rx="10" fill="#fffbeb" stroke="#fde68a"/>
+<g transform="translate(266, 336)" fill="none" stroke="#d97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<rect x="5" y="3" width="18" height="22" rx="1.5"/><line x1="9" y1="9" x2="19" y2="9"/>
+<line x1="11" y1="18" x2="11" y2="21"/><line x1="14" y1="15" x2="14" y2="21"/><line x1="17" y1="13" x2="17" y2="21"/>
+</g>
+<text x="300" y="344" font-size="14" font-weight="500" fill="#0f172a">Audit report</text>
+<text x="300" y="362" font-size="11" fill="#92400e">PDF · MD · JSON · HTML</text>
+</g>
+</svg>

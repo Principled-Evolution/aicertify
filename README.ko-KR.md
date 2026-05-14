@@ -1,5 +1,8 @@
 <div align="center">
-  <img src="aicertify/assets/aic.png" alt="AICertify" width="180"/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/hero_banner_dark.svg">
+    <img src="diagrams/hero_banner_light.svg" alt="AICertify — Compliance-as-code for AI systems" width="100%">
+  </picture>
 </div>
 
 <h1 align="center">AICertify</h1>
@@ -32,7 +35,10 @@
 </p>
 
 <p align="center">
-  <img src="diagrams/diagram1_hero_flow.png" alt="AI 애플리케이션에서 감사 준비 리포트까지: AI 애플리케이션 -> AICertify 계약 -> OPA 정책 평가 -> 컴플라이언스 리포트" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram1_hero_flow_dark.svg">
+    <img src="diagrams/diagram1_hero_flow_light.svg" alt="AI 애플리케이션에서 감사 준비 리포트까지: AI 애플리케이션 -> AICertify 계약 -> OPA 정책 평가 -> 컴플라이언스 리포트" width="85%" />
+  </picture>
 </p>
 
 <br>
@@ -108,10 +114,6 @@ await app.evaluate(regulations=regs, report_format="pdf", output_dir="reports")
 
 AICertify는 바로 그 산출물을 위해 만들어졌습니다.
 
-<p align="center">
-  <img src="diagrams/diagram4_comparison.png" alt="AICertify와 대안 비교: AICertify는 명명된 규제 프레임워크, 산업별 수직 영역, 그리고 기본 제공되는 감사 준비 리포트를 갖춘 유일한 오픈소스 정책 코드화 옵션입니다" width="85%" />
-</p>
-
 | | AICertify | Fairlearn / AIF360 | MS RAI Toolbox | Credo AI |
 |---|---|---|---|---|
 | 오픈소스 | ✅ Apache 2.0 | ✅ MIT | ✅ MIT | ❌ 비공개 |
@@ -127,7 +129,10 @@ AICertify는 바로 그 산출물을 위해 만들어졌습니다.
 ## 작동 방식
 
 <p align="center">
-  <img src="diagrams/diagram2_architecture.png" alt="AICertify 아키텍처: AI 앱이 계약을 제공하고, 이는 평가기(Fairness, ContentSafety, RiskManagement, Compliance)를 거쳐 94개의 Rego 정책을 포함한 OPA 엔진으로 흐르며, 리포트 생성기를 통해 감사 산출물을 만들어 냅니다" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram2_architecture_dark.svg">
+    <img src="diagrams/diagram2_architecture_light.svg" alt="AICertify 아키텍처: AI 앱이 계약을 제공하고, 이는 평가기(Fairness, ContentSafety, RiskManagement, Compliance)를 거쳐 94개의 Rego 정책을 포함한 OPA 엔진으로 흐르며, 리포트 생성기를 통해 감사 산출물을 만들어 냅니다" width="85%" />
+  </picture>
 </p>
 
 1. **계약(Contract)** — AI 애플리케이션에 대한 JSON 설명: 모델, 버전, 수집된 상호작용, 메타데이터.
@@ -142,7 +147,10 @@ AICertify는 바로 그 산출물을 위해 만들어졌습니다.
 ## 규제 커버리지
 
 <p align="center">
-  <img src="diagrams/diagram3_regulatory_coverage.png" alt="규제 커버리지: 15개 이상의 프레임워크와 5개 산업에 걸친 94개 정책 -- EU AI Act, NIST AI RMF, India DPDP, Brazil AI Bill, RTCA DO-365/366, FAA Part 107, EASA SORA, ICAO Doc 10019, 의료, 금융, 자동차, 교육, 글로벌, 항공, AIOps, 기업" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram3_regulatory_coverage_dark.svg">
+    <img src="diagrams/diagram3_regulatory_coverage_light.svg" alt="규제 커버리지: 15개 이상의 프레임워크와 5개 산업에 걸친 94개 정책 -- EU AI Act, NIST AI RMF, India DPDP, Brazil AI Bill, RTCA DO-365/366, FAA Part 107, EASA SORA, ICAO Doc 10019, 의료, 금융, 자동차, 교육, 글로벌, 항공, AIOps, 기업" width="85%" />
+  </picture>
 </p>
 
 AICertify는 [gopal](https://github.com/Principled-Evolution/gopal) 정책 라이브러리에서 실행됩니다 — 다음 프레임워크들에 걸친 **94개의 프로덕션 OPA 정책**입니다.
@@ -201,7 +209,10 @@ python -m aicertify.cli \
 ## 샘플 리포트
 
 <p align="center">
-  <img src="diagrams/diagram5_report_anatomy.png" alt="감사 준비 리포트의 구성: 프레임워크 이름, 애플리케이션, 모델, 날짜를 포함한 헤더, 요약 정리, 정책 결과 표, 리스크 평가 막대 차트, 시정 안내, AICertify v0.7.0 표시 푸터" width="85%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram5_report_anatomy_dark.svg">
+    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="감사 준비 리포트의 구성: 프레임워크 이름, 애플리케이션, 모델, 날짜를 포함한 헤더, 요약 정리, 정책 결과 표, 리스크 평가 막대 차트, 시정 안내, AICertify v0.7.0 표시 푸터" width="85%" />
+  </picture>
 </p>
 
 `examples/outputs/` 디렉터리에는 실제 평가에서 생성된 리포트가 들어 있어, 직접 실행하기 전에 살펴볼 수 있습니다.
