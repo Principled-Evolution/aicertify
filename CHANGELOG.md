@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] — 2026-05-14
+
+### Added
+
+- **`aicertify demo` subcommand** — a self-contained, no-config demo entry point. Loads a bundled sample contract (`aicertify/_demo/sample_contract.json`), runs an OPA evaluation against the EU AI Act policy set, and writes `aicertify_demo_report.md` to the current directory. Requires only the `opa` binary on PATH (no API keys, no contract file). The CLI now also detects a missing `opa` binary and prints a one-line, platform-aware install command instead of stack-tracing.
+- **`aicertify evaluate` subcommand** — the previous flat CLI behaviour, now under an explicit subcommand. The pre-0.7.1 invocation `aicertify --contract X --policy Y …` is still accepted (transparently routed to `evaluate`).
+- **Updated README Quick Start** — collapses to three commands: `pip install aicertify`, `curl … opa`, `aicertify demo`. Honest first-install timing called out (~3–5 min for deps + the one-time OPA install).
+
 ### Changed
 
 - **Visual refresh** — all README diagrams replaced with hand-authored, theme-aware SVGs in [`diagrams/`](diagrams/). Each diagram now ships as a paired `_light.svg` + `_dark.svg` and is embedded via `<picture>` so GitHub light- and dark-theme readers each see the variant that matches their canvas. The top-of-README logo is replaced with a hero banner SVG. The previous matplotlib generator (`diagrams/generate_diagrams.py`) and 5 baked-in PNG diagrams have been removed in favour of the hand-authored SVG system documented in [`diagrams/STYLE.md`](diagrams/STYLE.md).

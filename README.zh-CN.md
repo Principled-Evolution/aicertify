@@ -46,18 +46,18 @@
 ## 快速开始
 
 ```bash
-pip install aicertify
+pip install aicertify       # 首次安装约 3–5 分钟(会拉取 langchain + transformers)
+
+# 一次性安装 OPA 二进制(约 80 MB)
+curl -L https://openpolicyagent.org/downloads/latest/opa_linux_amd64 -o /usr/local/bin/opa && sudo chmod +x /usr/local/bin/opa
+
+# 运行内置演示 —— 无需合约文件,无需 API key,约 10 秒
+aicertify demo
 ```
 
-运行内置演示(克隆仓库以获取示例合约和示例代码):
+`aicertify demo` 会加载内置的示例合约,通过 OPA 对其进行 EU AI Act 策略评估,并将 `aicertify_demo_report.md` 写入当前目录。打开报告 —— 这就是审计交付物的样貌。
 
-```bash
-git clone https://github.com/Principled-Evolution/aicertify.git
-cd aicertify
-python examples/quickstart.py
-```
-
-quickstart 会将一个示例 AI 应用接入 EU AI Act 策略集,并将合规报告写入 `reports/`。打开看看 —— 这就是您的审计交付物的样貌:由系统生成,而非手工撰写。
+如需更完整的评估(LangFair 公平性指标、DeepEval 内容安全评分、PDF 报告),请查看 [`examples/quickstart.py`](examples/quickstart.py) 以及 [可派生的示例机器人](examples/) —— 每个示例均包含 `input_contract.json`、`policy_config.yaml` 和 `run.py`。
 
 ### 用于开发
 

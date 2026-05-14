@@ -46,18 +46,18 @@
 ## 빠른 시작
 
 ```bash
-pip install aicertify
+pip install aicertify       # 첫 설치는 약 3~5분 소요 (langchain + transformers 다운로드)
+
+# OPA 바이너리 일회성 설치 (약 80 MB)
+curl -L https://openpolicyagent.org/downloads/latest/opa_linux_amd64 -o /usr/local/bin/opa && sudo chmod +x /usr/local/bin/opa
+
+# 번들 데모 실행 — 계약 파일/ API 키 불필요, 약 10초
+aicertify demo
 ```
 
-샘플 계약과 예시를 함께 실행하려면 저장소를 클론하세요:
+`aicertify demo`는 번들 샘플 계약을 로드하여 OPA를 통해 EU AI Act 정책 세트에 대해 평가하고, 현재 디렉터리에 `aicertify_demo_report.md` 파일을 작성합니다. 리포트를 열어 보세요 — 그것이 바로 감사 산출물의 모습입니다.
 
-```bash
-git clone https://github.com/Principled-Evolution/aicertify.git
-cd aicertify
-python examples/quickstart.py
-```
-
-빠른 시작 스크립트는 샘플 AI 애플리케이션을 EU AI Act 정책 세트에 통과시키고 컴플라이언스 리포트를 `reports/`에 작성합니다. 파일을 열어 보세요. 이것이 바로 여러분의 감사 산출물의 모습입니다 — 손으로 작성하지 않고 생성된 리포트입니다.
+더 풍부한 평가(LangFair 공정성 지표, DeepEval 콘텐츠 안전성 스코어링, PDF 리포트)는 [`examples/quickstart.py`](examples/quickstart.py)와 [포크 가능한 예시 봇들](examples/)을 참고하세요. 각 예시에는 `input_contract.json`, `policy_config.yaml`, `run.py`가 포함되어 있습니다.
 
 ### 개발용 설치
 

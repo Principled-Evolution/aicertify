@@ -42,13 +42,17 @@ pyproject.toml                      Poetry-managed project metadata
 # Install (editable)
 pip install -e .
 
-# Run the end-to-end demo (writes reports/ into the repo)
+# Self-contained demo — bundled sample contract, OPA-only, no API keys
+aicertify demo
+# → writes ./aicertify_demo_report.md
+
+# Full quickstart (uses the heavy ML evaluators)
 python examples/quickstart.py
 
-# CLI evaluation
-python -m aicertify.cli \
+# CLI evaluation against a user contract
+aicertify evaluate \
   --contract examples/sample_contract.json \
-  --policy aicertify/opa_policies/international/eu_ai_act/v1 \
+  --policy eu_ai_act \
   --report-format pdf \
   --output-dir reports/
 

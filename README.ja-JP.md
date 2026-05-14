@@ -46,18 +46,18 @@
 ## クイックスタート
 
 ```bash
-pip install aicertify
+pip install aicertify       # 初回インストールは約 3〜5 分(langchain + transformers を取得)
+
+# OPA バイナリを一度だけインストール(約 80 MB)
+curl -L https://openpolicyagent.org/downloads/latest/opa_linux_amd64 -o /usr/local/bin/opa && sudo chmod +x /usr/local/bin/opa
+
+# 同梱のデモを実行 —— 契約ファイル不要、API キー不要、約 10 秒
+aicertify demo
 ```
 
-同梱のデモを実行するには(サンプル契約と examples 一式を取得するためにリポジトリをクローンします):
+`aicertify demo` は同梱のサンプル契約を読み込み、OPA 経由で EU AI Act のポリシーセットに対して評価を行い、`aicertify_demo_report.md` をカレントディレクトリに書き出します。レポートを開いてみてください。それが監査成果物の実例です。
 
-```bash
-git clone https://github.com/Principled-Evolution/aicertify.git
-cd aicertify
-python examples/quickstart.py
-```
-
-クイックスタートでは、サンプル AI アプリケーションを EU AI Act のポリシーセットに通し、コンプライアンスレポートを `reports/` に出力します。それを開いてみてください。手書きではなく、生成された監査成果物の実例です。
+より高度な評価(LangFair の公平性メトリクス、DeepEval によるコンテンツ安全性スコアリング、PDF レポート)については、[`examples/quickstart.py`](examples/quickstart.py) と [フォーク可能なサンプルボット](examples/) を参照してください。各サンプルには `input_contract.json`、`policy_config.yaml`、`run.py` が同梱されています。
 
 ### 開発用のセットアップ
 
