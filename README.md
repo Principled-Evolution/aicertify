@@ -70,6 +70,10 @@ aicertify demo
 
 `aicertify demo` loads a bundled sample contract, evaluates it against the EU AI Act policy set via OPA, and writes `aicertify_demo_report.md` to the current directory. Open the report — that's what your audit deliverable looks like.
 
+<p align="center">
+  <img src="docs/demo.gif" alt="aicertify demo recording — banner, spinners, evaluation progress, generated report path" width="85%" />
+</p>
+
 For richer evaluations (LangFair fairness metrics, DeepEval content-safety scoring, PDF reports), see [`examples/quickstart.py`](examples/quickstart.py) and the [forkable example bots](examples/) — each ships an `input_contract.json`, a `policy_config.yaml`, and a `run.py`.
 
 ### For development
