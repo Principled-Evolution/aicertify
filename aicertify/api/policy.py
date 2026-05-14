@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 
-
 # Import models
 from aicertify.models.contract_models import AiCertifyContract
 

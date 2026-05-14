@@ -10,7 +10,6 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-
 # Re-export models from the centralized location
 from aicertify.models.report import (
     MetricGroup,

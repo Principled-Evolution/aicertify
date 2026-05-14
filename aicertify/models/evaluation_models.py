@@ -23,7 +23,6 @@ from aicertify.models.evaluation import (
     create_compliance_input,
 )
 
-
 # Emit a deprecation warning when this module is imported
 warnings.warn(
     "The 'evaluation_models.py' module is deprecated and will be removed in a future release. "
