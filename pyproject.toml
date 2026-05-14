@@ -1,6 +1,6 @@
 [project]
 name = "aicertify"
-version = "0.7.1"
+version = "0.7.2"
 description = "Compliance-as-code for AI systems. Audit your AI against the EU AI Act, NIST AI RMF, and 13+ regulatory frameworks using Open Policy Agent (OPA) — and produce audit-ready PDF, Markdown, JSON, or HTML reports."
 authors = [
     {name = "Kapil Madan", email = "kapil.madan@gmail.com"},

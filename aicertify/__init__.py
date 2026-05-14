@@ -6,7 +6,7 @@ compliance frameworks.
 """
 
 # Version information
-__version__ = "0.7.1"
+__version__ = "0.7.2"
 
 # Direct imports for developer convenience
 try:
