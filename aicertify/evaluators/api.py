@@ -23,7 +23,6 @@ from aicertify.models.report import (
 from aicertify.models.evaluation import MetricValue
 from aicertify.models import Interaction, AiCertifyContract, ModelInfo
 
-
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)

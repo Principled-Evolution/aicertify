@@ -14,7 +14,7 @@ repos:
         args: [--fix]
 
 -   repo: https://github.com/psf/black
-    rev: 25.1.0  # Will be updated to 25.1.0 after running pre-commit autoupdate
+    rev: 26.3.1  # Bumped to fix GHSA-3936-cmfr-pm3m (cache filename arbitrary write)
     hooks:
     -   id: black
         language_version: python3.12
