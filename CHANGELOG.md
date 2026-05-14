@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`aicertify demo` rewritten for the canonical rich-UX flow.** The previous demo runner produced plain `print()` output; it now mirrors [`examples/quickstart.py`](examples/quickstart.py) exactly — uses the high-level `application.create()` + `app.evaluate()` API and wraps each step in `print_banner`, `spinner`, `MessageGroup`, and `success` markers from `aicertify.utils.logging_config`. Visually identical to the canonical SDK experience.
+- **CLI default verbosity now WARNING, not INFO.** `aicertify demo` and `aicertify evaluate` no longer flood the terminal with INFO-level chatter from `langfair`, `deepeval`, the OPA policy loader, etc. Pass `--verbose` to opt back in (raises root logger to INFO and `aicertify` namespace to DEBUG).
+- **OPA `policy_loader` no longer warns on `helper_functions/`** — those `.rego` files are shared library code (reporting helpers, validation helpers), not policies, and were always meant to be skipped silently. Same for dot-prefixed config directories.
+
+### Added
+
+- **`docs/demo.cast` + `docs/demo.gif`** — asciinema recording of `aicertify demo` running end-to-end, embedded near the top of the README so visitors see the rich UX before installing anything.
+
 ## [0.7.1] — 2026-05-14
 
 ### Added
