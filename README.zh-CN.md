@@ -5,18 +5,12 @@
   </picture>
 </div>
 
-<h1 align="center">AICertify</h1>
-
 <p align="center">
   <a href="README.md">English</a> |
   <strong>简体中文</strong> |
   <a href="README.ja-JP.md">日本語</a> |
   <a href="README.ko-KR.md">한국어</a> |
   <a href="README.hi-IN.md">हिन्दी</a>
-</p>
-
-<p align="center">
-  <strong>面向 AI 系统的合规即代码。</strong>
 </p>
 
 <p align="center">
