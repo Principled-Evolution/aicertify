@@ -5,7 +5,7 @@ import os
 import inspect
 from datetime import datetime
 
-from aicertify.models.evaluation_models import AiComplianceInput
+from aicertify.models.evaluation import AiComplianceInput
 from aicertify.opa_core.evaluator import OpaEvaluator, ExecutionMode
 from aicertify.opa_core.policy_loader import PolicyLoader
 

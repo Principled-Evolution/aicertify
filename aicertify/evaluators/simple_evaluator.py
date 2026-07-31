@@ -9,8 +9,8 @@ a fallback when full evaluation capabilities aren't available.
 import logging
 from typing import Dict, Any
 
-from aicertify.models.contract_models import AiCertifyContract, load_contract
-from aicertify.models.evaluation_models import AiEvaluationResult
+from aicertify.models.contract import AiCertifyContract, load_contract
+from aicertify.models.evaluation import AiEvaluationResult
 from aicertify.opa_core.simple_policy import evaluate_policy_simple
 
 # Configure logging

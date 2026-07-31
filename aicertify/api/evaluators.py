@@ -13,7 +13,7 @@ from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 
 # Import models and evaluation components
-from aicertify.models.contract_models import AiCertifyContract, load_contract
+from aicertify.models.contract import AiCertifyContract, load_contract
 
 # Import the evaluators
 from aicertify.evaluators import ComplianceEvaluator
