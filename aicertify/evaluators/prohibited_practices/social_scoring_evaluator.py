@@ -9,12 +9,26 @@ behavior or personal characteristics, leading to detrimental or discriminatory t
 import logging
 from typing import Dict, Any, List, Tuple
 
-from deepeval.metrics import GEval
-from deepeval.test_case import LLMTestCase, LLMTestCaseParams
-
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
 
 logger = logging.getLogger(__name__)
+
+# Check if DeepEval is available. A broken transitive dependency (e.g. a
+# langchain_community/langchain_core version mismatch) surfaces as
+# ModuleNotFoundError here too, which is a subclass of ImportError, so it's
+# caught by the same guard as a genuinely-missing package.
+try:
+    import deepeval
+    from deepeval.metrics import GEval
+    from deepeval.test_case import LLMTestCase, LLMTestCaseParams
+
+    DEEPEVAL_AVAILABLE = True
+    logger.debug(f"DeepEval version {deepeval.__version__} successfully imported")
+except ImportError as e:
+    logger.warning(
+        f"DeepEval not usable ({e}). SocialScoringEvaluator will report unavailable."
+    )
+    DEEPEVAL_AVAILABLE = False
 
 
 class SocialScoringEvaluator(BaseEvaluator):
@@ -56,7 +70,12 @@ class SocialScoringEvaluator(BaseEvaluator):
         super().__init__(kwargs)
 
     def _initialize(self) -> None:
-        """Initialize the evaluator with the required metrics."""
+        """Initialize the evaluator with the required metrics, if deepeval is usable."""
+        if not DEEPEVAL_AVAILABLE:
+            self.social_scoring_metric = None
+            self.detrimental_treatment_metric = None
+            return
+
         # Set up DeepEval metrics for social scoring detection
         self.social_scoring_metric = GEval(
             name="Social Scoring Detection",
@@ -121,6 +140,15 @@ class SocialScoringEvaluator(BaseEvaluator):
         Returns:
             EvaluationResult: The evaluation result
         """
+        if not DEEPEVAL_AVAILABLE or self.social_scoring_metric is None:
+            return EvaluationResult(
+                evaluator_name="SocialScoringEvaluator",
+                compliant=False,
+                score=0.0,
+                reason="DeepEval is not available, so social scoring could not be evaluated.",
+                details={},
+            )
+
         try:
             # Extract the content to evaluate
             content = self._get_content_to_evaluate(interaction)

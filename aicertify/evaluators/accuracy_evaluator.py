@@ -8,12 +8,26 @@ which require AI systems to provide accurate information and avoid hallucination
 import logging
 from typing import Dict, Any, List
 
-from deepeval.metrics import HallucinationMetric, FaithfulnessMetric
-from deepeval.test_case import LLMTestCase
-
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
 
 logger = logging.getLogger(__name__)
+
+# Check if DeepEval is available. A broken transitive dependency (e.g. a
+# langchain_community/langchain_core version mismatch) surfaces as
+# ModuleNotFoundError here too, which is a subclass of ImportError, so it's
+# caught by the same guard as a genuinely-missing package.
+try:
+    import deepeval
+    from deepeval.metrics import HallucinationMetric, FaithfulnessMetric
+    from deepeval.test_case import LLMTestCase
+
+    DEEPEVAL_AVAILABLE = True
+    logger.debug(f"DeepEval version {deepeval.__version__} successfully imported")
+except ImportError as e:
+    logger.warning(
+        f"DeepEval not usable ({e}). AccuracyEvaluator will report unavailable."
+    )
+    DEEPEVAL_AVAILABLE = False
 
 
 class AccuracyEvaluator(BaseEvaluator):
@@ -51,8 +65,12 @@ class AccuracyEvaluator(BaseEvaluator):
         super().__init__(kwargs)
 
     def _initialize(self) -> None:
-        """Initialize the evaluator with deepeval metrics."""
-        # Initialize the metrics
+        """Initialize the evaluator with deepeval metrics, if deepeval is usable."""
+        if not DEEPEVAL_AVAILABLE:
+            self.hallucination_metric = None
+            self.faithfulness_metric = None
+            return
+
         self.hallucination_metric = HallucinationMetric(
             threshold=self.hallucination_threshold, model=self.model
         )
@@ -70,6 +88,15 @@ class AccuracyEvaluator(BaseEvaluator):
         Returns:
             EvaluationResult: The evaluation result
         """
+        if not DEEPEVAL_AVAILABLE or self.hallucination_metric is None:
+            return EvaluationResult(
+                evaluator_name="AccuracyEvaluator",
+                compliant=False,
+                score=0.0,
+                reason="DeepEval is not available, so accuracy could not be evaluated.",
+                details={},
+            )
+
         try:
             input_text = interaction.get("input_text", "")
             output_text = interaction.get("output_text", "")

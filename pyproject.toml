@@ -130,6 +130,14 @@ ruff = "^0.5.5"
 pre-commit = "^4.2.0"
 black = ">=26.3.1,<27.0.0"
 
+[tool.pytest.ini_options]
+# deepeval registers a pytest plugin (entry point name "plugins") that pytest
+# autoloads unconditionally at startup, before any test file is collected. In
+# environments where deepeval's own langchain_community/langchain_core pin is
+# broken, that autoload crashes pytest itself, regardless of whether any test
+# imports deepeval. Disabling it here is unrelated to test content.
+addopts = "-p no:plugins"
+
 [tool.ruff]
 line-length = 88
 target-version = "py312"
