@@ -6,7 +6,7 @@
 </div>
 
 <p align="center">
-  <em>Audit your AI against the EU AI Act, NIST AI RMF, and 13 more frameworks — one contract, one command, one report.</em>
+  <em>Audit your AI against the EU AI Act, NIST AI RMF, and 6 more international frameworks: one contract, one command, one report.</em>
 </p>
 
 <p align="center">
@@ -16,7 +16,7 @@
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12%2B-blue.svg?style=flat-square" alt="Python 3.12+"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="Apache 2.0"></a>
   <a href="https://www.openpolicyagent.org/ecosystem/entry/principled-evolution"><img src="https://img.shields.io/badge/built%20on-OPA-7D4698.svg?style=flat-square" alt="Built on OPA"></a>
-  <a href="https://github.com/Principled-Evolution/gopal"><img src="https://img.shields.io/badge/policies-94%20rego-2f9e44.svg?style=flat-square" alt="94 Rego Policies"></a>
+  <a href="https://github.com/Principled-Evolution/gopal"><img src="https://img.shields.io/badge/policies-85%20rego-2f9e44.svg?style=flat-square" alt="85 Rego Policies"></a>
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@
 
 <br>
 
-> 📦 **Full documentation, examples, contributing guide, translations (zh-CN / ja-JP / ko-KR / hi-IN), and 94 Rego policies** live in the [GitHub repository](https://github.com/Principled-Evolution/aicertify).
+> 📦 **Full documentation, examples, contributing guide, translations (zh-CN / ja-JP / ko-KR / hi-IN), and 85 Rego policies** live in the [GitHub repository](https://github.com/Principled-Evolution/aicertify).
 
 Regulators are moving faster than your governance docs. The EU AI Act is in force. NIST AI RMF is the de-facto US standard. India, Brazil, and Singapore are next. `AICertify` lets you encode those obligations as executable [Open Policy Agent](https://www.openpolicyagent.org/) policies, run them against captured AI interactions, and produce audit-ready reports in PDF, Markdown, JSON, or HTML.
 
@@ -42,7 +42,7 @@ It's the missing link between *"we have a responsible-AI policy"* and *"we can p
 - generate Markdown, JSON, HTML, or PDF reports your auditor can read
 - integrate AI compliance checks into CI/CD
 
-AICertify is part of the [Open Policy Agent ecosystem](https://www.openpolicyagent.org/ecosystem/entry/principled-evolution) — built on the same policy engine that powers Kubernetes admission, microservice authorisation, and infrastructure governance at scale.
+AICertify is part of the [Open Policy Agent ecosystem](https://www.openpolicyagent.org/ecosystem/entry/principled-evolution), built on the same policy engine that powers Kubernetes admission, microservice authorisation, and infrastructure governance at scale.
 
 > ⭐ **If AICertify helps you, please star the [repo](https://github.com/Principled-Evolution/aicertify).** It helps AI governance and policy-as-code practitioners discover the project.
 
@@ -57,17 +57,17 @@ pip install aicertify
 # 2. Install the OPA binary, one-time (~80 MB)
 curl -L https://openpolicyagent.org/downloads/latest/opa_linux_amd64 -o /usr/local/bin/opa && sudo chmod +x /usr/local/bin/opa
 
-# 3. Run the bundled demo — no contract file, no API keys, ~10 seconds
+# 3. Run the bundled demo (no contract file, no API keys, ~10 seconds)
 aicertify demo
 ```
 
-`aicertify demo` loads a bundled sample contract, evaluates it against the EU AI Act policy set via OPA, and writes `aicertify_demo_report.md` to the current directory. Open the report — that's what your audit deliverable looks like.
+`aicertify demo` loads a bundled sample contract, evaluates it against the EU AI Act policy set via OPA, and writes `aicertify_demo_report.md` to the current directory. Open the report: that's what your audit deliverable looks like.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Principled-Evolution/aicertify/main/docs/demo.gif" alt="aicertify demo recording — banner, spinners, evaluation progress, generated report path" width="85%" />
+  <img src="https://raw.githubusercontent.com/Principled-Evolution/aicertify/main/docs/demo.gif" alt="aicertify demo recording: banner, spinners, evaluation progress, generated report path" width="85%" />
 </p>
 
-For richer evaluations (LangFair fairness metrics, DeepEval content-safety scoring, PDF reports), see [`examples/quickstart.py`](https://github.com/Principled-Evolution/aicertify/blob/main/examples/quickstart.py) and the [forkable example bots](https://github.com/Principled-Evolution/aicertify/tree/main/examples) — each ships an `input_contract.json`, a `policy_config.yaml`, and a `run.py`.
+For richer evaluations (LangFair fairness metrics, DeepEval content-safety scoring, PDF reports), see [`examples/quickstart.py`](https://github.com/Principled-Evolution/aicertify/blob/main/examples/quickstart.py) and the [forkable example bots](https://github.com/Principled-Evolution/aicertify/tree/main/examples), each of which ships an `input_contract.json`, a `policy_config.yaml`, and a `run.py`.
 
 ### Minimal Python usage
 
@@ -124,7 +124,7 @@ See the full positioning in [docs/why-aicertify.md on GitHub](https://github.com
 Most AI-governance tooling is either:
 
 - **A vendor SaaS** that locks your audit trail behind a login (Credo AI, Holistic AI), or
-- **A research toolkit** focused on a single dimension — fairness metrics (Fairlearn, AI Fairness 360) or explainability (Microsoft RAI Toolbox).
+- **A research toolkit** focused on a single dimension: fairness metrics (Fairlearn, AI Fairness 360) or explainability (Microsoft RAI Toolbox).
 
 Neither produces the document a regulator actually asks for: *evidence that you tested this AI system against a named regulation, with reproducible policies and a dated report.*
 
@@ -132,7 +132,7 @@ Neither produces the document a regulator actually asks for: *evidence that you 
 |---|---|---|---|---|
 | Open source | ✅ Apache 2.0 | ✅ MIT | ✅ MIT | ❌ Closed |
 | On-prem / air-gapped | ✅ | ✅ | ✅ | ❌ |
-| Named regulatory frameworks | **EU AI Act, NIST RMF, Brazil AI Bill, India DPDP, +11 more** | ❌ (fairness only) | ❌ (toolkit) | ✅ |
+| Named regulatory frameworks | **EU AI Act, NIST RMF, Brazil AI Bill, India Digital Policy, +9 more** | ❌ (fairness only) | ❌ (toolkit) | ✅ |
 | Policy-as-code (auditable, diff-able) | ✅ OPA / Rego | ❌ | ❌ | ❌ |
 | Industry verticals out of the box | Aviation, Banking, Healthcare, Automotive, Education | ❌ | ❌ | Partial |
 | Generates audit-ready reports | ✅ PDF / MD / JSON / HTML | ❌ | Partial | ✅ |
@@ -144,7 +144,7 @@ Neither produces the document a regulator actually asks for: *evidence that you 
 
 If you already use OPA, AICertify gives you the **AI-application context layer** OPA was missing. You bring your AI app; AICertify captures the interactions, feeds them through the OPA engine against AI-specific Rego policies sourced from [gopal](https://github.com/Principled-Evolution/gopal), and emits audit-ready evidence.
 
-The whole stack is policy-as-code — same workflow you already use for Kubernetes admission, microservice authorisation, and infrastructure governance.
+The whole stack is policy-as-code: the same workflow you already use for Kubernetes admission, microservice authorisation, and infrastructure governance.
 
 ---
 
@@ -152,9 +152,9 @@ The whole stack is policy-as-code — same workflow you already use for Kubernet
 
 Copy any of these and substitute your own contract:
 
-- **[customer-support-bot](https://github.com/Principled-Evolution/aicertify/tree/main/examples/customer-support-bot)** — limited-risk EU AI Act + global cross-cutting policies
-- **[healthcare-triage-bot](https://github.com/Principled-Evolution/aicertify/tree/main/examples/healthcare-triage-bot)** — EU AI Act high-risk Annex III(5)(a) + gopal healthcare patient-safety policies
-- **[hiring-screening-bot](https://github.com/Principled-Evolution/aicertify/tree/main/examples/hiring-screening-bot)** — EU AI Act high-risk Annex III(4) + fair-lending proxy + FRIA metadata pattern
+- **[customer-support-bot](https://github.com/Principled-Evolution/aicertify/tree/main/examples/customer-support-bot)**: limited-risk EU AI Act + global cross-cutting policies
+- **[healthcare-triage-bot](https://github.com/Principled-Evolution/aicertify/tree/main/examples/healthcare-triage-bot)**: EU AI Act high-risk Annex III(5)(a) + gopal healthcare patient-safety policies
+- **[hiring-screening-bot](https://github.com/Principled-Evolution/aicertify/tree/main/examples/hiring-screening-bot)**: EU AI Act high-risk Annex III(4) + fair-lending proxy + FRIA metadata pattern
 
 Each example ships an `input_contract.json`, `policy_config.yaml`, `sample_interactions.json`, an `expected_report.md`, and a `run.py` you can execute directly.
 
@@ -164,21 +164,21 @@ Each example ships an `input_contract.json`, `policy_config.yaml`, `sample_inter
 
 You don't have to install anything to see what AICertify produces. A sample pre-generated PDF is in the repo:
 
-- **[demo-report-eu-ai-act.pdf](https://github.com/Principled-Evolution/aicertify/blob/main/docs/demo-report-eu-ai-act.pdf)** — a customer-support agent evaluated against the EU AI Act
-- **[examples/outputs/](https://github.com/Principled-Evolution/aicertify/tree/main/examples/outputs)** — canonical full outputs for EU AI Act, loan evaluation, and medical diagnosis
+- **[demo-report-eu-ai-act.pdf](https://github.com/Principled-Evolution/aicertify/blob/main/docs/demo-report-eu-ai-act.pdf)**: a customer-support agent evaluated against the EU AI Act
+- **[examples/outputs/](https://github.com/Principled-Evolution/aicertify/tree/main/examples/outputs)**: canonical full outputs for EU AI Act, loan evaluation, and medical diagnosis
 
 ---
 
 ## More on GitHub
 
 - Full [README with diagrams](https://github.com/Principled-Evolution/aicertify) (English / [简体中文](https://github.com/Principled-Evolution/aicertify/blob/main/README.zh-CN.md) / [日本語](https://github.com/Principled-Evolution/aicertify/blob/main/README.ja-JP.md) / [한국어](https://github.com/Principled-Evolution/aicertify/blob/main/README.ko-KR.md) / [हिन्दी](https://github.com/Principled-Evolution/aicertify/blob/main/README.hi-IN.md))
-- [CONTRIBUTING.md](https://github.com/Principled-Evolution/aicertify/blob/main/CONTRIBUTING.md) — how to add policies, examples, or framework coverage
-- [SECURITY.md](https://github.com/Principled-Evolution/aicertify/blob/main/SECURITY.md) — private vulnerability disclosure
-- [CHANGELOG.md](https://github.com/Principled-Evolution/aicertify/blob/main/CHANGELOG.md) — what changed in each release
-- [gopal](https://github.com/Principled-Evolution/gopal) — the upstream OPA/Rego policy library AICertify uses
+- [CONTRIBUTING.md](https://github.com/Principled-Evolution/aicertify/blob/main/CONTRIBUTING.md): how to add policies, examples, or framework coverage
+- [SECURITY.md](https://github.com/Principled-Evolution/aicertify/blob/main/SECURITY.md): private vulnerability disclosure
+- [CHANGELOG.md](https://github.com/Principled-Evolution/aicertify/blob/main/CHANGELOG.md): what changed in each release
+- [gopal](https://github.com/Principled-Evolution/gopal): the upstream OPA/Rego policy library AICertify uses
 
 ---
 
 ## License
 
-Apache 2.0 — see the [LICENSE file](https://github.com/Principled-Evolution/aicertify/blob/main/LICENSE).
+Apache 2.0, see the [LICENSE file](https://github.com/Principled-Evolution/aicertify/blob/main/LICENSE).

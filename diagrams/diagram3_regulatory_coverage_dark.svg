@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg viewBox="0 0 680 450" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
 <title>Regulatory coverage</title>
-<desc>94 production Rego policies across 15+ frameworks and 5 industries.</desc>
+<desc>85 production Rego policies across 8 frameworks and 5 industries.</desc>
 
-<text x="170" y="60" font-size="36" font-weight="500" fill="#fbbf24" text-anchor="middle">94</text>
+<text x="170" y="60" font-size="36" font-weight="500" fill="#fbbf24" text-anchor="middle">85</text>
 <text x="170" y="80" font-size="12" fill="#8b949e" text-anchor="middle">Rego policies</text>
-<text x="340" y="60" font-size="36" font-weight="500" fill="#fbbf24" text-anchor="middle">15+</text>
+<text x="340" y="60" font-size="36" font-weight="500" fill="#fbbf24" text-anchor="middle">8</text>
 <text x="340" y="80" font-size="12" fill="#8b949e" text-anchor="middle">frameworks</text>
 <text x="510" y="60" font-size="36" font-weight="500" fill="#fbbf24" text-anchor="middle">5</text>
 <text x="510" y="80" font-size="12" fill="#8b949e" text-anchor="middle">industries</text>
@@ -22,7 +22,7 @@
 <line x1="46" y1="156" x2="306" y2="156" stroke="#21262d" stroke-width="1"/>
 <circle cx="52" cy="172" r="2.5" fill="#818cf8"/><text x="62" y="176" font-size="12" fill="#c9d1d9">EU AI Act</text>
 <circle cx="52" cy="192" r="2.5" fill="#818cf8"/><text x="62" y="196" font-size="12" fill="#c9d1d9">NIST AI RMF</text>
-<circle cx="52" cy="212" r="2.5" fill="#818cf8"/><text x="62" y="216" font-size="12" fill="#c9d1d9">India DPDP</text>
+<circle cx="52" cy="212" r="2.5" fill="#818cf8"/><text x="62" y="216" font-size="12" fill="#c9d1d9">India Digital Policy</text>
 <circle cx="52" cy="232" r="2.5" fill="#818cf8"/><text x="62" y="236" font-size="12" fill="#c9d1d9">Brazil AI Bill</text>
 </g>
 
@@ -37,7 +37,7 @@
 <circle cx="380" cy="172" r="2.5" fill="#818cf8"/><text x="390" y="176" font-size="12" fill="#c9d1d9">ICAO Doc 10019</text>
 <circle cx="380" cy="192" r="2.5" fill="#818cf8"/><text x="390" y="196" font-size="12" fill="#c9d1d9">FAA Part 107</text>
 <circle cx="380" cy="212" r="2.5" fill="#818cf8"/><text x="390" y="216" font-size="12" fill="#c9d1d9">EASA SORA</text>
-<circle cx="380" cy="232" r="2.5" fill="#818cf8"/><text x="390" y="236" font-size="12" fill="#c9d1d9">RTCA DO-365/366</text>
+<circle cx="380" cy="232" r="2.5" fill="#818cf8"/><text x="390" y="236" font-size="12" fill="#c9d1d9">RTCA DO-365</text>
 </g>
 
 <g>

@@ -19,7 +19,8 @@ aicertify/                          Python package
 ├── __init__.py                     Public API (re-exports the surface a user sees)
 ├── cli.py                          Argparse CLI entry — see "Useful commands" below
 ├── application.py / regulations.py User-facing fluent API
-├── api.py / contract_models.py     Contract data model (Pydantic)
+├── api.py                          Contract evaluation entry points
+├── models/contract.py              Contract data model (Pydantic)
 ├── evaluators/                     Pluggable evaluators (Fairness, ContentSafety, …)
 ├── opa_policies/                   Vendored Rego policy tree (mirrors gopal layout)
 │   ├── global/v1/                  Cross-cutting categories
