@@ -27,8 +27,7 @@ The documentation here is organized along [Diátaxis](https://diataxis.fr/) line
 
 ## 💡 Explanation — understand the design
 
-- [Project overview](../PROJECT_OVERVIEW.md) — the long-form architectural narrative.
-- [AGENTS.md](../AGENTS.md) — how AI coding agents (and humans) should work in the repo.
+- [AGENTS.md](../AGENTS.md) — the architectural narrative and how AI coding agents (and humans) should work in the repo.
 - [Why policy-as-code?](../README.md#why-aicertify) — the differentiation argument.
 
 ## 🤝 Contributing & community
