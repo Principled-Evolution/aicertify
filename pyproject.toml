@@ -71,20 +71,20 @@ dependencies = [
     "rich (>=13.8.0,<14.0.0)",
     "black (>=26.3.1,<27.0.0)",
     "h11>=0.14.0",
-    "torch>=2.7.0",
+    "torch>=2.13.0",
     "transformers>=4.53.0",
-    "setuptools>=78.1.1",
+    "setuptools>=83.0.0",
     "pycares (>=4.9.0,<5.0.0)",
     # Explicit lower bounds for transitive dependencies that ship security
     # fixes Dependabot has flagged. Each is the minimum version with the
     # named CVE/GHSA addressed; upper bounds are intentionally loose so
     # the parent libraries (langchain*, deepeval, transformers, etc.) can
     # continue to resolve their own pins.
-    "aiohttp>=3.14.0",             # 13 advisories (incl. zip bomb, SSRF, header smuggling)
+    "aiohttp>=3.14.1",             # 13 advisories (incl. zip bomb, SSRF, header smuggling)
     "urllib3>=2.7.0",              # 4 advisories (decompression bombs, cross-origin header leak)
-    "pillow>=12.2.0",              # 4 advisories (PSD OOB write, FITS GZIP bomb, font overflow)
-    "pypdf>=6.10.2",               # 14 advisories (multiple RAM-exhaust, infinite-loop fixes)
-    "nltk>=3.9.4",                 # 1 critical zip slip + 4 high (downloader path traversal, AFO, XSS)
+    "pillow>=12.3.0",              # 4 advisories (PSD OOB write, FITS GZIP bomb, font overflow)
+    "pypdf>=6.14.2",               # 14 advisories (multiple RAM-exhaust, infinite-loop fixes)
+    "nltk>=3.10.0",                 # 1 critical zip slip + 4 high (downloader path traversal, AFO, XSS)
     # LangChain ecosystem on 1.x — unlocked by langfair-mantric@python-3.12-support
     # which now allows langchain >=0.3.7,<2.0 (only imports langchain_core, which is
     # API-compatible across the 0.3 -> 1.x transition).
@@ -92,11 +92,11 @@ dependencies = [
     "langchain>=1.0.0",             # match langchain-core 1.x line
     "langchain-text-splitters>=1.1.2",  # 1 high XXE + 1 medium SSRF in HTMLHeaderTextSplitter
     "langchain-community>=0.3.27",  # 1 high XXE (community remained on 0.3.x — not yet ported to 1.x)
-    "langsmith>=0.8.0",             # 1 high deserialization + token-redaction bypass
-    "pyasn1>=0.6.3",                # 2 high DoS (unbounded recursion)
+    "langsmith>=0.8.18",             # 1 high deserialization + token-redaction bypass
+    "pyasn1>=0.6.4",                # 2 high DoS (unbounded recursion)
     "protobuf>=5.29.6,<6",          # 1 high JSON recursion depth bypass; pin to 5.x to avoid major bump
     "banks>=2.4.2",                # 1 critical RCE via Jinja2 SSTI
-    "starlette>=0.49.1",            # 1 high O(n^2) range-header DoS + 1 medium multipart DoS
+    "starlette>=1.3.1",            # 1 high O(n^2) range-header DoS + 1 medium multipart DoS
     "sentencepiece>=0.2.1",        # 1 high heap overflow
     "orjson>=3.11.6",              # 1 high unbounded recursion
     "brotli>=1.2.0",               # 1 high DoS
