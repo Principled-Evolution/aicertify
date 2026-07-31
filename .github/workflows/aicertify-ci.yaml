@@ -41,6 +41,5 @@ jobs:
         run: |
           poetry run python -c "import aicertify; print(f'AICertify version: {aicertify.__version__}')"
 
-      # Temporarily disabled until we have more reliable tests
-      # - name: Run Basic Tests
-      #   run: poetry run pytest tests/ -v
+      - name: Run Basic Tests
+        run: poetry run pytest tests/ -v

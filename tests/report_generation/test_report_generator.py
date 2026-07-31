@@ -11,7 +11,10 @@ from aicertify.report_generation.report_models import (
     AggregatedReport,
     NestedPolicyReport,  # Add this import
 )
-from aicertify.report_generation.report_generator import create_report_data
+from aicertify.report_generation.report_generator import (
+    create_report_data,
+    ReportGenerator,
+)
 import re
 
 
@@ -96,8 +99,8 @@ def create_test_data() -> AggregatedReport:
         result=True,
         metrics=eu_fairness_metrics,
         timestamp=int(datetime.now().timestamp()),
-        package_path="international.eu_ai_act.v1.fairness",
-        file_path="aicertify/opa_policies/international/eu_ai_act/v1/fairness/fairness.rego",
+        package_path="international.eu_ai_act.v1.eu_fairness",
+        file_path="aicertify/opa_policies/international/eu_ai_act/v1/eu_fairness/eu_fairness.rego",
     )
 
     eu_transparency_policy = PolicyReport(
@@ -190,16 +193,14 @@ def test_control_summary_calculation():
 def test_html_report_generation(tmp_path):
     """Test HTML report generation with our test data"""
     report = create_test_data()
-    tmp_path / "test_report.html"
-    create_report_data(report)
+    output_path = tmp_path / "test_report.html"
+    report_data = create_report_data(report)
 
-    # Skip this test since generate_html_report has been moved or renamed
-    pytest.skip("HTML report generation is not available in this version")
+    success = ReportGenerator.generate_html_report(report_data, str(output_path))
 
-    # Old code that no longer works:
-    # success = generate_html_report(report_data, str(output_path))
-    # assert success
-    # assert output_path.exists()
+    assert success
+    assert output_path.exists()
+    assert "Test AI Application" in output_path.read_text(encoding="utf-8")
 
 
 if __name__ == "__main__":
