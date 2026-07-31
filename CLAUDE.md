@@ -4,7 +4,7 @@
 
 ## What you're working on
 
-**AICertify** evaluates AI applications against regulatory frameworks (EU AI Act, NIST AI RMF, +13 more) using [OPA](https://www.openpolicyagent.org/) policies from [gopal](https://github.com/Principled-Evolution/gopal). The deliverable is an audit-ready compliance report (PDF / Markdown / JSON / HTML).
+**AICertify** evaluates AI applications against regulatory frameworks (EU AI Act, NIST AI RMF, +6 more) using [OPA](https://www.openpolicyagent.org/) policies from [gopal](https://github.com/Principled-Evolution/gopal). The deliverable is an audit-ready compliance report (PDF / Markdown / JSON / HTML).
 
 ## Fast orientation
 

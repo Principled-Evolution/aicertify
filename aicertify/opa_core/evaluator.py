@@ -14,7 +14,7 @@ import tempfile
 import requests
 import atexit
 
-from ..models.contract_models import AiCertifyContract as Contract
+from ..models.contract import AiCertifyContract as Contract
 
 # Define execution modes as a Literal type for better type checking
 ExecutionMode = Literal["production", "development", "debug"]

@@ -12,7 +12,7 @@ from uuid import UUID
 from datetime import datetime
 
 # Import models
-from aicertify.models.contract_models import AiCertifyContract
+from aicertify.models.contract import AiCertifyContract
 
 # Configure logging
 logger = logging.getLogger(__name__)

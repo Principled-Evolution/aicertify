@@ -47,7 +47,7 @@
 <rect x="96" y="354" width="170" height="3" rx="1.5" fill="#e2e8f0"/>
 
 <line x1="80" y1="376" x2="300" y2="376" stroke="#e2e8f0" stroke-width="0.5"/>
-<text x="80" y="390" font-size="9" fill="#94a3b8">AICertify v0.7.0 · run #a4f3 · Apache 2.0</text>
+<text x="80" y="390" font-size="9" fill="#94a3b8">AICertify v0.7.3 · run #a4f3 · Apache 2.0</text>
 
 <line x1="320" y1="46" x2="345" y2="46" stroke="#cbd5e1" stroke-width="0.5" stroke-dasharray="3 3"/>
 <circle cx="350" cy="46" r="3" fill="#4f46e5"/>

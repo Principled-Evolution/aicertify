@@ -28,7 +28,7 @@ Every artifact is reproducible: same input, same policy, same result. Every clai
 
 AICertify exists for teams that need to **read, run, review, and repeat** their AI compliance evidence:
 
-- **AI engineers** building under the EU AI Act, NIST AI RMF, India DPDP, Brazil AI Bill, FERPA/COPPA, FAA UAS rules, or any other named framework.
+- **AI engineers** building under the EU AI Act, NIST AI RMF, India Digital Policy, Brazil AI Bill, FERPA/COPPA, FAA UAS rules, or any other named framework.
 - **Governance, risk, and compliance (GRC) teams** who want their controls to *execute*, not just describe.
 - **Auditors and model risk professionals** evaluating third-party AI systems.
 - **Platform engineers** integrating AI compliance checks into CI/CD next to their linting, type-checking, and dependency scanning.
@@ -42,7 +42,7 @@ AICertify exists for teams that need to **read, run, review, and repeat** their 
 | Open source | ✅ Apache 2.0 | ❌ Closed | ✅ MIT |
 | Air-gapped / on-prem deployable | ✅ | ❌ | ✅ |
 | Policy-as-code (versioned, diff-able, reviewable) | ✅ OPA / Rego | ❌ | ❌ |
-| Named regulatory frameworks (EU AI Act, NIST RMF, +13 more) | ✅ via [gopal](https://github.com/Principled-Evolution/gopal) | ✅ | ❌ (fairness/explainability only) |
+| Named regulatory frameworks (EU AI Act, NIST RMF, +6 more) | ✅ via [gopal](https://github.com/Principled-Evolution/gopal) | ✅ | ❌ (fairness/explainability only) |
 | Industry verticals out of the box (aviation, banking, healthcare, education, automotive) | ✅ | Partial | ❌ |
 | Audit-ready report output (PDF / Markdown / JSON / HTML) | ✅ | ✅ | Partial |
 | Custom policies | ✅ Drop a `.rego` file | ✅ (paid tier) | N/A |
@@ -62,5 +62,5 @@ What it *does* give you is the missing link between *"we have a responsible-AI p
 
 - **See the output without installing:** open [demo-report-eu-ai-act.pdf](demo-report-eu-ai-act.pdf).
 - **Run the quickstart:** [`examples/quickstart.py`](../examples/quickstart.py).
-- **Explore the policy library:** [gopal](https://github.com/Principled-Evolution/gopal) — 94 production Rego policies across 15+ frameworks.
+- **Explore the policy library:** [gopal](https://github.com/Principled-Evolution/gopal) — 85 production Rego policies across 8 frameworks and 5 industries.
 - **Open a [good first issue](https://github.com/Principled-Evolution/aicertify/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).**

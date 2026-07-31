@@ -11,7 +11,7 @@ __version__ = "0.7.3"
 # Direct imports for developer convenience
 try:
     # Contract creation and management
-    from aicertify.models.contract_models import (
+    from aicertify.models.contract import (
         create_contract,
         save_contract,
         load_contract,

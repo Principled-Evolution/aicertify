@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`aicertify demo` no longer crashes on a fresh install.** Importing `aicertify.application` hard-crashed with `ModuleNotFoundError: No module named 'langchain_core.tracers.langchain_v1'` — a third-party version incompatibility between `deepeval` and the resolved `langchain_core`/`langchain_community` — because six evaluator modules (`accuracy_evaluator.py`, `biometric_categorization_evaluator.py`, and the four `evaluators/prohibited_practices/*.py` modules) imported `deepeval` at module level without the graceful-degradation guard already used elsewhere in the codebase (`content_safety_evaluator.py`, `fairness_evaluator.py`). All six now follow the same `try/except ImportError` + `DEEPEVAL_AVAILABLE` pattern, reporting the affected evaluator unavailable instead of crashing the whole package. This was the first command a new user runs, and it was completely broken.
+- **`pytest` itself couldn't start.** `deepeval` registers a pytest plugin under the entry-point name `plugins`, which pytest autoloads unconditionally before any test file is collected — so the same broken `langchain_core` dependency crashed `pytest` outright, independent of the evaluator fix above and independent of whether any test imported `deepeval`. Disabled via `addopts = "-p no:plugins"` in `pyproject.toml`.
+- **`import aicertify` fired a `DeprecationWarning` against itself.** The package `__init__.py`, plus six internal call sites, imported `AiCertifyContract`/`AiEvaluationResult`/etc. from the deprecated `aicertify.models.contract_models` / `aicertify.models.evaluation_models` shims instead of their non-deprecated replacements (`aicertify.models.contract`, `aicertify.models.evaluation`). Every import of the library warned about its own internals. Repointed all internal usages; the shims remain for external backward compatibility.
+- **`tests/` was restored.** The directory referenced by `AGENTS.md` and the CI workflow didn't exist — two test modules had been left under `aicertify/report_generation/` instead. Moved back to `tests/report_generation/`, fixed a stale pre-rename policy path in test fixture data, replaced a `pytest.skip`-based no-op test with a real assertion against `ReportGenerator.generate_html_report`, and converted several `return`-based pseudo-tests into real `assert`-based tests (they were passing regardless of outcome).
+- **Re-enabled the `pytest` step in `.github/workflows/aicertify-ci.yaml`**, disabled since April 2025 pending "more reliable tests" — now that the above is fixed, it is.
+- **`gopal` submodule bumped** from a commit ~15 months stale (49 policies) to current main (85 policies), which includes real aviation-standards coverage the README already claimed but the vendored policies didn't actually contain.
+- **README, translated READMEs (zh-CN/ja-JP/ko-KR/hi-IN), README-pypi.md, AGENTS.md, CLAUDE.md, and docs/why-aicertify.md** corrected to match the bumped submodule: policy count (94 → 85), framework count, aviation standards list (dropped `ASTM F3442`, `RTCA DO-365/366` → `RTCA DO-365`), India DPDP → India Digital Policy naming, and an honest scaffold-vs-implemented breakdown per framework in the Status section instead of a flat "production-ready" claim.
+
 ## [0.7.3] — 2026-05-14
 
 ### Fixed

@@ -29,10 +29,10 @@
 </g>
 <g>
 <rect x="784" y="476" width="120" height="36" rx="18" fill="#eef2ff"/>
-<text x="844" y="494" font-size="16" font-weight="500" fill="#4338ca" text-anchor="middle" dominant-baseline="central">+13 more</text>
+<text x="844" y="494" font-size="16" font-weight="500" fill="#4338ca" text-anchor="middle" dominant-baseline="central">+6 more</text>
 </g>
 
 <line x1="120" y1="568" x2="1080" y2="568" stroke="#e2e8f0" stroke-width="1"/>
 <text x="120" y="600" font-size="18" font-weight="400" fill="#64748b">github.com/Principled-Evolution/aicertify</text>
-<text x="1080" y="600" font-size="18" font-weight="400" fill="#64748b" text-anchor="end">94 Rego policies · Apache 2.0</text>
+<text x="1080" y="600" font-size="18" font-weight="400" fill="#64748b" text-anchor="end">85 Rego policies · Apache 2.0</text>
 </svg>

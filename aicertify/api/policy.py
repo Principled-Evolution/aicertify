@@ -13,7 +13,7 @@ from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 
 # Import models
-from aicertify.models.contract_models import AiCertifyContract
+from aicertify.models.contract import AiCertifyContract
 
 # Import core utilities
 from aicertify.api.core import CustomJSONEncoder
@@ -296,7 +296,7 @@ async def evaluate_by_policy(
         Dictionary containing evaluation results and report paths
     """
     # Handle different input types
-    from aicertify.models.contract_models import load_contract
+    from aicertify.models.contract import load_contract
 
     contract_obj = None
     if isinstance(contract, str):

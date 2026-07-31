@@ -9,12 +9,26 @@ person's consciousness to materially distort behavior.
 import logging
 from typing import Dict, Any, List, Tuple
 
-from deepeval.metrics import GEval
-from deepeval.test_case import LLMTestCase, LLMTestCaseParams
-
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
 
 logger = logging.getLogger(__name__)
+
+# Check if DeepEval is available. A broken transitive dependency (e.g. a
+# langchain_community/langchain_core version mismatch) surfaces as
+# ModuleNotFoundError here too, which is a subclass of ImportError, so it's
+# caught by the same guard as a genuinely-missing package.
+try:
+    import deepeval
+    from deepeval.metrics import GEval
+    from deepeval.test_case import LLMTestCase, LLMTestCaseParams
+
+    DEEPEVAL_AVAILABLE = True
+    logger.debug(f"DeepEval version {deepeval.__version__} successfully imported")
+except ImportError as e:
+    logger.warning(
+        f"DeepEval not usable ({e}). EmotionRecognitionEvaluator will report unavailable."
+    )
+    DEEPEVAL_AVAILABLE = False
 
 
 class EmotionRecognitionEvaluator(BaseEvaluator):
@@ -61,7 +75,13 @@ class EmotionRecognitionEvaluator(BaseEvaluator):
         super().__init__(kwargs)
 
     def _initialize(self) -> None:
-        """Initialize the evaluator with the required metrics."""
+        """Initialize the evaluator with the required metrics, if deepeval is usable."""
+        if not DEEPEVAL_AVAILABLE:
+            self.emotion_recognition_metric = None
+            self.workplace_context_metric = None
+            self.educational_context_metric = None
+            return
+
         # Set up DeepEval metrics for emotion recognition detection
         self.emotion_recognition_metric = GEval(
             name="Emotion Recognition Detection",
@@ -146,6 +166,15 @@ class EmotionRecognitionEvaluator(BaseEvaluator):
         Returns:
             EvaluationResult: The evaluation result
         """
+        if not DEEPEVAL_AVAILABLE or self.emotion_recognition_metric is None:
+            return EvaluationResult(
+                evaluator_name="EmotionRecognitionEvaluator",
+                compliant=False,
+                score=0.0,
+                reason="DeepEval is not available, so emotion recognition could not be evaluated.",
+                details={},
+            )
+
         try:
             # Extract the content to evaluate
             content = self._get_content_to_evaluate(interaction)

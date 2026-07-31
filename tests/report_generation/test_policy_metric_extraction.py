@@ -22,7 +22,7 @@ from aicertify.report_generation.policy_metric_extraction import (
 logger = logging.getLogger(__name__)
 
 
-def test_registry_initialization() -> Dict[str, Any]:
+def check_registry_initialization() -> Dict[str, Any]:
     """
     Test the evaluator registry initialization.
 
@@ -50,7 +50,7 @@ def test_registry_initialization() -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-def test_extraction_path_generation() -> Dict[str, Any]:
+def check_extraction_path_generation() -> Dict[str, Any]:
     """
     Test the generation of extraction paths for metrics.
 
@@ -76,7 +76,7 @@ def test_extraction_path_generation() -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-def test_custom_extraction_logic(
+def check_custom_extraction_logic(
     sample_result: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
@@ -122,7 +122,7 @@ def test_custom_extraction_logic(
         return {"success": False, "error": str(e)}
 
 
-def test_full_integration() -> Dict[str, Any]:
+def check_full_integration() -> Dict[str, Any]:
     """
     Test the full integration between registry and extraction.
 
@@ -131,7 +131,7 @@ def test_full_integration() -> Dict[str, Any]:
     """
     try:
         # Step 1: Initialize the evaluator registry
-        registry_result = test_registry_initialization()
+        registry_result = check_registry_initialization()
         if not registry_result["success"]:
             return registry_result
 
@@ -139,12 +139,12 @@ def test_full_integration() -> Dict[str, Any]:
         initialize_metric_extraction()
 
         # Step 3: Test extraction path generation
-        paths_result = test_extraction_path_generation()
+        paths_result = check_extraction_path_generation()
         if not paths_result["success"]:
             return paths_result
 
         # Step 4: Test custom extraction logic
-        extraction_result = test_custom_extraction_logic()
+        extraction_result = check_custom_extraction_logic()
         if not extraction_result["success"]:
             return extraction_result
 
@@ -160,28 +160,57 @@ def test_full_integration() -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
+def test_registry_initialization():
+    result = check_registry_initialization()
+    assert result["success"], result.get("error")
+    assert result["metrics_count"] > 0
+    assert result["evaluators_count"] > 0
+    assert "fairness.score" in result["metrics"]
+
+
+def test_extraction_path_generation():
+    result = check_extraction_path_generation()
+    assert result["success"], result.get("error")
+    assert "fairness.score" in result["path_generation_results"]["fairness.score"]
+
+
+def test_custom_extraction_logic():
+    result = check_custom_extraction_logic()
+    assert result["success"], result.get("error")
+    assert result["extracted_metrics_count"] == 6
+    names = {m["name"] for m in result["extracted_metrics"]}
+    assert "compliance.decision" in names
+    assert "compliance.score" in names
+
+
+def test_full_integration():
+    result = check_full_integration()
+    assert result["success"], result.get("error")
+    assert result["message"] == "Full integration test successful"
+
+
 def run_all_tests() -> None:
     """
-    Run all tests and print the results.
+    Run all checks and print the results.
     """
     logging.basicConfig(level=logging.INFO)
 
     print("\n====== Testing Policy Metric Extraction Integration ======\n")
 
     print("\n----- Testing Registry Initialization -----\n")
-    registry_result = test_registry_initialization()
+    registry_result = check_registry_initialization()
     print(pformat(registry_result))
 
     print("\n----- Testing Extraction Path Generation -----\n")
-    paths_result = test_extraction_path_generation()
+    paths_result = check_extraction_path_generation()
     print(pformat(paths_result))
 
     print("\n----- Testing Custom Extraction Logic -----\n")
-    extraction_result = test_custom_extraction_logic()
+    extraction_result = check_custom_extraction_logic()
     print(pformat(extraction_result))
 
     print("\n----- Testing Full Integration -----\n")
-    full_result = test_full_integration()
+    full_result = check_full_integration()
     print(pformat(full_result))
 
     print("\n====== Test Complete ======\n")
