@@ -108,7 +108,7 @@ dependencies = [
     "virtualenv>=20.36.1",         # TOCTOU directory-creation fix
     "Pygments>=2.20.0",            # ReDoS in GUID regex
     "soupsieve>=2.8.4",            # 2 high (selector-list memory exhaustion + ReDoS in selector parser)
-    "cryptography>=48.0.1",        # 1 high (vulnerable OpenSSL bundled in the wheel)
+    "cryptography>=50.0.0",        # 1 high (vulnerable OpenSSL bundled in the wheel)
 ]
 
 [project.urls]
