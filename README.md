@@ -47,7 +47,7 @@ It's the missing link between *"we have a responsible-AI policy"* and *"we can p
 - produce audit-ready compliance evidence on every release
 - evaluate AI interactions against named regulatory frameworks (EU AI Act, NIST AI RMF, FERPA, fair-lending, FAA/EASA aviation, …)
 - generate Markdown, JSON, HTML, or PDF reports your auditor can read
-- integrate AI compliance checks into CI/CD
+- integrate AI compliance checks into CI/CD ([GitHub Actions guide](docs/integrations/github-actions.md))
 
 AICertify is part of the [Open Policy Agent ecosystem](https://www.openpolicyagent.org/ecosystem/entry/principled-evolution), built on the same policy engine that powers Kubernetes admission, microservice authorisation, and infrastructure governance at scale.
 

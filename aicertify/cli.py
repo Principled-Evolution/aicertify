@@ -270,11 +270,22 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--verbose", action="store_true", help="Enable debug logging")
 
+    # Accepted after the subcommand too. `aicertify demo --verbose` is what
+    # people type, and with --verbose defined only on the top-level parser it
+    # failed with "unrecognized arguments: --verbose" after already spending
+    # several seconds importing the evaluator stack. Sharing one parent parser
+    # keeps a single definition and lets it appear on either side.
+    verbose_parent = argparse.ArgumentParser(add_help=False)
+    verbose_parent.add_argument(
+        "--verbose", action="store_true", help="Enable debug logging"
+    )
+
     subparsers = parser.add_subparsers(dest="command", metavar="<command>")
 
     # demo
     demo = subparsers.add_parser(
         "demo",
+        parents=[verbose_parent],
         help="Run a self-contained demo against the EU AI Act policies",
         description=(
             "Loads a bundled sample contract, evaluates it against the EU AI "
@@ -307,6 +318,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # evaluate
     ev = subparsers.add_parser(
         "evaluate",
+        parents=[verbose_parent],
         help="Evaluate a user-provided contract against a policy folder",
         description=(
             "Loads a contract JSON, evaluates it against the named OPA policy "
@@ -340,6 +352,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # explain
     ex = subparsers.add_parser(
         "explain",
+        parents=[verbose_parent],
         help="Show what input a framework's policies need, and why",
         description=(
             "Print every field the policies in a framework require, split into "
@@ -366,6 +379,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # init-contract
     init = subparsers.add_parser(
         "init-contract",
+        parents=[verbose_parent],
         help="Scaffold a contract with every field a framework needs",
         description=(
             "Write a contract skeleton containing every field the chosen "
