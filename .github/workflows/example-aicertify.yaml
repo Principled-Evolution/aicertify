@@ -1,0 +1,96 @@
+name: AI Compliance (example)
+
+# An example workflow, not a gate on this repository.
+#
+# It is here to be copied into a downstream repo and to be dogfooded on demand.
+# It does not run on pushes or pull requests, because the bundled example
+# contract carries no declared context and would therefore report a wall of
+# denials that says nothing about whether this repo is healthy. Run it from the
+# Actions tab, or copy it and point it at your own contract.
+#
+# docs/integrations/github-actions.md explains the copy-and-adapt path.
+
+on:
+  workflow_dispatch:
+    inputs:
+      contract:
+        description: 'Path to the contract JSON'
+        default: 'examples/customer-support-bot/input_contract.json'
+        type: string
+      framework:
+        description: 'Framework to evaluate against (eu_ai_act, uk, bfs, legal, …)'
+        default: 'eu_ai_act'
+        type: string
+      fail_on:
+        description: 'any = fail the build when a policy denies; none = report only'
+        default: 'none'
+        type: choice
+        options: [none, any]
+
+permissions:
+  contents: read
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # submodules: true is not optional. The policy library is a submodule at
+      # aicertify/opa_policies, and without it there are no policies at all:
+      # the evaluation produces zero verdicts rather than an obvious error.
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install OPA
+        run: |
+          curl -sSL -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64
+          chmod 755 opa
+          sudo mv opa /usr/local/bin/
+          opa version
+
+      # The evaluators pull transformer models on first use, which dominates the
+      # run time. Caching turns a cold ten-minute job into a warm one.
+      - name: Cache model downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            ~/.cache/torch
+          key: aicertify-models-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: aicertify-models-${{ runner.os }}-
+
+      - name: Install AICertify
+        run: pip install -e .
+
+      # Cheap and worth doing first: if the contract is missing fields the
+      # policies read, this is where you find out, rather than in the verdicts.
+      - name: Show what this framework requires
+        run: aicertify explain "${{ inputs.framework }}"
+
+      - name: Evaluate and gate
+        run: |
+          python examples/github-actions/gate.py \
+            --contract "${{ inputs.contract }}" \
+            --policy "${{ inputs.framework }}" \
+            --fail-on "${{ inputs.fail_on }}" \
+            --report-format markdown \
+            --output-dir reports
+
+      # always() so the evidence survives a failing gate. The artifact is what
+      # an auditor asks for: proof the check ran and what it decided.
+      - name: Upload the compliance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-report-${{ inputs.framework }}
+          path: |
+            reports/
+            compliance-summary.json
+          if-no-files-found: warn
+          retention-days: 30

@@ -219,3 +219,7 @@ reference-docs/
 !docs/demo-report-*.md
 !examples/*/expected_report.md
 cline*.*
+
+# Written by examples/github-actions/gate.py
+compliance-summary.json
+compliance-summary-*.json

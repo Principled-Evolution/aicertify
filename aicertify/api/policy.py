@@ -21,6 +21,7 @@ from aicertify.api.core import CustomJSONEncoder
 # Import OPA components
 from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator
+from aicertify.opa_core.introspection import merge_declared_context
 
 # Import evaluators
 from aicertify.evaluators import ComplianceEvaluator
@@ -125,10 +126,23 @@ async def aicertify_app_for_policy(
         generate_report=False,
     )
 
+    # Fold the contract's declared context into the OPA input.
+    #
+    # Most GOPAL obligations turn on facts no evaluator can observe: whether a
+    # conformity assessment was completed, whether a human can intervene in an
+    # automated decision, whether the CE marking was affixed. 69 of the EU AI
+    # Act's 77 required fields are of that kind. Until this merge existed those
+    # fields could not reach OPA at all, because input_data was the evaluator
+    # output and nothing else, so every policy resting on a declaration denied
+    # no matter what the contract said.
+    #
+    # See merge_declared_context for why measured values win over declared ones.
+    opa_input = merge_declared_context(phase1_results, contract)
+
     # evaluate with OPA
     opa_results = opa_evaluator.evaluate_policy_category(
         policy_category=policy_folder,
-        input_data=phase1_results,
+        input_data=opa_input,
         custom_params=custom_params,
     )
 

@@ -89,13 +89,20 @@ def parse_rego_file_metadata(file_path: str) -> RegoMetadata:
         re.MULTILINE,
     )
     if metrics_section:
-        # Extract all metric lines in one pass
+        # Extract all metric lines in one pass.
+        #
+        # Horizontal whitespace only. With \s the trailing optional group
+        # matched the newline and the indentation of the following line, so the
+        # scan resumed mid-way down the block and every second entry was
+        # silently dropped. A policy declaring four required metrics reported
+        # two, which fed straight into evaluator discovery and left evaluations
+        # running without the data their policies needed.
         metric_matches = re.findall(
-            r"^\s*#\s*-\s*(.+?)(?:\s*(?:#.*)?)?$",
+            r"^[ \t]*#[ \t]*-[ \t]*(.+?)[ \t]*(?:#.*)?$",
             metrics_section.group(1),
             re.MULTILINE,
         )
-        metrics = [m.strip() for m in metric_matches]
+        metrics = [m.strip() for m in metric_matches if m.strip()]
     else:
         logger.debug(f"No RequiredMetrics section found in {file_path}")
 
@@ -106,8 +113,11 @@ def parse_rego_file_metadata(file_path: str) -> RegoMetadata:
     )
     if params_section:
         # Parse each parameter line
+        # Horizontal whitespace only, for the same reason as the metrics
+        # pattern above: \s would consume the line break and skip entries.
         param_pattern = (
-            r"^\s*#\s*-\s*([^\s(]+)(?:\s*\(default\s*([^)]+)\))?(?:\s*(?:#.*)?)?$"
+            r"^[ \t]*#[ \t]*-[ \t]*([^\s(]+)"
+            r"(?:[ \t]*\(default[ \t]*([^)]+)\))?[ \t]*(?:#.*)?$"
         )
         param_matches = re.findall(param_pattern, params_section.group(1), re.MULTILINE)
 

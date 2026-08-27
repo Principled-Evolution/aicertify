@@ -118,6 +118,148 @@ def _cmd_demo(args: argparse.Namespace) -> int:
         return 1
 
 
+def _cmd_explain(args: argparse.Namespace) -> int:
+    """Handle the ``explain`` subcommand."""
+    from aicertify.opa_core.introspection import (
+        available_frameworks,
+        evaluator_for,
+        introspect,
+    )
+
+    try:
+        info = introspect(args.framework)
+    except LookupError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "framework": info.query,
+                    "policy_count": info.policy_count,
+                    "policies": [
+                        {
+                            "package": p.package,
+                            "path": p.path,
+                            "required_metrics": p.required_metrics,
+                            "required_params": p.required_params,
+                        }
+                        for p in info.policies
+                    ],
+                    "declared_fields": info.declared_fields,
+                    "evaluator_fields": info.evaluator_fields,
+                    "params": info.params,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    width = 46
+    print(f"\n{info.query}  —  {info.policy_count} policies\n")
+
+    if info.declared_fields:
+        print(f"Fields you must declare ({len(info.declared_fields)})")
+        print("  No evaluator can observe these. They are facts about your system,")
+        print(
+            "  your process, or your paperwork, so you assert them in the contract.\n"
+        )
+        for path in sorted(info.declared_fields):
+            users = info.declared_fields[path]
+            shown = ", ".join(users[:3])
+            if len(users) > 3:
+                shown += f", +{len(users) - 3} more"
+            print(f"  {path:<{width}} {shown}")
+        print()
+
+    if info.evaluator_fields:
+        print(f"Fields produced by evaluators ({len(info.evaluator_fields)})")
+        print("  Computed at evaluation time from your interactions. Do not hand-write")
+        print("  these: asserting your own fairness score defeats the point.\n")
+        for path in sorted(info.evaluator_fields):
+            users = info.evaluator_fields[path]
+            hint = evaluator_for(path)
+            suffix = f"[{hint} evaluator]" if hint else ""
+            print(f"  {path:<{width}} {', '.join(users[:2])} {suffix}".rstrip())
+        print()
+
+    if info.params:
+        print(f"Tunable parameters ({len(info.params)})")
+        print("  Thresholds with documented defaults. Override in the contract's")
+        print("  params object or with `evaluate --params`.\n")
+        for name in sorted(info.params):
+            users = ", ".join(info.param_sources.get(name, [])[:3])
+            print(f"  {name:<{width}} default {info.params[name]!r:<10} {users}")
+        print()
+
+    if args.policies:
+        print(f"Policies ({info.policy_count})\n")
+        for p in info.policies:
+            print(f"  {p.package}")
+            print(f"    {len(p.required_metrics)} required fields  ·  {p.path}")
+        print()
+
+    print(f"Next: aicertify init-contract --policy {args.framework} > contract.json")
+    if not args.policies:
+        print("      Add --policies to list the individual policies.")
+    print(
+        "\nFields are classified by prefix, which is a heuristic. A real "
+        "evaluation is\nthe authoritative answer.  Frameworks: "
+        + ", ".join(available_frameworks())
+        + "\n"
+    )
+    return 0
+
+
+def _cmd_init_contract(args: argparse.Namespace) -> int:
+    """Handle the ``init-contract`` subcommand."""
+    from aicertify.opa_core.introspection import (
+        build_contract_skeleton,
+        introspect,
+        unfilled_paths,
+    )
+
+    try:
+        info = introspect(args.policy)
+    except LookupError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    contract = build_contract_skeleton(
+        info,
+        application_name=args.application_name,
+        model_name=args.model_name,
+    )
+    rendered = json.dumps(contract, indent=2, sort_keys=False)
+
+    if args.output:
+        if os.path.exists(args.output) and not args.force:
+            print(
+                f"error: {args.output} already exists. Pass --force to overwrite.",
+                file=sys.stderr,
+            )
+            return 2
+        with open(args.output, "w", encoding="utf-8") as handle:
+            handle.write(rendered + "\n")
+        todo = len(unfilled_paths(contract.get("context", {})))
+        print(f"Wrote {args.output}", file=sys.stderr)
+        print(
+            f"  {info.policy_count} policies, {todo} fields to fill in under context.",
+            file=sys.stderr,
+        )
+        print(
+            f"  Run `aicertify explain {args.policy}` to see what each field means.",
+            file=sys.stderr,
+        )
+    else:
+        # Stdout stays pure JSON so `> contract.json` produces a valid file.
+        print(rendered)
+
+    return 0
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="aicertify",
@@ -128,11 +270,22 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--verbose", action="store_true", help="Enable debug logging")
 
+    # Accepted after the subcommand too. `aicertify demo --verbose` is what
+    # people type, and with --verbose defined only on the top-level parser it
+    # failed with "unrecognized arguments: --verbose" after already spending
+    # several seconds importing the evaluator stack. Sharing one parent parser
+    # keeps a single definition and lets it appear on either side.
+    verbose_parent = argparse.ArgumentParser(add_help=False)
+    verbose_parent.add_argument(
+        "--verbose", action="store_true", help="Enable debug logging"
+    )
+
     subparsers = parser.add_subparsers(dest="command", metavar="<command>")
 
     # demo
     demo = subparsers.add_parser(
         "demo",
+        parents=[verbose_parent],
         help="Run a self-contained demo against the EU AI Act policies",
         description=(
             "Loads a bundled sample contract, evaluates it against the EU AI "
@@ -165,6 +318,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # evaluate
     ev = subparsers.add_parser(
         "evaluate",
+        parents=[verbose_parent],
         help="Evaluate a user-provided contract against a policy folder",
         description=(
             "Loads a contract JSON, evaluates it against the named OPA policy "
@@ -195,6 +349,71 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     ev.set_defaults(func=_cmd_evaluate)
 
+    # explain
+    ex = subparsers.add_parser(
+        "explain",
+        parents=[verbose_parent],
+        help="Show what input a framework's policies need, and why",
+        description=(
+            "Print every field the policies in a framework require, split into "
+            "the ones you must declare and the ones an evaluator computes for "
+            "you. Answers 'what do I feed it?' without running an evaluation."
+        ),
+    )
+    ex.add_argument(
+        "framework",
+        help="Framework to explain, e.g. eu_ai_act, uk, bfs, international/eu_ai_act",
+    )
+    ex.add_argument(
+        "--policies",
+        action="store_true",
+        help="Also list the individual policies and their field counts",
+    )
+    ex.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON instead of the human summary",
+    )
+    ex.set_defaults(func=_cmd_explain)
+
+    # init-contract
+    init = subparsers.add_parser(
+        "init-contract",
+        parents=[verbose_parent],
+        help="Scaffold a contract with every field a framework needs",
+        description=(
+            "Write a contract skeleton containing every field the chosen "
+            "framework declares, nested into the shape the policies read, so "
+            "the first run is filling in blanks rather than guessing."
+        ),
+    )
+    init.add_argument(
+        "--policy",
+        required=True,
+        help="Framework to scaffold for, e.g. eu_ai_act, uk, bfs",
+    )
+    init.add_argument(
+        "--output",
+        "-o",
+        help="Write to this file instead of stdout",
+    )
+    init.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite --output if it already exists",
+    )
+    init.add_argument(
+        "--application-name",
+        default="your-application",
+        help="Value for application_name (default: your-application)",
+    )
+    init.add_argument(
+        "--model-name",
+        default="your-model",
+        help="Value for model_info.model_name (default: your-model)",
+    )
+    init.set_defaults(func=_cmd_init_contract)
+
     return parser
 
 
@@ -216,9 +435,15 @@ def main() -> int:
     # OPA policy loader, …) unless the user opts in via --verbose. Note: this
     # runs BEFORE argparse so it's in effect when the (deferred) aicertify
     # package imports happen inside the subcommand handlers.
+    # force=True matters. Seven modules call logging.basicConfig(level=INFO) at
+    # import time, and importing the aicertify package runs them before main()
+    # does. Without force the root logger already has a handler, basicConfig
+    # returns early, and the intended quiet default never takes effect: every
+    # command printed INFO chatter from the policy loader and the evaluators.
     logging.basicConfig(
         level=logging.WARNING,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        force=True,
     )
 
     sys.argv[:] = _inject_evaluate_for_legacy_invocation(sys.argv)

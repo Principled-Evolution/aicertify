@@ -14,7 +14,11 @@ import os
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+# Logging is configured by the application entry point, not here. A library
+# module calling logging.basicConfig hijacks the root logger of whatever
+# imports it: these calls ran at import time, before aicertify.cli could set
+# its own quiet default, so every command printed evaluator registration
+# chatter it had explicitly tried to suppress.
 logger = logging.getLogger(__name__)
 
 # Check if DeepEval is available
