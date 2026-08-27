@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <em>Audit your AI against the EU AI Act, NIST AI RMF, and 6 more international frameworks: one contract, one command, one report.</em>
+  <em>Audit your AI against the EU AI Act, the UK AI framework, NIST AI RMF and six more international frameworks: one contract, one command, one report.</em>
 </p>
 
 <p align="center">
@@ -24,7 +24,7 @@
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12%2B-blue.svg?style=flat-square" alt="Python 3.12+"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="Apache 2.0"></a>
   <a href="https://www.openpolicyagent.org/ecosystem/entry/principled-evolution"><img src="https://img.shields.io/badge/built%20on-OPA-7D4698.svg?style=flat-square" alt="Built on OPA"></a>
-  <a href="https://github.com/Principled-Evolution/gopal"><img src="https://img.shields.io/badge/policies-85%20rego-2f9e44.svg?style=flat-square" alt="85 Rego Policies"></a>
+  <a href="https://github.com/Principled-Evolution/gopal"><img src="https://img.shields.io/badge/policies-91%20rego-2f9e44.svg?style=flat-square" alt="91 Rego Policies"></a>
   <a href="https://makeapullrequest.com"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome"></a>
 </p>
 
@@ -75,6 +75,66 @@ aicertify demo
 </p>
 
 For richer evaluations (LangFair fairness metrics, DeepEval content-safety scoring, PDF reports), see [`examples/quickstart.py`](examples/quickstart.py) and the [forkable example bots](examples/), each of which ships an `input_contract.json`, a `policy_config.yaml`, and a `run.py`.
+
+### Finding out what a framework needs
+
+The hard part of a first real run is not installing anything, it is knowing what to put
+in the contract. The EU AI Act policies need 155 distinct input fields, and guessing
+them from evaluation failures is miserable. Two commands answer it up front.
+
+`aicertify explain` lists every field a framework's policies read, split by who is
+supposed to supply it:
+
+```bash
+aicertify explain uk
+```
+
+```
+uk  —  6 policies
+
+Fields you must declare (31)
+  No evaluator can observe these. They are facts about your system,
+  your process, or your paperwork, so you assert them in the contract.
+
+  decision.article_9_condition                   automated_decision_making
+  decision.meaningful_human_involvement          automated_decision_making
+  ...
+  governance.oversight_body_in_place             accountability_governance
+  safeguards.human_intervention_available        automated_decision_making
+```
+
+Nothing in a transcript reveals whether a conformity assessment was completed or
+whether a human can intervene in an automated decision, so those are declarations.
+Fairness and toxicity scores are the opposite: the evaluators compute them, and the
+command marks them as such so you do not hand-write your own results.
+
+`aicertify init-contract` turns that list into a file to fill in, nested into the shape
+the policies actually read:
+
+```bash
+aicertify init-contract --policy uk > contract.json
+```
+
+```json
+{
+  "application_name": "your-application",
+  "model_info": { "model_name": "your-model", "model_version": "v1", "metadata": {} },
+  "interactions": [ { "input_text": "Replace with a real prompt from your system.", "…": "…" } ],
+  "context": {
+    "decision": { "significant": null, "special_category_data_involved": null },
+    "governance": { "accountable_person_named": null, "oversight_body_in_place": null },
+    "safeguards": { "human_intervention_available": null, "information_provided": null }
+  }
+}
+```
+
+Replace the nulls and run `aicertify evaluate --contract contract.json --policy uk`.
+A field left as `null` is dropped rather than sent as an explicit null, so an
+unfilled scaffold denies instead of being read as "assessed, and false".
+
+Add `--policies` to see the individual policies, or `--json` for machine-readable
+output. `aicertify explain <framework>` with no valid match prints the list of
+frameworks it accepts.
 
 ### For development
 
@@ -142,7 +202,7 @@ AICertify is built for that artifact.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram2_architecture_dark.svg">
-    <img src="diagrams/diagram2_architecture_light.svg" alt="AICertify architecture: Your AI App feeds a Contract, which flows through Evaluators (Fairness, ContentSafety, RiskManagement, Compliance) into the OPA Engine with 85 Rego policies, producing an audit deliverable via the Report Generator" width="85%" />
+    <img src="diagrams/diagram2_architecture_light.svg" alt="AICertify architecture: Your AI App feeds a Contract, which flows through Evaluators (Fairness, ContentSafety, RiskManagement, Compliance) into the OPA Engine with 91 Rego policies, producing an audit deliverable via the Report Generator" width="85%" />
   </picture>
 </p>
 
@@ -160,15 +220,16 @@ Because the policies are declarative Rego, they version, diff, and review like a
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram3_regulatory_coverage_dark.svg">
-    <img src="diagrams/diagram3_regulatory_coverage_light.svg" alt="Regulatory coverage: 85 policies across 8 frameworks and 5 industries -- EU AI Act, NIST AI RMF, India Digital Policy, Brazil AI Bill, RTCA DO-365, FAA Part 107, EASA SORA, ICAO Doc 10019, Healthcare, Banking and Financial Services, Automotive, Education, Global, Aviation, AIOps, Corporate" width="85%" />
+    <img src="diagrams/diagram3_regulatory_coverage_light.svg" alt="Regulatory coverage: 91 policies across 9 frameworks and 6 industries -- EU AI Act, NIST AI RMF, India Digital Policy, Brazil AI Bill, RTCA DO-365, FAA Part 107, EASA SORA, ICAO Doc 10019, Healthcare, Banking and Financial Services, Automotive, Education, Global, Aviation, AIOps, Corporate" width="85%" />
   </picture>
 </p>
 
-AICertify runs against the [gopal](https://github.com/Principled-Evolution/gopal) policy library: **85 production OPA policies** across these frameworks:
+AICertify runs against the [gopal](https://github.com/Principled-Evolution/gopal) policy library: **91 production OPA policies** across these frameworks:
 
 ### International
-- **EU AI Act** (29 policies): prohibited practices, biometric ID, manipulation, transparency, technical documentation, human oversight, GPAI obligations. Several obligation areas are scaffolds pending full implementation; see [gopal's coverage matrix](https://github.com/Principled-Evolution/gopal/blob/main/docs/coverage/eu-ai-act.md) for exactly which are enforceable today.
-- **NIST AI RMF**: Govern, Map, Measure, Manage + AI 600-1
+- **EU AI Act** (29 policies): prohibited practices, biometric ID, manipulation, transparency, technical documentation, human oversight, GPAI obligations, conformity assessment and CE marking. Every obligation area is implemented; see [gopal's coverage matrix](https://github.com/Principled-Evolution/gopal/blob/main/docs/coverage/eu-ai-act.md) for the article-by-article mapping.
+- **UK AI framework** (6 policies): the five pro-innovation principles, plus UK GDPR Articles 22A-22D as substituted by section 80 of the Data (Use and Access) Act 2025. The UK and EU automated-decision regimes have diverged, and both are encoded
+- **NIST AI RMF** (5 policies): Govern, Map, Measure, Manage + AI 600-1
 - **India Digital Policy**: aligned with NITI Aayog's National Strategy for Artificial Intelligence (the separate India DPDP Act isn't covered yet)
 - **Brazil AI Governance Bill**: algorithmic governance requirements
 - **Aviation standards** (7 policies): ICAO Doc 10019, FAA Part 107, FAA Remote ID, EASA Regulation 2019/947, EASA SORA, RTCA DO-365, ISO 21384
@@ -176,8 +237,9 @@ AICertify runs against the [gopal](https://github.com/Principled-Evolution/gopal
 ### Industry-specific
 - **Aviation** (12 policies): airworthiness, autonomous systems, data management, flight operations
 - **Education** (12 policies): FERPA, COPPA, proctoring, human-in-the-loop grading
-- **Banking & Financial Services**: model risk, fair lending
-- **Healthcare**: patient safety, diagnostic safety
+- **Banking & Financial Services** (4 policies): model risk (SR 11-7, OCC 2011-12, BCBS 239), fair lending, PRA SS1/23, FCA Consumer Duty
+- **Legal services** (3 policies): citation verification, client confidentiality, competence and supervision, following the SRA and BSB guidance on AI use
+- **Healthcare** (2 policies): patient safety, diagnostic safety
 - **Automotive**: vehicle safety integration
 
 ### Global & Operational
@@ -185,7 +247,7 @@ AICertify runs against the [gopal](https://github.com/Principled-Evolution/gopal
 - **Corporate**: InfoSec, governance
 - **AIOps & Cost**: scalability, resource efficiency
 
-The Global and Operational categories are currently scaffolds (stable package paths, not yet enforceable logic) more often than not; check the linked coverage matrix or the policy's own file before relying on one in production.
+No category is a scaffold any more. Every policy checks concrete input fields, has a sibling test, and is asserted to deny an input carrying no evidence. `docs/coverage/coverage.json` in gopal is generated from the policy files and records, per policy, the fields it requires and whether it has that test.
 
 Don't see your regulation? [Add a Rego file](https://github.com/Principled-Evolution/gopal/blob/main/CONTRIBUTING.md). The library is designed to be extended.
 
@@ -240,15 +302,16 @@ Open the PDFs. That's what your auditor wants.
 
 AICertify is in **beta (v0.7.3)**. The API may evolve before the 1.0 release. Production-ready frameworks today:
 
-- ✅ Global evaluators (fairness, content safety, transparency): all 9 policies implemented
-- ✅ Aviation policy set (ICAO, FAA, EASA, RTCA, ISO): all 19 policies implemented, across both the international regulators and the industry vertical
-- ✅ Automotive: vehicle safety fully implemented
-- 🚧 EU AI Act: 8 of 29 policies implemented; the rest are scaffolds pending real logic
-- 🚧 NIST AI RMF: Govern and the AI 600-1 orchestrator are implemented; Map, Measure, and Manage are scaffolds
-- 🚧 Healthcare, BFS: one policy per vertical implemented (diagnostic safety, fair lending), the other is a scaffold (patient safety, model risk)
-- 🚧 India Digital Policy: early stage
+Every policy in the library is implemented. There are no scaffolds left, so the useful
+distinction is no longer implemented-or-not but **how deep the check goes**:
 
-A "scaffold" means the package path and default-deny structure exist but the compliance logic isn't written yet, so it always denies. See [gopal's coverage matrices](https://github.com/Principled-Evolution/gopal/tree/main/docs/coverage) for the exact obligation-by-obligation breakdown, and the [policy library roadmap](https://github.com/Principled-Evolution/gopal) for what's next.
+- ✅ **Threshold checks against measured values.** Global (fairness, content safety, toxicity, transparency), EU AI Act fairness, healthcare diagnostic safety, BFS fair lending and model risk. These compare a number your evaluators produced against a threshold.
+- ✅ **Structural checks against the document you supply.** The EU AI Act's 29 policies, the aviation set (19 across the regulators and the vertical), automotive, education, legal.
+- ⚠️ **Declared booleans.** NIST AI RMF Map, Measure and Manage, the UK principles, and the operational categories gate on a self-attestation such as `input.map.intended_use_documented` rather than inspecting the artefact behind it. That is a claim the policy records and enforces, not independent verification. gopal's [NIST matrix](https://github.com/Principled-Evolution/gopal/blob/main/docs/coverage/nist-ai-rmf.md) states this in the same terms, and notes that the orchestrator's verdict inherits that shallowness.
+
+Which category a policy falls into is derivable: `docs/coverage/coverage.json` in gopal
+lists the fields each policy requires, and a policy asking for `metrics.*` is comparing
+measurements while one asking for `governance.*` is recording declarations.
 
 ---
 
@@ -259,7 +322,7 @@ If you already use OPA for Kubernetes admission, microservice authorisation, or 
 - **Bring your own Rego policies.** Drop a `.rego` file into the policy folder and it evaluates alongside the bundled set.
 - **Evaluate AI interactions through OPA.** Captured inputs, outputs, and metrics flow into your policies via the standard OPA `input` document.
 - **Generate audit-ready evidence.** PDF / Markdown / JSON / HTML, one command.
-- **Use [gopal](https://github.com/Principled-Evolution/gopal) as the policy library underneath.** 85 production Rego policies covering EU AI Act, NIST AI RMF, aviation safety, FERPA, fair lending, and more.
+- **Use [gopal](https://github.com/Principled-Evolution/gopal) as the policy library underneath.** 91 production Rego policies covering the EU AI Act, the UK AI framework, NIST AI RMF, aviation safety, FERPA, fair lending, UK financial services and legal practice.
 
 AICertify is listed in the [Open Policy Agent ecosystem](https://www.openpolicyagent.org/ecosystem/entry/principled-evolution) as the AI-governance entry alongside Gopal.
 
