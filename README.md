@@ -64,11 +64,18 @@ pip install aicertify
 # 2. Install the OPA binary, one-time (~80 MB)
 curl -L https://openpolicyagent.org/downloads/latest/opa_linux_amd64 -o /usr/local/bin/opa && sudo chmod +x /usr/local/bin/opa
 
-# 3. Run the bundled demo (no contract file, no API keys, ~10 seconds)
+# 3. Run the bundled demo (no contract file, no API keys)
 aicertify demo
 ```
 
 `aicertify demo` loads a bundled sample contract, evaluates it against the EU AI Act policy set via OPA, and writes `aicertify_demo_report.md` to the current directory. Open the report: that's what your audit deliverable looks like.
+
+> **First run is slow.** The demo runs five evaluators over the sample
+> interactions, and they download and load transformer models on first use, which
+> dominates the wall-clock time. Expect minutes, not seconds, and expect it to be
+> much faster once the model cache is warm. If you only want the Rego verdicts and
+> none of the evaluator machinery, the [gopal](https://github.com/Principled-Evolution/gopal)
+> policy bundles evaluate in seconds with just the `opa` binary.
 
 <p align="center">
   <img src="docs/demo.gif" alt="aicertify demo recording: banner, spinners, evaluation progress, generated report path" width="85%" />
