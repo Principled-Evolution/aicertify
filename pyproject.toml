@@ -83,7 +83,7 @@ dependencies = [
     "aiohttp>=3.14.1",             # 15 advisories (incl. zip bomb, SSRF, header smuggling)
     "urllib3>=2.7.0",              # 4 advisories (decompression bombs, cross-origin header leak)
     "pillow>=12.3.0",              # 13 advisories (PSD/FITS/font OOB writes, heap corruption)
-    "pypdf>=6.14.2",               # 13 advisories (multiple RAM-exhaust, infinite-loop fixes)
+    "pypdf>=6.15.0",               # 13 advisories (multiple RAM-exhaust, infinite-loop fixes)
     "nltk>=3.10.0",                # 1 critical zip slip + 4 high (downloader path traversal, AFO, XSS)
     # LangChain ecosystem on 1.x — unlocked by langfair-mantric@python-3.12-support
     # which now allows langchain >=0.3.7,<2.0 (only imports langchain_core, which is
