@@ -115,13 +115,30 @@ async def run_demo(
     output: str = DEFAULT_REPORT_NAME,
     report_format: str = "markdown",
     policy: str = DEFAULT_POLICY,
+    with_llm_metrics: bool = False,
 ) -> int:
-    """Run the bundled demo. Returns a shell-style exit code."""
+    """Run the bundled demo. Returns a shell-style exit code.
+
+    ``with_llm_metrics`` opts in to the LLM-judged evaluators. It is off by
+    default because the demo is advertised as needing no API keys, and it
+    silently stopped being true for anyone who happened to have OPENAI_API_KEY
+    exported: DeepEval's toxicity metric would make a billable completion call
+    per interaction, and a run was observed sitting on those calls for over 19
+    minutes. The OPA verdict is the substance of the demo either way.
+    """
     # The OPA-binary check uses only stdlib (shutil.which) so it's safe to
     # run BEFORE the stderr redirect — failure messages stay visible.
     if opa_binary_path() is None:
         print_opa_install_instructions()
         return 1
+
+    # The LLM-judged evaluators activate off the presence of OPENAI_API_KEY.
+    # Hide it for the duration unless the caller asked for them, so the demo
+    # behaves the same way whether or not the environment happens to carry a
+    # key, and never spends the user's money without being asked.
+    restore_api_key: Optional[str] = None
+    if not with_llm_metrics and os.environ.get("OPENAI_API_KEY"):
+        restore_api_key = os.environ.pop("OPENAI_API_KEY")
 
     # Don't expose CUDA — matches examples/quickstart.py to keep behaviour
     # reproducible across machines with and without GPUs.
@@ -183,6 +200,19 @@ async def run_demo(
             f"{policy} policy set → {report_format} report.",
             category="EVALUATION",
         )
+
+        if with_llm_metrics:
+            info(
+                "LLM-judged metrics are ON. DeepEval will make a billable "
+                "completion call per interaction, so this takes minutes rather "
+                "than seconds."
+            )
+        elif restore_api_key is not None:
+            info(
+                "OPENAI_API_KEY is set but LLM-judged metrics are off, so no "
+                "billable calls will be made. Pass --with-llm-metrics to "
+                "include fairness and toxicity scoring."
+            )
 
         # Step 1: regulations set
         with spinner("Creating regulations set", emoji="🔍"):
@@ -266,11 +296,27 @@ async def run_demo(
             "Open the report above to see what an AICertify audit deliverable "
             "looks like — generated, not handwritten."
         )
+        # The sample contract carries no compliance declarations, so the
+        # policies deny. Saying so beats leaving a first-time user staring at a
+        # column of failures and concluding the tool is broken, and it points at
+        # the two commands that answer "what would make these pass?".
+        info(
+            f"Expect denials: the bundled contract declares no compliance "
+            f"evidence, and most obligations turn on facts no evaluator can "
+            f"observe. To see what {policy} actually asks for, and to scaffold "
+            f"a contract that answers it:"
+        )
+        info(f"    aicertify explain {policy}")
+        info(f"    aicertify init-contract --policy {policy} > contract.json")
         return 0
     except Exception:
         exit_code = 99
         raise
     finally:
+        # Put the caller's environment back exactly as we found it.
+        if restore_api_key is not None:
+            os.environ["OPENAI_API_KEY"] = restore_api_key
+
         # Restore real stderr
         sys.stderr.flush()
         os.dup2(saved_stderr_fd, 2)
