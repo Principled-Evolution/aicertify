@@ -10,11 +10,49 @@ from pathlib import Path
 from .policy_loader import PolicyLoader
 from uuid import UUID
 from datetime import datetime
+
 import tempfile
 import requests
 import atexit
 
 from ..models.contract import AiCertifyContract as Contract
+
+# Paths and file types OPA must not try to load as data documents.
+#
+# `opa eval --data <dir>` walks the whole tree and parses every .yaml/.json it
+# finds as a data document. The gopal policy library ships GitHub issue-template
+# forms under .github/ISSUE_TEMPLATE/ and JSON fixtures under examples/, and
+# those collide:
+#
+#   .github/ISSUE_TEMPLATE/new_framework.yml: merge error
+#
+# OPA then exits 2 having evaluated nothing, every policy query comes back
+# empty, and the caller receives a report saying zero policies were evaluated
+# rather than an error. gopal's own CI passes the same ignores to `opa check`
+# and `opa test` for this reason; the eval path here had none.
+OPA_IGNORE_PATTERNS: List[str] = [
+    ".github",
+    ".git",
+    "custom",
+    "dist",
+    "*.yml",
+    "*.yaml",
+    "*.json",
+    "*.md",
+]
+
+
+def opa_ignore_flags() -> List[str]:
+    """`--ignore` flags for every `opa eval` invocation.
+
+    Kept in one place so a new call site cannot silently omit them, which is
+    exactly how the failure above went unnoticed.
+    """
+    flags: List[str] = []
+    for pattern in OPA_IGNORE_PATTERNS:
+        flags.extend(["--ignore", pattern])
+    return flags
+
 
 # Define execution modes as a Literal type for better type checking
 ExecutionMode = Literal["production", "development", "debug"]
@@ -242,6 +280,7 @@ class OpaEvaluator:
                 temp_file_path,
                 query,
             ]
+            cmd[3:3] = opa_ignore_flags()
 
             # Optionally add debugging flags if debug mode is enabled
             if debug_mode:
@@ -534,6 +573,7 @@ class OpaEvaluator:
         cmd = [
             self.opa_path,
             "eval",
+            *opa_ignore_flags(),
             "--data",
             policy_dir,
             "--format",
@@ -591,6 +631,7 @@ class OpaEvaluator:
             cmd = [
                 self.opa_path,
                 "eval",
+                *opa_ignore_flags(),
                 "--format",
                 "json",  # Always use JSON format for clean output
                 "--data",

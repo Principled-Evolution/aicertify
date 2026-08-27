@@ -6,9 +6,10 @@ for evaluating AI systems against content safety criteria.
 """
 
 import logging
-from typing import Dict, Any, Tuple
+from typing import Any, Callable, Dict, Tuple
 import asyncio
 import os
+import threading
 
 # Import base evaluator components
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
@@ -20,6 +21,13 @@ from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
 # its own quiet default, so every command printed evaluator registration
 # chatter it had explicitly tried to suppress.
 logger = logging.getLogger(__name__)
+
+# DeepEval's ToxicityMetric is LLM-judged, so measure() is a network call. Without
+# a bound, an unreachable or throttled provider hangs the whole evaluation: a demo
+# run was observed sitting in select() inside toxicity.py for over 19 minutes
+# having produced nothing. 60s per interaction is generous for one completion and
+# still bounds a six-interaction contract to a few minutes worst case.
+DEFAULT_LLM_TIMEOUT_SECONDS = 60
 
 # Check if DeepEval is available
 try:
@@ -155,6 +163,79 @@ class ContentSafetyEvaluator(BaseEvaluator):
                 raise RuntimeError(
                     f"Failed to initialize DeepEval ToxicityMetric: {str(e)}"
                 )
+
+    def _timed_out_result(self, timeout: float) -> Dict[str, Any]:
+        """The verdict for an interaction whose LLM call did not return in time.
+
+        Deliberately identical in shape and direction to the unavailable path:
+        worst-case toxicity and passed=False. A content-safety check that did not
+        complete has established nothing, and reporting it as clean would be the
+        same fail-open this library has had to close three times elsewhere.
+        """
+        return {
+            "toxicity_score": 1.0,
+            "passed": False,
+            "reason": (
+                f"Content safety evaluation timed out after {timeout:g}s. "
+                "Toxicity could not be determined."
+            ),
+            "method": "timeout",
+            "using_mock": True,
+        }
+
+    def _run_bounded(
+        self, fn: Callable[[], Dict[str, Any]], timeout: float
+    ) -> Dict[str, Any]:
+        """Run ``fn`` on a daemon thread and give up after ``timeout`` seconds.
+
+        A daemon thread rather than a ThreadPoolExecutor on purpose. Executor
+        threads are non-daemon and the interpreter joins them at exit, so a call
+        still blocked in the provider would keep the process alive after we had
+        stopped waiting for it, which defeats the point. The abandoned thread
+        here cannot hold up exit.
+        """
+        box: Dict[str, Any] = {}
+
+        def target() -> None:
+            try:
+                box["value"] = fn()
+            except BaseException as exc:  # noqa: BLE001 - re-raised on the caller
+                box["error"] = exc
+
+        worker = threading.Thread(
+            target=target, name="aicertify-content-safety", daemon=True
+        )
+        worker.start()
+        worker.join(timeout)
+
+        if worker.is_alive():
+            logger.warning(
+                "Content safety evaluation exceeded %gs and was abandoned. "
+                "DeepEval's toxicity metric is LLM-judged; check provider "
+                "reachability, or set llm_timeout_seconds in the evaluator "
+                "config.",
+                timeout,
+            )
+            return self._timed_out_result(timeout)
+
+        if "error" in box:
+            raise box["error"]
+        return box["value"]
+
+    def _evaluate_interaction_bounded(
+        self, input_text: str, output_text: str
+    ) -> Dict[str, Any]:
+        """``_evaluate_interaction`` under a wall-clock bound.
+
+        Set ``llm_timeout_seconds`` to 0 or None in the evaluator config to
+        restore the previous unbounded behaviour.
+        """
+        timeout = self.config.get("llm_timeout_seconds", DEFAULT_LLM_TIMEOUT_SECONDS)
+        if not timeout or timeout <= 0:
+            return self._evaluate_interaction(input_text, output_text)
+        return self._run_bounded(
+            lambda: self._evaluate_interaction(input_text, output_text), timeout
+        )
 
     def _evaluate_interaction(
         self, input_text: str, output_text: str
@@ -320,7 +401,7 @@ class ContentSafetyEvaluator(BaseEvaluator):
                 output_text = interaction.get("output_text", "")
 
             # Evaluate with our helper method
-            result = self._evaluate_interaction(input_text, output_text)
+            result = self._evaluate_interaction_bounded(input_text, output_text)
             result["interaction_id"] = i
 
             evaluation_results.append(result)
@@ -442,7 +523,8 @@ class ContentSafetyEvaluator(BaseEvaluator):
 
             # Run the evaluation in a thread pool
             result = await loop.run_in_executor(
-                None, lambda: self._evaluate_interaction(input_text, output_text)
+                None,
+                lambda: self._evaluate_interaction_bounded(input_text, output_text),
             )
 
             result["interaction_id"] = i

@@ -111,6 +111,7 @@ def _cmd_demo(args: argparse.Namespace) -> int:
                 output=args.output,
                 report_format=args.format,
                 policy=args.policy,
+                with_llm_metrics=args.with_llm_metrics,
             )
         )
     except Exception as exc:
@@ -311,6 +312,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Bundled policy framework name (default: eu_ai_act). "
             "Try also: nist, global"
+        ),
+    )
+    demo.add_argument(
+        "--with-llm-metrics",
+        action="store_true",
+        help=(
+            "Include the LLM-judged evaluators (fairness, toxicity). Off by "
+            "default: they need an OPENAI_API_KEY, make a billable call per "
+            "interaction, and take minutes. The OPA verdict does not need them."
         ),
     )
     demo.set_defaults(func=_cmd_demo)

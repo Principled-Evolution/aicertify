@@ -70,12 +70,17 @@ aicertify demo
 
 `aicertify demo` loads a bundled sample contract, evaluates it against the EU AI Act policy set via OPA, and writes `aicertify_demo_report.md` to the current directory. Open the report: that's what your audit deliverable looks like.
 
-> **First run is slow.** The demo runs five evaluators over the sample
-> interactions, and they download and load transformer models on first use, which
-> dominates the wall-clock time. Expect minutes, not seconds, and expect it to be
-> much faster once the model cache is warm. If you only want the Rego verdicts and
-> none of the evaluator machinery, the [gopal](https://github.com/Principled-Evolution/gopal)
-> policy bundles evaluate in seconds with just the `opa` binary.
+> **Expect around two minutes, and expect denials.** Most of the time goes on
+> importing the evaluator stack, which pulls torch and transformers. The bundled
+> contract declares no compliance evidence, so the policies deny — that is the
+> correct answer, and the demo now tells you which two commands show what to
+> declare. No API keys are used, even if `OPENAI_API_KEY` is set in your
+> environment; pass `--with-llm-metrics` to opt in to the LLM-judged fairness and
+> toxicity scoring, which is billable and much slower.
+>
+> If you only want the Rego verdicts and none of the evaluator machinery, the
+> [gopal](https://github.com/Principled-Evolution/gopal) policy bundles evaluate
+> in seconds with just the `opa` binary.
 
 <p align="center">
   <img src="docs/demo.gif" alt="aicertify demo recording: banner, spinners, evaluation progress, generated report path" width="85%" />
