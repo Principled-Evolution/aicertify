@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.8.0]: 2026-08-28
+
+### Fixed
+
+- **AICertify could only report on four of gopal's 91 policies.** It queried `data.<package>.report_output` for every policy, and four define that rule. An EU AI Act evaluation reported 4 verdicts out of 29; UK, NIST, BFS, legal, global, healthcare and education evaluations reported nothing at all, while still exiting successfully.
+
+  The policies were never silent, they were being asked the wrong question. A survey of the library found `report` on 59 policies and `policy_metrics` on 63, and gopal's coverage data names a decision rule for all 84 policies that reach a verdict. The query is now the whole package, and extraction reads the richest shape available: `report_output`, then `compliance_report`, then `report`, then the decision rule with `policy_metrics`.
+
+  | Framework | Before | After |
+  | --- | --- | --- |
+  | eu_ai_act | 4 | 29 |
+  | uk | 0 | 6 |
+  | nist | 0 | 5 |
+  | bfs | 0 | 4 |
+  | legal | 0 | 3 |
+  | global | 0 | 4 |
+  | healthcare | 0 | 2 |
+  | education | 0 | 4 |
+
+  The decision rule is read from coverage data rather than assumed: eight distinct names are in use across the library, so guessing `allow` would have dropped seven policies. A policy whose decision rule produces no boolean is omitted rather than reported as a failure, because in Rego an undefined value is not `false`. And `academic_integrity` is a detector whose `true` means a concern was found, so its verdict is inverted before reporting.
+
+- **CI never checked out the policy submodule**, so tests reading the real library passed vacuously against an empty index. It now fetches submodules, and those tests skip with a clear reason on a non-recursive clone.
+
+- **Test files are no longer evaluated.** `*_test.rego` files declare their own packages and contribute no verdicts.
+
+### Added
+
+- **`CITATION.cff` and `.zenodo.json`.** GitHub now offers a "Cite this repository" button, and each release is archived by Zenodo with a DOI. The citation metadata records gopal as a referenced work via its concept DOI, `10.5281/zenodo.22142302`.
+
+### Changed
+
+- **gopal submodule bumped 28 commits**, which is what makes the decision-rule data available. It also brings gopal's Article 13/50 citation correction, the FERPA §99.30 consent rewrite, and the prohibited-practice fixes.
+
 ### Fixed
 
 - **`aicertify demo` no longer crashes on a fresh install.** Importing `aicertify.application` hard-crashed with `ModuleNotFoundError: No module named 'langchain_core.tracers.langchain_v1'` — a third-party version incompatibility between `deepeval` and the resolved `langchain_core`/`langchain_community` — because six evaluator modules (`accuracy_evaluator.py`, `biometric_categorization_evaluator.py`, and the four `evaluators/prohibited_practices/*.py` modules) imported `deepeval` at module level without the graceful-degradation guard already used elsewhere in the codebase (`content_safety_evaluator.py`, `fairness_evaluator.py`). All six now follow the same `try/except ImportError` + `DEEPEVAL_AVAILABLE` pattern, reporting the affected evaluator unavailable instead of crashing the whole package. This was the first command a new user runs, and it was completely broken.

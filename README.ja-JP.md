@@ -228,7 +228,7 @@ Python API の全体像は [`examples/quickstart.py`](examples/quickstart.py) �
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram5_report_anatomy_dark.svg">
-    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="監査対応レポートの構成: フレームワーク名・アプリケーション・モデル・日付を含むヘッダー、エグゼクティブサマリー、ポリシー結果テーブル、リスク評価の棒グラフ、是正ガイダンス、AICertify v0.7.3 を示すフッター" width="85%" />
+    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="監査対応レポートの構成: フレームワーク名・アプリケーション・モデル・日付を含むヘッダー、エグゼクティブサマリー、ポリシー結果テーブル、リスク評価の棒グラフ、是正ガイダンス、AICertify v0.8.0 を示すフッター" width="85%" />
   </picture>
 </p>
 
@@ -238,7 +238,7 @@ PDF を開いてみてください。監査人が求めているのは、まさ�
 
 ## ステータス
 
-AICertify は現在 **ベータ版 (v0.7.3)** です。1.0 リリースまでに API が変更される可能性があります。本日時点で本番運用可能なフレームワークは次のとおりです。
+AICertify は現在 **ベータ版 (v0.8.0)** です。1.0 リリースまでに API が変更される可能性があります。本日時点で本番運用可能なフレームワークは次のとおりです。
 
 - ✅ グローバル評価器(公平性、コンテンツ安全性、透明性): 9 ポリシーすべてを実装済み
 - ✅ 航空ポリシーセット(ICAO、FAA、EASA、RTCA、ISO): 国際規制と業種別の両方を合わせた 19 ポリシーすべてを実装済み

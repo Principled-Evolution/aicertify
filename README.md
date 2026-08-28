@@ -302,7 +302,7 @@ You don't have to install anything to see what AICertify produces. Pre-generated
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram5_report_anatomy_dark.svg">
-    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="Anatomy of an audit-ready report: header with framework name, application, model and date; executive summary; policy results table; risk assessment bar chart; remediation guidance; footer attributing AICertify v0.7.3" width="85%" />
+    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="Anatomy of an audit-ready report: header with framework name, application, model and date; executive summary; policy results table; risk assessment bar chart; remediation guidance; footer attributing AICertify v0.8.0" width="85%" />
   </picture>
 </p>
 
@@ -312,7 +312,7 @@ Open the PDFs. That's what your auditor wants.
 
 ## Status
 
-AICertify is in **beta (v0.7.3)**. The API may evolve before the 1.0 release. Production-ready frameworks today:
+AICertify is in **beta (v0.8.0)**. The API may evolve before the 1.0 release. Production-ready frameworks today:
 
 Every policy in the library is implemented. There are no scaffolds left, so the useful
 distinction is no longer implemented-or-not but **how deep the check goes**:

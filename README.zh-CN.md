@@ -231,7 +231,7 @@ python -m aicertify.cli \
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram5_report_anatomy_dark.svg">
-    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="审计就绪报告的结构剖析:包含框架名称、应用、模型与日期的页眉;执行摘要;策略结果表;风险评估柱状图;整改建议;以及标注 AICertify v0.7.3 的页脚" width="85%" />
+    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="审计就绪报告的结构剖析:包含框架名称、应用、模型与日期的页眉;执行摘要;策略结果表;风险评估柱状图;整改建议;以及标注 AICertify v0.8.0 的页脚" width="85%" />
   </picture>
 </p>
 
@@ -241,7 +241,7 @@ python -m aicertify.cli \
 
 ## 状态
 
-AICertify 目前处于 **beta 阶段(v0.7.3)**。1.0 正式版发布前,API 仍可能发生变化。当前已可用于生产的框架情况如下:
+AICertify 目前处于 **beta 阶段(v0.8.0)**。1.0 正式版发布前,API 仍可能发生变化。当前已可用于生产的框架情况如下:
 
 - ✅ 全球评估器(公平性、内容安全、透明度):全部 9 条策略均已实现
 - ✅ 航空策略集(ICAO、FAA、EASA、RTCA、ISO):全部 19 条策略均已实现,覆盖国际监管标准与行业垂直两个类别

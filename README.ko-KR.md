@@ -228,7 +228,7 @@ python -m aicertify.cli \
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram5_report_anatomy_dark.svg">
-    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="감사 준비 리포트의 구성: 프레임워크 이름, 애플리케이션, 모델, 날짜를 포함한 헤더, 요약 정리, 정책 결과 표, 리스크 평가 막대 차트, 시정 안내, AICertify v0.7.3 표시 푸터" width="85%" />
+    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="감사 준비 리포트의 구성: 프레임워크 이름, 애플리케이션, 모델, 날짜를 포함한 헤더, 요약 정리, 정책 결과 표, 리스크 평가 막대 차트, 시정 안내, AICertify v0.8.0 표시 푸터" width="85%" />
   </picture>
 </p>
 
@@ -238,7 +238,7 @@ PDF를 열어 보세요. 감사관이 원하는 것이 바로 이것입니다.
 
 ## 상태
 
-AICertify는 현재 **베타(v0.7.3)** 단계이며, 1.0 릴리스 전까지 API가 변경될 수 있습니다. 현재 프로덕션에 사용할 수 있는 프레임워크는 다음과 같습니다.
+AICertify는 현재 **베타(v0.8.0)** 단계이며, 1.0 릴리스 전까지 API가 변경될 수 있습니다. 현재 프로덕션에 사용할 수 있는 프레임워크는 다음과 같습니다.
 
 - ✅ 글로벌 평가기(공정성, 콘텐츠 안전성, 투명성): 9개 정책 모두 구현 완료
 - ✅ 항공 정책 세트(ICAO, FAA, EASA, RTCA, ISO): 국제 규제와 산업별 항목을 합쳐 19개 정책 모두 구현 완료

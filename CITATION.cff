@@ -1,0 +1,49 @@
+# Citation metadata for AICertify.
+#
+# GitHub reads this file and offers a "Cite this repository" button, and Zenodo
+# reads it when archiving a release. The audience for this tool writes
+# conformity assessments, policy submissions and papers, so being citable in a
+# form they can paste is worth more than another badge.
+cff-version: 1.2.0
+message: "If you use AICertify in your research or compliance work, please cite it as below."
+title: "AICertify: compliance-as-code evaluation for AI systems"
+abstract: >-
+  AICertify evaluates an AI system against regulatory policy written as Open
+  Policy Agent Rego, and produces audit-ready reports in PDF, Markdown, JSON or
+  HTML. It computes the measured half of a compliance picture, including
+  fairness, toxicity and content-safety metrics, rather than accepting them as
+  declarations, and evaluates the result against the GOPAL policy library
+  covering the EU AI Act, the UK AI framework, NIST AI RMF and further
+  sector-specific frameworks.
+type: software
+authors:
+  - family-names: Madan
+    given-names: Kapil
+    affiliation: "Principled Evolution"
+  - name: "Principled Evolution"
+    website: "https://principledevolution.ai"
+version: "0.8.0"
+date-released: "2026-08-28"
+license: Apache-2.0
+repository-code: "https://github.com/Principled-Evolution/AICertify"
+url: "https://github.com/Principled-Evolution/AICertify"
+references:
+  - type: software
+    title: "GOPAL: the Rego policy library for AI compliance"
+    doi: 10.5281/zenodo.22142302
+    repository-code: "https://github.com/Principled-Evolution/gopal"
+    authors:
+      - family-names: Madan
+        given-names: Kapil
+      - name: "Principled Evolution"
+keywords:
+  - ai-governance
+  - ai-compliance
+  - eu-ai-act
+  - nist-ai-rmf
+  - policy-as-code
+  - open-policy-agent
+  - opa
+  - rego
+  - model-evaluation
+  - responsible-ai
