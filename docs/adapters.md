@@ -81,6 +81,37 @@ author's choosing is a claim about a dataset, not a measurement of your
 deployed system, and promoting it would let a good SST-2 score answer a
 question nobody asked about it.
 
+### One command
+
+```
+$ aicertify score-card bert-base-uncased
+
+bert-base-uncased
+  completeness  0.49   (threshold 0.8)
+  quality       0.66
+  BELOW THRESHOLD
+
+    intended_use             1.00  ####################
+    training_data            0.67  #############
+    factors                  0.50  ##########
+    ...
+    evaluation_data          0.00
+
+scored with aicertify 0.7.0, gopal 1.3.1, rubric v1
+```
+
+The version line is not decoration. A figure quoted anywhere has to be
+reproducible, and without it a reader who reruns this later and gets a
+different number cannot tell a changed rubric from a wrong claim.
+
+`--file` scores a local `README.md`, `--json` is machine-readable, and
+`--threshold` compares against something other than 0.8.
+
+The same scoring runs in the browser at
+[the validation preview](https://principledevolution.ai/playground), which
+reads the rubric this exports rather than a copy of it. CI asserts the two
+produce identical scores.
+
 ### What real cards actually score
 
 Run through the adapter and `ModelCardEvaluator`, against the 0.8 threshold

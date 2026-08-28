@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import pathlib
 import logging
 import os
 import sys
@@ -424,6 +425,35 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     init.set_defaults(func=_cmd_init_contract)
 
+    # score-card
+    sc = subparsers.add_parser(
+        "score-card",
+        parents=[verbose_parent],
+        help="Score a Hugging Face model card against GOPAL's documentation rubric",
+        description=(
+            "Fetch a model card from the Hub and score how much of GOPAL's "
+            "documentation requirement it answers. The number is a "
+            "documentation-completeness measure, not a compliance verdict: a "
+            "card answers part of what Annex IV asks and then stops."
+        ),
+    )
+    sc.add_argument(
+        "repo_id",
+        nargs="?",
+        help="Hub repo, e.g. bert-base-uncased or openai-community/gpt2",
+    )
+    sc.add_argument("--file", help="Score a local README.md instead of the Hub")
+    sc.add_argument(
+        "--threshold",
+        type=float,
+        default=0.8,
+        help="Pass mark to compare against (default 0.8, the EU AI Act "
+        "technical-documentation check)",
+    )
+    sc.add_argument("--json", action="store_true", help="Machine-readable output")
+    sc.add_argument("--quiet", action="store_true", help="Omit the per-section table")
+    sc.set_defaults(func=_cmd_score_card)
+
     return parser
 
 
@@ -437,6 +467,122 @@ def _inject_evaluate_for_legacy_invocation(argv: list) -> list:
     if len(argv) >= 2 and argv[1].startswith("--") and "--contract" in argv:
         return [argv[0], "evaluate", *argv[1:]]
     return argv
+
+
+def _cmd_score_card(args) -> int:
+    """Score a Hugging Face model card against GOPAL's documentation rubric."""
+    import json as _json
+
+    from aicertify.adapters import from_model_card
+    from aicertify.evaluators.documentation import ModelCardEvaluator
+
+    if args.file:
+        card = pathlib.Path(args.file).read_text(encoding="utf-8")
+        source = args.file
+    else:
+        try:
+            from huggingface_hub import ModelCard
+        except ImportError:
+            print(
+                "Reading from the Hub needs huggingface_hub. Install it, or pass "
+                "--file with a README.md you already have.",
+                file=sys.stderr,
+            )
+            return 2
+        try:
+            card = ModelCard.load(args.repo_id).content
+        except Exception as exc:  # noqa: BLE001 - the reason matters more than the type
+            print(f"Could not load {args.repo_id}: {exc}", file=sys.stderr)
+            return 2
+        source = args.repo_id
+
+    fragment = from_model_card(card)
+    if not fragment:
+        print(f"{source}: no readable model card content", file=sys.stderr)
+        return 2
+
+    evaluator = ModelCardEvaluator()
+    result = evaluator.evaluate(fragment.get("documentation", {}))
+    emitted = (result.details or {}).get("metrics", {}).get("model_card", {})
+    completeness = emitted.get("completeness", 0.0)
+    quality = emitted.get("quality", 0.0)
+    threshold = args.threshold
+
+    versions = _versions()
+
+    if args.json:
+        print(
+            _json.dumps(
+                {
+                    "source": source,
+                    "completeness": completeness,
+                    "quality": quality,
+                    "threshold": threshold,
+                    "passes": completeness >= threshold,
+                    "sections": (result.details or {}).get("section_scores", {}),
+                    "versions": versions,
+                },
+                indent=2,
+            )
+        )
+        return 0
+
+    verdict = "PASS" if completeness >= threshold else "BELOW THRESHOLD"
+    print(f"\n{source}")
+    print(f"  completeness  {completeness:.2f}   (threshold {threshold})")
+    print(f"  quality       {quality:.2f}")
+    print(f"  {verdict}\n")
+
+    scores = (result.details or {}).get("section_scores", {})
+    if scores and not args.quiet:
+        for section, score in sorted(scores.items(), key=lambda kv: -kv[1]):
+            bar = "#" * int(round(score * 20))
+            print(f"    {section:<24} {score:4.2f}  {bar}")
+        print()
+
+    if completeness < threshold:
+        print(
+            "A model card answers part of what Annex IV asks and then stops.\n"
+            "This is the documentation-completeness gap, not a compliance verdict."
+        )
+    print(
+        f"\nscored with aicertify {versions['aicertify']}, "
+        f"gopal {versions['gopal']}, rubric v{versions['rubric']}"
+    )
+    return 0
+
+
+def _versions() -> dict:
+    """What produced this number, so a rerun can be compared against it."""
+    import json as _json
+
+    try:
+        import importlib.metadata as _md
+
+        aicertify_version = _md.version("aicertify")
+    except Exception:  # noqa: BLE001
+        aicertify_version = "unknown"
+
+    gopal_version = "unknown"
+    changelog = pathlib.Path(__file__).resolve().parent / "opa_policies" / "VERSION"
+    if changelog.exists():
+        gopal_version = changelog.read_text().strip()
+
+    rubric_version = "unknown"
+    rubric = (
+        pathlib.Path(__file__).resolve().parent / "adapters" / "model_card_rubric.json"
+    )
+    if rubric.exists():
+        try:
+            rubric_version = str(_json.loads(rubric.read_text()).get("version", "?"))
+        except Exception:  # noqa: BLE001
+            pass
+
+    return {
+        "aicertify": aicertify_version,
+        "gopal": gopal_version,
+        "rubric": rubric_version,
+    }
 
 
 def main() -> int:
