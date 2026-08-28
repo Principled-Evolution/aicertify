@@ -27,6 +27,7 @@ from aicertify.evaluators.prohibited_practices import (
     EmotionRecognitionEvaluator,
 )
 from aicertify.evaluators.documentation import ModelCardEvaluator
+from aicertify.evaluators.audit_logging_evaluator import AuditLoggingEvaluator
 
 # Configure logging
 # Logging is configured by the application entry point, not here. A library
@@ -87,6 +88,7 @@ class ComplianceEvaluator:
         "social_scoring": SocialScoringEvaluator,
         "emotion_recognition": EmotionRecognitionEvaluator,
         "model_card": ModelCardEvaluator,
+        "audit_logging": AuditLoggingEvaluator,
     }
 
     def __init__(

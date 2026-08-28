@@ -82,10 +82,28 @@ def load_alias_table() -> Dict[str, List[str]]:
         return {}
     text = ALIASES_REGO.read_text(encoding="utf-8")
     table: Dict[str, List[str]] = {}
-    for m in re.finditer(r'"((?:metrics)\.[\w.]+)":\s*\[(.*?)\]\s*,\s*\n', text, re.S):
-        paths = re.findall(r"\[([^\]]+)\]", m.group(2))
-        table[m.group(1)] = [".".join(re.findall(r'"([^"]+)"', p)) for p in paths]
-    return table
+    # Scanned line by line rather than with one regex. The entries are nested
+    # arrays, and a non-greedy pattern to the first "]," stops at the end of the
+    # first inner path instead of the end of the entry. That yields an empty
+    # alias list for every metric and makes the widening a silent no-op, which
+    # is how this shipped the first time.
+    current = None
+    for line in text.splitlines():
+        stripped = line.strip()
+        opening = re.match(r'"(metrics\.[\w.]+)":\s*\[$', stripped)
+        if opening:
+            current = opening.group(1)
+            table[current] = []
+            continue
+        if current is None:
+            continue
+        if stripped.startswith("],"):
+            current = None
+            continue
+        segments = re.findall(r'"([^"]+)"', stripped)
+        if segments:
+            table[current].append(".".join(segments))
+    return {name: paths for name, paths in table.items() if paths}
 
 
 def policies(node) -> Iterator[dict]:
@@ -144,6 +162,23 @@ def supplied_metrics() -> Dict[str, List[str]]:
     return dict(supplies)
 
 
+def registered_evaluators() -> Set[str]:
+    """Evaluator class names the pipeline will actually instantiate.
+
+    Declaring SUPPORTED_METRICS is what makes an evaluator visible to this
+    report, but ComplianceEvaluator only runs what is in EVALUATOR_CLASSES.
+    An evaluator in the first set and not the second supplies nothing at
+    runtime, and reporting it as `ok` would be a fail-open: the report would
+    claim a metric is covered when no pipeline produces it.
+    """
+    logging.disable(logging.CRITICAL)
+    try:
+        from aicertify.evaluators.compliance_evaluator import ComplianceEvaluator
+    except Exception:  # noqa: BLE001 - report degrades rather than dying
+        return set()
+    return {c.__name__ for c in ComplianceEvaluator.EVALUATOR_CLASSES.values()}
+
+
 def match(
     required: str, supplies: Dict[str, List[str]], aliases: Dict[str, List[str]]
 ) -> List[str]:
@@ -174,6 +209,7 @@ def main() -> int:
     required = required_metrics()
     supplies = supplied_metrics()
     aliases = load_alias_table()
+    registered = registered_evaluators()
 
     result: Dict[str, dict] = {}
     for framework in sorted(required):
@@ -182,11 +218,14 @@ def main() -> int:
         rows = []
         for metric in sorted(required[framework]):
             evaluators = match(metric, supplies, aliases)
+            live = [e for e in evaluators if not registered or e in registered]
+            unwired = [e for e in evaluators if e not in live]
             rows.append(
                 {
                     "metric": metric,
                     "required_by": sorted(required[framework][metric]),
-                    "evaluators": evaluators,
+                    "evaluators": live,
+                    "unregistered": unwired,
                 }
             )
         result[framework] = {
@@ -202,6 +241,11 @@ def main() -> int:
                     "alias_table_available": bool(aliases),
                     "evaluators_found": sorted(
                         {e for v in supplies.values() for e in v}
+                    ),
+                    "unregistered_evaluators": (
+                        sorted({e for v in supplies.values() for e in v} - registered)
+                        if registered
+                        else []
                     ),
                     "frameworks": result,
                 },
@@ -222,12 +266,16 @@ def main() -> int:
             f"{framework}  ({data['covered']}/{data['total']} measured metrics have an evaluator)"
         )
         for row in data["metrics"]:
-            mark = "ok  " if row["evaluators"] else "GAP "
-            who = (
-                ", ".join(row["evaluators"])
-                if row["evaluators"]
-                else "no evaluator declares this"
-            )
+            if row["evaluators"]:
+                mark, who = "ok  ", ", ".join(row["evaluators"])
+            elif row["unregistered"]:
+                mark = "WIRE"
+                who = (
+                    f"{', '.join(row['unregistered'])} declares this but is not in "
+                    "ComplianceEvaluator.EVALUATOR_CLASSES, so it never runs"
+                )
+            else:
+                mark, who = "GAP ", "no evaluator declares this"
             print(f"  {mark} {row['metric']:<46} {who}")
         print()
     print(f"TOTAL: {total_c} of {total_n} measured metrics can be supplied today.")

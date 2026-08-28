@@ -157,3 +157,65 @@ class TestAgainstTheRealLibrary:
                 assert gap.is_measured(
                     name
                 ), f"{name} is a declared fact, not a measured metric"
+
+
+@needs_policies
+class TestTheAliasTableIsActuallyRead:
+    """
+    The parser shipped once returning every canonical name with an empty alias
+    list, so widening was a silent no-op and the report under-counted coverage.
+    An empty list per entry looks like a working parser from the outside, which
+    is why these assert content rather than shape.
+    """
+
+    def test_aliases_are_parsed_not_just_the_keys(self):
+        table = gap.load_alias_table()
+        assert table, "no alias table parsed from the pinned gopal checkout"
+        total = sum(len(v) for v in table.values())
+        assert total >= 20, f"only {total} aliases parsed across {len(table)} metrics"
+
+    def test_every_entry_lists_itself_first(self):
+        for name, paths in gap.load_alias_table().items():
+            assert paths and paths[0] == name, f"{name} does not list itself first"
+
+    def test_a_known_legacy_spelling_is_present(self):
+        table = gap.load_alias_table()
+        assert (
+            "documentation.model_card.completeness_score"
+            in table["metrics.model_card.completeness"]
+        )
+
+    def test_the_two_toxicity_statistics_stay_separate(self):
+        """gopal split these deliberately; merging them here would undo it."""
+        table = gap.load_alias_table()
+        assert "metrics.toxicity.max_toxicity" not in table["metrics.toxicity.score"]
+        assert "metrics.toxicity.score" not in table["metrics.toxicity.max_toxicity"]
+
+
+@needs_policies
+class TestAnEvaluatorMustActuallyBeWiredIn:
+    """
+    Declaring SUPPORTED_METRICS is what makes an evaluator visible to the
+    report, but ComplianceEvaluator only instantiates what is listed in
+    EVALUATOR_CLASSES. An evaluator in the first set and not the second
+    produces nothing at runtime, so counting it as covered would be a
+    fail-open: the report would claim a metric is supplied when no pipeline
+    supplies it. This was live for exactly one commit, caught by the evaluator
+    added to demonstrate the guide.
+    """
+
+    def test_the_registry_is_readable(self):
+        assert gap.registered_evaluators(), "could not read EVALUATOR_CLASSES"
+
+    def test_every_declaring_evaluator_is_registered(self):
+        registered = gap.registered_evaluators()
+        declaring = {e for v in gap.supplied_metrics().values() for e in v}
+        orphans = sorted(declaring - registered)
+        assert not orphans, (
+            f"{orphans} declare SUPPORTED_METRICS but are absent from "
+            "ComplianceEvaluator.EVALUATOR_CLASSES, so they never run. "
+            "Either register them or drop the declaration."
+        )
+
+    def test_the_worked_example_from_the_guide_is_registered(self):
+        assert "AuditLoggingEvaluator" in gap.registered_evaluators()
