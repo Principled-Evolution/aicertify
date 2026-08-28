@@ -17,8 +17,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # The gopal policy library is a submodule, and the tests that matter most
+      # read it: which decision rule each policy publishes, and whether a true
+      # verdict means compliant or means a concern was detected. Without it,
+      # those tests were passing vacuously against an empty index.
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set Up Python
         uses: actions/setup-python@v4

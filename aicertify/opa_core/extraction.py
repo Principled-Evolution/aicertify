@@ -240,6 +240,16 @@ def extract_report_outputs(
     return all_results
 
 
+def _package_values_from(opa_results: Dict[str, Any]) -> tuple:
+    """Find the package map and policy directory an aggregated result carries."""
+    result = opa_results.get("result")
+    if isinstance(result, dict):
+        values = result.get("package_values")
+        if isinstance(values, dict):
+            return values, result.get("policy_dir")
+    return {}, None
+
+
 def extract_all_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult]:
     """
     Extract all policy results from OPA evaluation results using schema validation.
@@ -250,10 +260,21 @@ def extract_all_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult
     Returns:
         List of PolicyResult objects for report generation
     """
+    package_values, policy_dir = _package_values_from(opa_results)
+
     try:
         # First parse and validate against our schema
         extracted_results = extract_policy_results_with_schema(opa_results)
         if not extracted_results:
+            # Not an error, and usually not even unusual: only four of gopal's
+            # policies define report_output. Fall through to the decision rules
+            # rather than reporting nothing, which is what issue #78 described.
+            logger.debug(
+                "No report_output structures found; building results from "
+                "decision rules instead."
+            )
+            if package_values and policy_dir:
+                return extract_results_from_packages(package_values, policy_dir)
             logger.warning("No valid policy results found after schema validation")
             return []
 
@@ -274,6 +295,14 @@ def extract_all_policy_results(opa_results: Dict[str, Any]) -> List[PolicyResult
                 name=policy.policy_name, result=policy.result, metrics=metrics
             )
             policy_results.append(policy_result)
+
+        # Add anything that published only a decision rule, without
+        # displacing the richer report_output entries already built.
+        if package_values and policy_dir:
+            covered = {r.name for r in policy_results}
+            for extra in extract_results_from_packages(package_values, policy_dir):
+                if extra.name not in covered:
+                    policy_results.append(extra)
 
         logger.info(f"Extracted {len(policy_results)} policy results")
         return policy_results
@@ -386,3 +415,140 @@ def validate_opa_results(opa_results: Dict[str, Any]) -> bool:
         return False
 
     return True
+
+
+# ---------------------------------------------------------------------------
+# Decision-rule extraction (issue #78)
+#
+# `extract_policy_results_with_schema` above only recognises `report_output`.
+# Four of gopal's 91 policies define it, so evaluations against the UK, NIST,
+# BFS, legal or global sets reported nothing at all while exiting successfully.
+#
+# The policies were not silent, they were being asked the wrong question. A
+# survey of the library found `report` on 59 policies and `policy_metrics` on
+# 63, and gopal's coverage data names a decision rule for all 84 policies that
+# reach a verdict. So the fix is to ask for the whole package and read whatever
+# it actually publishes, preferring the richest shape available.
+# ---------------------------------------------------------------------------
+
+from aicertify.opa_core.decision_index import (  # noqa: E402
+    PolicyDescriptor,
+    load_index,
+)
+
+#: Report structures in descending order of detail. The first one present wins.
+REPORT_RULES = ("report_output", "compliance_report", "report")
+
+#: Where per-metric detail lives when a report structure does not carry it.
+METRIC_RULES = ("policy_metrics",)
+
+
+def _metrics_from(package_value: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Pull per-metric detail out of whichever shape the policy publishes.
+
+    Both the report structures and `policy_metrics` use the same inner shape:
+    a mapping of metric key to an object carrying at least `name` and
+    `control_passed`. Anything that does not look like that is skipped rather
+    than guessed at.
+    """
+    candidates: List[Any] = []
+    for rule in REPORT_RULES:
+        block = package_value.get(rule)
+        if isinstance(block, dict) and isinstance(block.get("metrics"), dict):
+            candidates.append(block["metrics"])
+    for rule in METRIC_RULES:
+        block = package_value.get(rule)
+        if isinstance(block, dict):
+            candidates.append(block)
+
+    for source in candidates:
+        metrics: Dict[str, Any] = {}
+        for key, value in source.items():
+            if not isinstance(value, dict):
+                continue
+            metrics[key] = {
+                "name": value.get("name", key),
+                "value": value.get("value"),
+                "control_passed": value.get("control_passed"),
+            }
+        if metrics:
+            return metrics
+    return {}
+
+
+def synthesise_policy_result(
+    package: str,
+    package_value: Dict[str, Any],
+    descriptor: Optional[PolicyDescriptor],
+) -> Optional[PolicyResult]:
+    """
+    Build a report entry for one policy from whatever it published.
+
+    Returns None when the package is a shared library, when the library does
+    not describe it, or when its decision rule produced no boolean. That last
+    case is deliberate: in Rego an undefined value is not `false`, so a policy
+    that reached no conclusion is omitted rather than recorded as a failure it
+    did not declare.
+    """
+    if descriptor is None or not descriptor.reports_a_verdict:
+        return None
+    if not isinstance(package_value, dict):
+        return None
+
+    raw = package_value.get(descriptor.decision_rule)
+    verdict = descriptor.interpret(raw)
+    if verdict is None:
+        logger.debug(
+            "Policy %s produced no boolean for %s; omitting rather than "
+            "reporting an undefined value as a failure.",
+            package,
+            descriptor.decision_rule,
+        )
+        return None
+
+    metrics = _metrics_from(package_value)
+    details: Dict[str, Any] = {
+        "package": package,
+        "decision_rule": descriptor.decision_rule,
+        "raw_decision": raw,
+    }
+    if descriptor.true_means == "concern":
+        # Worth stating in the report: `true` from this policy means a concern
+        # was detected, so the verdict shown is the inverse of the raw value.
+        details["detector"] = True
+    if descriptor.references:
+        details["references"] = descriptor.references
+    if not metrics:
+        details["detail_level"] = "decision only"
+
+    return PolicyResult(
+        name=descriptor.title or package,
+        result=verdict,
+        metrics=metrics or None,
+        details=details,
+    )
+
+
+def extract_results_from_packages(
+    package_values: Dict[str, Dict[str, Any]],
+    policy_dir: str,
+) -> List[PolicyResult]:
+    """
+    Build report entries for a mapping of package name to evaluated package.
+
+    Ordered by policy title so a report reads consistently between runs.
+    """
+    index = load_index(policy_dir)
+    results: List[PolicyResult] = []
+    for package, value in package_values.items():
+        result = synthesise_policy_result(package, value, index.get(package))
+        if result is not None:
+            results.append(result)
+    results.sort(key=lambda r: r.name)
+    logger.info(
+        "Built %d policy results from %d evaluated packages.",
+        len(results),
+        len(package_values),
+    )
+    return results
