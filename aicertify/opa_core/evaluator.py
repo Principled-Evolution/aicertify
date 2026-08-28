@@ -70,6 +70,24 @@ class CustomJSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
+def _package_value(evaluation: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """
+    Pull the evaluated package out of an `opa eval` result.
+
+    The shape is {"result": [{"expressions": [{"value": {...}}]}]}. Anything
+    else means the query was undefined or the policy errored, and the caller
+    treats that as "this policy published nothing" rather than guessing.
+    """
+    results = evaluation.get("result")
+    if not isinstance(results, list) or not results:
+        return None
+    expressions = results[0].get("expressions")
+    if not isinstance(expressions, list) or not expressions:
+        return None
+    value = expressions[0].get("value")
+    return value if isinstance(value, dict) else None
+
+
 class OpaEvaluator:
     """Evaluator class for OPA policy evaluation."""
 
@@ -987,38 +1005,60 @@ class OpaEvaluator:
                 "searched_in": self.policy_loader.get_policy_dir(),
             }
 
-        rego_files = list(target_path.rglob("*.rego"))
+        # Test files declare their own `_test` packages and assert things about
+        # the policies; evaluating them adds noise and no verdicts.
+        rego_files = [
+            f for f in target_path.rglob("*.rego") if not f.name.endswith("_test.rego")
+        ]
         if not rego_files:
             return {
                 "error": f"No .rego policy files found in folder or subfolders: {target_folder}",
                 "searched_in": target_folder,
             }
 
-        # Evaluate each policy individually
+        # Evaluate each policy individually.
+        #
+        # The query is the whole package rather than `<package>.report_output`.
+        # Only four of gopal's 91 policies define report_output, so asking for
+        # it specifically returned nothing for the other 87 while still exiting
+        # successfully (issue #78). Asking for the package returns whatever the
+        # policy actually publishes — a report structure, per-metric detail, or
+        # at minimum its decision rule — and extraction picks the richest shape
+        # available.
         individual_results = []
+        package_values: Dict[str, Any] = {}
         for rego_file in rego_files:
             package_name = self.extract_package_from_file(rego_file)
-            if package_name:
-                individual_query = f"data.{package_name}.report_output"
-                individual_result = self.evaluate_policy(
-                    policy_path=str(rego_file),
-                    input_data=input_data,
-                    query=individual_query,
-                    mode="production",  # Always use production mode for clean output
-                    restrict_to_folder=restrict_to_folder,
-                    retry_count=0,
+            if not package_name:
+                continue
+            individual_result = self.evaluate_policy(
+                policy_path=str(rego_file),
+                input_data=input_data,
+                query=f"data.{package_name}",
+                mode="production",  # Always use production mode for clean output
+                restrict_to_folder=restrict_to_folder,
+                retry_count=0,
+            )
+            if individual_result and "error" not in individual_result:
+                individual_results.append(
+                    {"policy": package_name, "result": individual_result}
                 )
-                if individual_result and "error" not in individual_result:
-                    individual_results.append(
-                        {"policy": package_name, "result": individual_result}
-                    )
+                value = _package_value(individual_result)
+                if value is not None:
+                    package_values[package_name] = value
 
-        # Return aggregated results
+        # Return aggregated results.
+        #
+        # `package_values` is carried alongside the raw per-policy results so
+        # the report layer can build a verdict for every policy that published
+        # one, not only those defining report_output.
         if individual_results:
             return {
                 "result": {
                     "policy": "Aggregated Individual Results",
                     "results": individual_results,
+                    "package_values": package_values,
+                    "policy_dir": self.policy_loader.get_policy_dir(),
                     "timestamp": datetime.now().isoformat(),
                 }
             }
