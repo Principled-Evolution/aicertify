@@ -72,7 +72,7 @@ aicertify demo
 
 > **Expect around two minutes, and expect denials.** Most of the time goes on
 > importing the evaluator stack, which pulls torch and transformers. The bundled
-> contract declares no compliance evidence, so the policies deny — that is the
+> contract declares no compliance evidence, so the policies deny. That is the
 > correct answer, and the demo now tells you which two commands show what to
 > declare. No API keys are used, even if `OPENAI_API_KEY` is set in your
 > environment; pass `--with-llm-metrics` to opt in to the LLM-judged fairness and
