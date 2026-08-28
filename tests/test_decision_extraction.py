@@ -111,6 +111,18 @@ class TestMetrics:
         assert (r.details or {}).get("detail_level") == "decision only"
 
 
+COVERAGE_FILE = Path(POLICY_DIR) / "docs" / "coverage" / "coverage.json"
+
+#: A clone without --recursive has no policies to read. Skipping is right for a
+#: contributor's first checkout; CI fetches submodules so these do run there,
+#: and a green CI without them would be the vacuous pass this fix is about.
+needs_policies = pytest.mark.skipif(
+    not COVERAGE_FILE.is_file(),
+    reason="gopal submodule not checked out; run: git submodule update --init",
+)
+
+
+@needs_policies
 class TestIndexAgainstTheRealLibrary:
     """These read the vendored gopal checkout, so they fail if the pin regresses."""
 
