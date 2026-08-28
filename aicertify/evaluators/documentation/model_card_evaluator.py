@@ -13,6 +13,41 @@ from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
 logger = logging.getLogger(__name__)
 
 
+def _locate_model_card(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Find the model card in whatever the caller handed us.
+
+    This evaluator originally read ``data["model_card"]`` and nothing else.
+    ComplianceEvaluator hands every evaluator ``contract.dict()``, whose keys
+    are fixed (application_name, model_info, interactions, context,
+    compliance_context), and none of them is ``model_card``. So the lookup
+    missed on every contract the pipeline has ever produced: the evaluator ran,
+    scored all nine sections as missing, and reported 0.0 with complete
+    confidence. A card can now arrive anywhere a contract can plausibly carry
+    one, and the first non-empty location wins.
+    """
+    if not isinstance(data, dict):
+        return {}
+
+    candidates = (
+        ("model_card",),
+        ("documentation", "model_card"),
+        ("context", "documentation", "model_card"),
+        ("context", "model_card"),
+        ("compliance_context", "documentation", "model_card"),
+        ("compliance_context", "model_card"),
+    )
+    for path in candidates:
+        node: Any = data
+        for key in path:
+            if not isinstance(node, dict):
+                node = None
+                break
+            node = node.get(key)
+        if isinstance(node, dict) and node:
+            return node
+    return {}
+
+
 class ModelCardEvaluator(BaseEvaluator):
     """
     Evaluator for assessing technical documentation compliance using HuggingFace Model Card standards.
@@ -181,7 +216,7 @@ class ModelCardEvaluator(BaseEvaluator):
         """
         try:
             # Extract model card content
-            model_card_content = documentation.get("model_card", {})
+            model_card_content = _locate_model_card(documentation)
 
             # Evaluate each required section
             section_scores = {}
