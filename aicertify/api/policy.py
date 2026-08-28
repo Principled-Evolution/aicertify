@@ -21,7 +21,10 @@ from aicertify.api.core import CustomJSONEncoder
 # Import OPA components
 from aicertify.opa_core.policy_loader import PolicyLoader
 from aicertify.opa_core.evaluator import OpaEvaluator
-from aicertify.opa_core.introspection import merge_declared_context
+from aicertify.opa_core.introspection import (
+    attach_measured_metrics,
+    merge_declared_context,
+)
 
 # Import evaluators
 from aicertify.evaluators import ComplianceEvaluator
@@ -138,6 +141,14 @@ async def aicertify_app_for_policy(
     #
     # See merge_declared_context for why measured values win over declared ones.
     opa_input = merge_declared_context(phase1_results, contract)
+
+    # Put the metrics evaluators actually computed where GOPAL reads them.
+    #
+    # GOPAL reads measured metrics at input.metrics.<domain>.<name>. Evaluator
+    # output is keyed by evaluator name, so only the three canonical names that
+    # happen to spell an evaluator name plus "score" ever resolved. See
+    # collect_measured_metrics.
+    opa_input = attach_measured_metrics(opa_input, phase1_results)
 
     # evaluate with OPA
     opa_results = opa_evaluator.evaluate_policy_category(

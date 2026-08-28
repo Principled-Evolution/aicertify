@@ -7,6 +7,14 @@ cannot, and a policy that reads one you cannot supply can never be satisfied.
 
 An evaluator is what supplies them. This is how to write one.
 
+None of this is required to use GOPAL. A shell script that writes JSON and
+calls `opa` is a complete integration, and GOPAL's
+[Plug your evaluator into GOPAL](https://github.com/Principled-Evolution/gopal/blob/main/docs/tutorials/supplying-metrics.md)
+walks that path with no Python in it. What AICertify adds is the scaffolding:
+the base class, the discovery, the gap report, and the merge that puts your
+measurements where the policies actually read them. Read this one if you want
+that; read the other if you would rather own the plumbing.
+
 ## 1. Find out what is missing
 
 ```
@@ -14,16 +22,21 @@ python scripts/metric_gap_report.py
 ```
 
 ```
-global  (2/4 measured metrics have an evaluator)
-  GAP  content_safety.toxicity_score                  no evaluator declares this
+global  (4/4 measured metrics have an evaluator)
+  ok   content_safety.toxicity_score                  ContentSafetyEvaluator
   ok   documentation.model_card.completeness_score    ModelCardEvaluator
-  GAP  evaluation.toxicity_score                      no evaluator declares this
+  ok   evaluation.toxicity_score                      ContentSafetyEvaluator
   ok   governance.audit_logging.completeness_score    AuditLoggingEvaluator
 
-international/eu_ai_act  (13/13 measured metrics have an evaluator)
-  ...
+industry_specific/healthcare  (3/6 measured metrics have an evaluator)
+  GAP  evaluation.clinical_validation.score           no evaluator declares this
+  GAP  evaluation.patient_safety.score                no evaluator declares this
+  GAP  evaluation.risk_assessment.score               no evaluator declares this
 
-TOTAL: 21 of 26 measured metrics can be supplied today.
+international/eu_ai_act  (12/13 measured metrics have an evaluator)
+  GAP  metrics.model_card.compliance_level            no evaluator declares this
+
+TOTAL: 22 of 26 measured metrics can be supplied today.
 ```
 
 Every `GAP` is a metric some policy needs and nothing produces. That is the
@@ -106,12 +119,43 @@ the row reads:
 Add the line and it reads:
 
 ```
-global  (2/4 measured metrics have an evaluator)
+global  (4/4 measured metrics have an evaluator)
   ok   governance.audit_logging.completeness_score    AuditLoggingEvaluator
 ```
 
 `WIRE` does not count toward the total. A metric nothing produces at runtime is
 not covered, whatever the class attributes say.
+
+## 4. Publish under the canonical name
+
+Registration gets your evaluator run. It does not get its numbers to a policy.
+
+GOPAL reads measured metrics at `input.metrics.<domain>.<name>`. Evaluator
+output arrives keyed by evaluator name, as `results.<evaluator>`, and for a long
+time the only canonical names that resolved were the three where those two
+happened to coincide: `metrics.fairness.score`, `metrics.content_safety.score`
+and `metrics.risk_management.score` each spell an evaluator name in the middle
+with `score` on the end. `metrics.model_card.completeness` does not, so no
+policy reading it ever saw a measurement.
+
+So publish explicitly, by putting the metric under `details["metrics"]` in the
+shape GOPAL reads:
+
+```python
+return EvaluationResult(
+    ...,
+    details={"metrics": {"audit_logging": {"completeness": score}}},
+)
+```
+
+`attach_measured_metrics` merges every evaluator's block into the top level of
+the OPA input. What you emit there is what the policy sees, under the name you
+gave it. `SUPPORTED_METRICS` is a claim about what you supply; this is the
+supply.
+
+`tests/test_metric_delivery.py` checks the whole path with `opa eval` against
+GOPAL's own resolver, so a metric that stops arriving fails a test rather than
+quietly reverting to a policy that can never be satisfied.
 
 ## Two things worth getting right
 
@@ -165,3 +209,20 @@ def test_a_negative_answer_still_counts_as_answered(self, evaluator):
 
 Distinguishing "answered no" from "not answered" is the single most common way
 an evaluator quietly reports a system as better than it is.
+
+## The four metrics still showing GAP
+
+Three of them are clinical: `patient_safety`, `clinical_validation` and
+`risk_assessment`. They are deliberately not closed. GOPAL gates the first at
+0.95, and it means a measurement from a clinical evaluation. The only thing
+this codebase could compute in-process is how many safety fields a document
+contains, and publishing that under the name `patient_safety.score` would let a
+system with complete paperwork clear a patient-safety gate it was never
+assessed against. Supply those from the evaluation that produced them, through
+the contract, or leave them absent and let the policy fail closed.
+
+The fourth is `metrics.model_card.compliance_level`. `ModelCardEvaluator`
+declared it and never computed it, and nothing it measures yields a compliance
+level distinct from completeness. The declaration was removed rather than
+backfilled, which is why the EU AI Act line reads 12/13 rather than 13/13. That
+number went down because it got honest, not because anything regressed.
