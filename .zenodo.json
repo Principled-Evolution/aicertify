@@ -1,0 +1,34 @@
+{
+  "title": "AICertify: compliance-as-code evaluation for AI systems",
+  "description": "<p>AICertify evaluates an AI system against regulatory policy written as <a href=\"https://www.openpolicyagent.org/\">Open Policy Agent</a> Rego, and produces audit-ready reports in PDF, Markdown, JSON or HTML.</p><p>It computes the measured half of a compliance picture — fairness, toxicity and content-safety metrics — rather than accepting them as declarations, and evaluates the result against the GOPAL policy library covering the EU AI Act, the UK AI framework, NIST AI RMF and further sector-specific frameworks.</p>",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "Apache-2.0",
+  "creators": [
+    { "name": "Madan, Kapil", "affiliation": "Principled Evolution" },
+    { "name": "Principled Evolution" }
+  ],
+  "keywords": [
+    "AI governance",
+    "AI compliance",
+    "EU AI Act",
+    "NIST AI RMF",
+    "policy as code",
+    "Open Policy Agent",
+    "Rego",
+    "model evaluation",
+    "responsible AI"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.22142302",
+      "relation": "requires",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "https://github.com/Principled-Evolution/AICertify",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
