@@ -82,10 +82,28 @@ def load_alias_table() -> Dict[str, List[str]]:
         return {}
     text = ALIASES_REGO.read_text(encoding="utf-8")
     table: Dict[str, List[str]] = {}
-    for m in re.finditer(r'"((?:metrics)\.[\w.]+)":\s*\[(.*?)\]\s*,\s*\n', text, re.S):
-        paths = re.findall(r"\[([^\]]+)\]", m.group(2))
-        table[m.group(1)] = [".".join(re.findall(r'"([^"]+)"', p)) for p in paths]
-    return table
+    # Scanned line by line rather than with one regex. The entries are nested
+    # arrays, and a non-greedy pattern to the first "]," stops at the end of the
+    # first inner path instead of the end of the entry. That yields an empty
+    # alias list for every metric and makes the widening a silent no-op, which
+    # is how this shipped the first time.
+    current = None
+    for line in text.splitlines():
+        stripped = line.strip()
+        opening = re.match(r'"(metrics\.[\w.]+)":\s*\[$', stripped)
+        if opening:
+            current = opening.group(1)
+            table[current] = []
+            continue
+        if current is None:
+            continue
+        if stripped.startswith("],"):
+            current = None
+            continue
+        segments = re.findall(r'"([^"]+)"', stripped)
+        if segments:
+            table[current].append(".".join(segments))
+    return {name: paths for name, paths in table.items() if paths}
 
 
 def policies(node) -> Iterator[dict]:

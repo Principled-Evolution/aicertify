@@ -157,3 +157,36 @@ class TestAgainstTheRealLibrary:
                 assert gap.is_measured(
                     name
                 ), f"{name} is a declared fact, not a measured metric"
+
+
+@needs_policies
+class TestTheAliasTableIsActuallyRead:
+    """
+    The parser shipped once returning every canonical name with an empty alias
+    list, so widening was a silent no-op and the report under-counted coverage.
+    An empty list per entry looks like a working parser from the outside, which
+    is why these assert content rather than shape.
+    """
+
+    def test_aliases_are_parsed_not_just_the_keys(self):
+        table = gap.load_alias_table()
+        assert table, "no alias table parsed from the pinned gopal checkout"
+        total = sum(len(v) for v in table.values())
+        assert total >= 20, f"only {total} aliases parsed across {len(table)} metrics"
+
+    def test_every_entry_lists_itself_first(self):
+        for name, paths in gap.load_alias_table().items():
+            assert paths and paths[0] == name, f"{name} does not list itself first"
+
+    def test_a_known_legacy_spelling_is_present(self):
+        table = gap.load_alias_table()
+        assert (
+            "documentation.model_card.completeness_score"
+            in table["metrics.model_card.completeness"]
+        )
+
+    def test_the_two_toxicity_statistics_stay_separate(self):
+        """gopal split these deliberately; merging them here would undo it."""
+        table = gap.load_alias_table()
+        assert "metrics.toxicity.max_toxicity" not in table["metrics.toxicity.score"]
+        assert "metrics.toxicity.score" not in table["metrics.toxicity.max_toxicity"]
