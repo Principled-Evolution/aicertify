@@ -139,7 +139,15 @@ class TestAgainstTheRealLibrary:
         assert "ContentSafetyEvaluator" in names
         assert "FairnessEvaluator" in names
 
-    def test_the_eu_ai_act_metrics_are_fully_supplied(self):
+    # metrics.model_card.compliance_level is a real gap, not an oversight.
+    # ModelCardEvaluator listed it in SUPPORTED_METRICS and never computed it,
+    # so the report counted it as supplied while the policy reading it saw
+    # nothing. Nothing this evaluator measures yields a compliance level
+    # distinct from completeness, so the declaration was removed rather than
+    # backfilled with a number that would have meant nothing.
+    KNOWN_EU_GAPS = {"metrics.model_card.compliance_level"}
+
+    def test_the_eu_ai_act_metrics_are_supplied_apart_from_the_known_gap(self):
         """
         The framework most people arrive for. If this regresses, the README
         should stop implying the EU policies work out of the box.
@@ -148,8 +156,12 @@ class TestAgainstTheRealLibrary:
         supplies = gap.supplied_metrics()
         aliases = gap.load_alias_table()
         eu = next(v for k, v in required.items() if "eu_ai_act" in k)
-        unmatched = [m for m in eu if not gap.match(m, supplies, aliases)]
-        assert not unmatched, f"EU AI Act metrics with no evaluator: {unmatched}"
+        unmatched = {m for m in eu if not gap.match(m, supplies, aliases)}
+        assert unmatched == self.KNOWN_EU_GAPS, (
+            f"EU AI Act coverage moved: unexpectedly missing "
+            f"{sorted(unmatched - self.KNOWN_EU_GAPS)}, unexpectedly present "
+            f"{sorted(self.KNOWN_EU_GAPS - unmatched)}"
+        )
 
     def test_declared_facts_never_appear_in_the_report(self):
         for metrics in gap.required_metrics().values():

@@ -327,6 +327,82 @@ def _drop_nulls(value: Any) -> Any:
     return value
 
 
+def collect_measured_metrics(
+    evaluation_results: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Lift each evaluator's canonical metric block out of its result.
+
+    GOPAL reads measured metrics at ``input.metrics.<domain>.<name>``, the
+    canonical names in ``helper_functions/metrics.rego``. Evaluator output
+    arrives keyed by evaluator name instead, as ``results.<evaluator>``, and the
+    only reason three metrics ever resolved is that ``metrics.fairness.score``,
+    ``metrics.content_safety.score`` and ``metrics.risk_management.score``
+    happen to spell an evaluator name in the middle and ``score`` at the end.
+    Nothing else lined up. ``metrics.model_card.completeness`` did not, so no
+    policy reading it ever saw a measurement, whatever the gap report said.
+
+    The contract is now explicit: an evaluator publishes canonical metrics by
+    putting them under ``details["metrics"]`` in the shape GOPAL reads, and this
+    function merges every evaluator's block into one tree that is attached at
+    the top level of the OPA input.
+
+    Declaring a metric in ``SUPPORTED_METRICS`` does not supply it. This reads
+    what was actually emitted, so an evaluator that names a metric and never
+    computes it contributes nothing here.
+    """
+    collected: Dict[str, Any] = {}
+    results = (evaluation_results or {}).get("results") or {}
+    if not isinstance(results, dict):
+        return collected
+    for result in results.values():
+        if not isinstance(result, dict):
+            continue
+        details = result.get("details")
+        if not isinstance(details, dict):
+            continue
+        block = details.get("metrics")
+        if isinstance(block, dict):
+            collected = _deep_merge_preserving(collected, _drop_nulls(block))
+    return collected
+
+
+def attach_measured_metrics(
+    opa_input: Dict[str, Any],
+    evaluation_results: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Put canonical measured metrics where GOPAL looks for them.
+
+    Merged over whatever ``input.metrics`` already holds, so the legacy
+    ``results`` to ``metrics`` aliasing in ``_transform_input_for_opa`` keeps
+    working for the three metrics that relied on it. A canonical metric an
+    evaluator actually computed wins over the alias, because it is the more
+    specific statement.
+    """
+    measured = collect_measured_metrics(evaluation_results)
+    if not measured:
+        return opa_input
+
+    merged = dict(opa_input)
+
+    # Reproduce the results-to-metrics aliasing here rather than leaving it to
+    # _transform_input_for_opa, which only applies it when "metrics" is absent.
+    # Setting metrics from measured alone would suppress that alias and drop the
+    # three metrics that depend on it, so both layers are merged now: the alias
+    # underneath, an actually-computed canonical metric on top.
+    base: Dict[str, Any] = {}
+    existing = merged.get("metrics")
+    if isinstance(existing, dict):
+        base = existing
+    else:
+        results = merged.get("results")
+        if isinstance(results, dict):
+            base = results
+
+    # measured first, so it wins over the alias where the two collide.
+    merged["metrics"] = _deep_merge_preserving(measured, base)
+    return merged
+
+
 def merge_declared_context(
     evaluation_results: Optional[Dict[str, Any]],
     contract: Any,
