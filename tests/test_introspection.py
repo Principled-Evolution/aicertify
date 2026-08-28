@@ -25,6 +25,8 @@ from aicertify.opa_core.introspection import (
     is_evaluator_field,
     merge_declared_context,
     unfilled_paths,
+    attach_measured_metrics,
+    collect_measured_metrics,
 )
 
 
@@ -216,3 +218,85 @@ class TestAgainstTheBundledLibrary:
             assert key in contract
         assert contract["interactions"], "a contract needs at least one interaction"
         assert "model_name" in contract["model_info"]
+
+
+class TestMeasuredMetricsReachThePolicies:
+    """
+    GOPAL reads measured metrics at input.metrics.<domain>.<name>. Evaluator
+    output is keyed by evaluator name, so before attach_measured_metrics only
+    three canonical names resolved, and only by coincidence: fairness,
+    content_safety and risk_management happen to spell an evaluator name in the
+    middle with "score" at the end. metrics.model_card.completeness did not
+    line up, so no policy reading it ever saw a measurement even though the gap
+    report called it supplied.
+    """
+
+    @staticmethod
+    def _phase1():
+        return {
+            "results": {
+                "content_safety": {
+                    "score": 0.0,
+                    "details": {
+                        "safety_score": 0.0,
+                        "metrics": {"toxicity": {"score": 0.29, "max_toxicity": 0.8}},
+                    },
+                },
+                "model_card": {
+                    "score": 0.42,
+                    "details": {"metrics": {"model_card": {"completeness": 0.42}}},
+                },
+                "fairness": {"score": 0.91, "details": {}},
+            }
+        }
+
+    def test_a_canonical_metric_an_evaluator_emitted_is_attached(self):
+        out = attach_measured_metrics(dict(self._phase1()), self._phase1())
+        assert out["metrics"]["model_card"]["completeness"] == 0.42
+        assert out["metrics"]["toxicity"]["score"] == 0.29
+
+    def test_the_results_alias_still_works(self):
+        """
+        Regression guard. Setting input.metrics from measured metrics alone made
+        _transform_input_for_opa skip its results-to-metrics aliasing, which
+        silently dropped the only three metrics that had ever resolved.
+        """
+        out = attach_measured_metrics(dict(self._phase1()), self._phase1())
+        assert out["metrics"]["fairness"]["score"] == 0.91
+        assert out["metrics"]["content_safety"]["score"] == 0.0
+
+    def test_an_emitted_metric_beats_the_alias(self):
+        phase1 = {
+            "results": {
+                "toxicity": {"score": 0.99, "details": {}},
+                "content_safety": {
+                    "score": 0.0,
+                    "details": {"metrics": {"toxicity": {"score": 0.01}}},
+                },
+            }
+        }
+        out = attach_measured_metrics(dict(phase1), phase1)
+        assert out["metrics"]["toxicity"]["score"] == 0.01
+
+    def test_nothing_emitted_changes_nothing(self):
+        phase1 = {"results": {"fairness": {"score": 0.9, "details": {}}}}
+        before = dict(phase1)
+        assert attach_measured_metrics(before, phase1) == before
+
+    def test_declaring_a_metric_does_not_supply_it(self):
+        """SUPPORTED_METRICS is a claim; this reads only what was emitted."""
+        phase1 = {
+            "results": {"ghost": {"score": 1.0, "details": {"not_metrics": {"x": 1}}}}
+        }
+        assert collect_measured_metrics(phase1) == {}
+
+    def test_malformed_results_do_not_explode(self):
+        for bad in (
+            None,
+            {},
+            {"results": None},
+            {"results": [1, 2]},
+            {"results": {"a": None}},
+            {"results": {"a": {"details": 7}}},
+        ):
+            assert collect_measured_metrics(bad) == {}

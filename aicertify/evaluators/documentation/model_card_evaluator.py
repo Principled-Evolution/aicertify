@@ -23,15 +23,20 @@ class ModelCardEvaluator(BaseEvaluator):
     """
 
     # Define the metrics supported by this evaluator
+    # Only what evaluate() actually emits. metrics.model_card.compliance_level
+    # was listed here and never computed, so the gap report counted it as
+    # supplied while no policy reading it ever saw a value. There is no honest
+    # way to derive a compliance level distinct from completeness from what this
+    # evaluator measures, so it is now reported as the gap it always was.
     SUPPORTED_METRICS: Tuple[str, ...] = (
         "model_card.score",
         "model_card.completeness",
         "model_card.quality",
         "model_card.section_scores",
-        "model_card.compliance_level",
         "metrics.model_card.score",
         "metrics.model_card.completeness",
         "metrics.model_card.quality",
+        "metrics.model_card.section_scores",
     )
 
     # Required sections based on HuggingFace Model Card standards and EU AI Act requirements
@@ -218,6 +223,20 @@ class ModelCardEvaluator(BaseEvaluator):
                 },
             }
 
+            # Publish under GOPAL's canonical names so the policies that read
+            # input.metrics.model_card.* actually receive these numbers.
+            # completeness is the weighted section score; quality is the mean
+            # content-quality rating, which is a different question and is
+            # deliberately unweighted.
+            detailed_results["metrics"] = {
+                "model_card": {
+                    "score": overall_score,
+                    "completeness": overall_score,
+                    "section_scores": section_scores,
+                    **self._quality_metric(section_quality),
+                }
+            }
+
             # Generate recommendations
             self._generate_recommendations(
                 section_scores, section_feedback, section_quality
@@ -340,6 +359,26 @@ class ModelCardEvaluator(BaseEvaluator):
             return "partial", 0.7
         else:
             return "comprehensive", 1.0
+
+    def _quality_metric(self, section_quality: Dict[str, str]) -> Dict[str, float]:
+        """Mean content-quality rating across sections, or nothing.
+
+        section_quality holds a label per section; QUALITY_LEVELS scores those
+        labels. Averaging them answers "how good is the content that is there",
+        which is not the same question as completeness and is why GOPAL keeps
+        metrics.model_card.quality separate from metrics.model_card.completeness.
+
+        Returns an empty dict when no section was rated. An unrated card is
+        unmeasured, and emitting 0.0 would report it as uniformly missing.
+        """
+        rated = [
+            self.QUALITY_LEVELS[level]["score"]
+            for level in section_quality.values()
+            if level in self.QUALITY_LEVELS
+        ]
+        if not rated:
+            return {}
+        return {"quality": sum(rated) / len(rated)}
 
     def _calculate_overall_score(self, section_scores: Dict[str, float]) -> float:
         """
