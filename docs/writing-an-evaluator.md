@@ -78,17 +78,40 @@ unsupplied, however good your evaluator is. `helper_functions/metrics.rego` in
 gopal is the list of canonical names, and it accepts the historical spellings
 as fallbacks.
 
-## 3. There is no step three
+## 3. Wire it in
 
-No registration call, no entry in a list, no configuration file. Discovery is
-by the `SUPPORTED_METRICS` attribute. Re-run the report:
+One line, in `ComplianceEvaluator.EVALUATOR_CLASSES`:
+
+```python
+EVALUATOR_CLASSES = {
+    ...
+    "audit_logging": AuditLoggingEvaluator,
+}
+```
+
+This is the step that is easy to skip, because everything looks fine without
+it. `SUPPORTED_METRICS` is what the gap report reads, so an unregistered
+evaluator still shows up there, while `ComplianceEvaluator` only ever
+instantiates what is in this dict. You get an evaluator that is discovered,
+reported as coverage, and never run.
+
+The report now refuses to be fooled by that. Leave the registration out and
+the row reads:
+
+```
+  WIRE governance.audit_logging.completeness_score    AuditLoggingEvaluator declares
+       this but is not in ComplianceEvaluator.EVALUATOR_CLASSES, so it never runs
+```
+
+Add the line and it reads:
 
 ```
 global  (2/4 measured metrics have an evaluator)
   ok   governance.audit_logging.completeness_score    AuditLoggingEvaluator
 ```
 
-The gap closed on the strength of the class attribute alone.
+`WIRE` does not count toward the total. A metric nothing produces at runtime is
+not covered, whatever the class attributes say.
 
 ## Two things worth getting right
 

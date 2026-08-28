@@ -190,3 +190,32 @@ class TestTheAliasTableIsActuallyRead:
         table = gap.load_alias_table()
         assert "metrics.toxicity.max_toxicity" not in table["metrics.toxicity.score"]
         assert "metrics.toxicity.score" not in table["metrics.toxicity.max_toxicity"]
+
+
+@needs_policies
+class TestAnEvaluatorMustActuallyBeWiredIn:
+    """
+    Declaring SUPPORTED_METRICS is what makes an evaluator visible to the
+    report, but ComplianceEvaluator only instantiates what is listed in
+    EVALUATOR_CLASSES. An evaluator in the first set and not the second
+    produces nothing at runtime, so counting it as covered would be a
+    fail-open: the report would claim a metric is supplied when no pipeline
+    supplies it. This was live for exactly one commit, caught by the evaluator
+    added to demonstrate the guide.
+    """
+
+    def test_the_registry_is_readable(self):
+        assert gap.registered_evaluators(), "could not read EVALUATOR_CLASSES"
+
+    def test_every_declaring_evaluator_is_registered(self):
+        registered = gap.registered_evaluators()
+        declaring = {e for v in gap.supplied_metrics().values() for e in v}
+        orphans = sorted(declaring - registered)
+        assert not orphans, (
+            f"{orphans} declare SUPPORTED_METRICS but are absent from "
+            "ComplianceEvaluator.EVALUATOR_CLASSES, so they never run. "
+            "Either register them or drop the declaration."
+        )
+
+    def test_the_worked_example_from_the_guide_is_registered(self):
+        assert "AuditLoggingEvaluator" in gap.registered_evaluators()
