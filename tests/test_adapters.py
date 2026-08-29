@@ -21,6 +21,7 @@ from aicertify.adapters import (
     from_model_index,
     load_heading_sources,
 )
+from aicertify.adapters import from_fairlearn, from_perspective
 
 
 def from_model_card(card):
@@ -372,3 +373,124 @@ def test_against_real_cards(repo_id):
     mc = from_model_card(ModelCard.load(repo_id).content)
     sections = mc.get("documentation", {}).get("model_card", {})
     assert len(sections) >= 6, f"{repo_id} parsed to only {sorted(sections)}"
+
+
+class TestFairlearn:
+    """
+    GOPAL compares metrics.fairness.score with >=, so higher is better.
+    Fairlearn's difference() is 0 at its best and points the other way. Handing
+    it over unchanged reports the fairest possible system as the least fair,
+    which is exactly how is_toxic once answered true for a clean system.
+    """
+
+    def test_a_difference_is_turned_the_right_way_up(self):
+        f = from_fairlearn(difference=0.2)["metrics"]["fairness"]
+        assert f["score"] == pytest.approx(0.8)
+        assert f["basis"] == "1 - difference"
+
+    def test_no_disparity_scores_at_the_top_not_the_bottom(self):
+        """The polarity test. A perfectly fair system must score 1.0, not 0.0."""
+        assert from_fairlearn(difference=0.0)["metrics"]["fairness"]["score"] == 1.0
+        assert from_fairlearn(ratio=1.0)["metrics"]["fairness"]["score"] == 1.0
+
+    def test_a_ratio_is_used_as_it_stands(self):
+        f = from_fairlearn(ratio=0.6667)["metrics"]["fairness"]
+        assert f["score"] == pytest.approx(0.6667)
+        assert f["basis"] == "ratio"
+
+    def test_the_ratio_wins_when_both_are_given(self):
+        """
+        A ratio is already bounded with 1 as the ideal, which is the shape a
+        >= 0.85 threshold expects, and it is how the four-fifths rule is
+        written. Converting a difference is the fallback, not the default.
+        """
+        f = from_fairlearn(ratio=0.9, difference=0.2)["metrics"]["fairness"]
+        assert f["score"] == pytest.approx(0.9)
+        assert f["difference"] == pytest.approx(0.2)
+
+    def test_a_score_clears_or_fails_the_threshold_the_way_gopal_reads_it(self):
+        """A 0.67 selection-rate ratio is below the 0.85 healthcare gate."""
+        assert from_fairlearn(ratio=0.6667)["metrics"]["fairness"]["score"] < 0.85
+        assert from_fairlearn(ratio=0.95)["metrics"]["fairness"]["score"] >= 0.85
+
+    @pytest.mark.parametrize("bad", [None, object(), {}, "x"])
+    def test_nothing_measurable_produces_nothing(self, bad):
+        assert from_fairlearn(bad) == {}
+
+    def test_a_real_metric_frame_multi_metric(self):
+        fairlearn = pytest.importorskip("fairlearn.metrics")
+        sklearn = pytest.importorskip("sklearn.metrics")
+        y, p = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0], [1, 0, 1, 0, 0, 1, 1, 0, 1, 0]
+        g = ["a"] * 5 + ["b"] * 5
+        frame = fairlearn.MetricFrame(
+            metrics={
+                "accuracy": sklearn.accuracy_score,
+                "selection_rate": fairlearn.selection_rate,
+            },
+            y_true=y,
+            y_pred=p,
+            sensitive_features=g,
+        )
+        f = from_fairlearn(frame)["metrics"]["fairness"]
+        assert f["score"] == pytest.approx(0.6666666, abs=1e-6)
+        assert f["by_group"] == {"a": pytest.approx(0.4), "b": pytest.approx(0.6)}
+
+    def test_a_single_metric_frame_returns_scalars_not_a_series(self):
+        """
+        The shape most people hit first, and the one that breaks a [metric]
+        lookup written for the multi-metric case.
+        """
+        fairlearn = pytest.importorskip("fairlearn.metrics")
+        y, p = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0], [1, 0, 1, 0, 0, 1, 1, 0, 1, 0]
+        g = ["a"] * 5 + ["b"] * 5
+        frame = fairlearn.MetricFrame(
+            metrics=fairlearn.selection_rate, y_true=y, y_pred=p, sensitive_features=g
+        )
+        assert from_fairlearn(frame)["metrics"]["fairness"]["score"] == pytest.approx(
+            0.6666666, abs=1e-6
+        )
+
+
+class TestPerspective:
+    """
+    Perspective returns one summary score per attribute per comment, higher
+    being worse. The mapping matches Detoxify's because GOPAL asks the same two
+    questions of any toxicity measurement.
+    """
+
+    BATCH = [
+        {
+            "attributeScores": {
+                "TOXICITY": {"summaryScore": {"value": v, "type": "PROBABILITY"}},
+                "INSULT": {"summaryScore": {"value": v * 0.8}},
+            }
+        }
+        for v in (0.02, 0.83, 0.05)
+    ]
+
+    def test_the_aggregate_and_the_maximum_stay_apart(self):
+        t = from_perspective(self.BATCH)["metrics"]["toxicity"]
+        assert t["score"] == pytest.approx((0.02 + 0.83 + 0.05) / 3)
+        assert t["max_toxicity"] == 0.83
+        assert t["score"] < 0.7 < t["max_toxicity"]
+
+    def test_a_single_response_works(self):
+        one = {"attributeScores": {"TOXICITY": {"summaryScore": {"value": 0.9}}}}
+        assert from_perspective(one)["metrics"]["toxicity"]["score"] == 0.9
+
+    def test_other_attributes_are_kept_not_dropped(self):
+        t = from_perspective(self.BATCH)["metrics"]["toxicity"]
+        assert t["categories"]["insult"]["max"] == pytest.approx(0.664)
+
+    def test_an_unscorable_attribute_is_absent_rather_than_zero(self):
+        """
+        Perspective omits summaryScore for an unsupported language. Reading
+        that as 0.0 reports text nobody could score as clean.
+        """
+        assert from_perspective({"attributeScores": {"TOXICITY": {}}}) == {}
+
+    @pytest.mark.parametrize(
+        "bad", [{}, None, [], "x", {"attributeScores": None}, [{"nope": 1}]]
+    )
+    def test_nothing_measurable_produces_nothing(self, bad):
+        assert from_perspective(bad) == {}

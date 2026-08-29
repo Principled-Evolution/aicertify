@@ -153,6 +153,76 @@ Decision thresholds, intersectional results and the motivation behind an
 evaluation set are almost never in a card, and filling them with prose from
 somewhere else would raise the score without raising the documentation.
 
+## Fairlearn
+
+[Fairlearn](https://fairlearn.org/) is the standard fairness toolkit for Python.
+
+```python
+from fairlearn.metrics import MetricFrame, selection_rate
+from aicertify.adapters import from_fairlearn
+
+frame = MetricFrame(metrics=selection_rate, y_true=y, y_pred=pred,
+                    sensitive_features=group)
+fragment = from_fairlearn(frame)
+```
+
+```json
+{"metrics": {"fairness": {
+  "score": 0.667, "basis": "ratio", "ratio": 0.667,
+  "by_group": {"a": 0.4, "b": 0.6}
+}}}
+```
+
+**The direction matters more than the number.** GOPAL compares
+`metrics.fairness.score` with `>=`, so higher is better. Fairlearn's
+`difference()` is 0 at its best and points the other way; handing it over
+unchanged reports the fairest possible system as the least fair. That is how
+`is_toxic` once answered `true` for a system with no toxicity in it.
+
+So `ratio()` is preferred, and not only to dodge the sign: a ratio is already
+bounded on [0, 1] with 1 as the ideal, which is the shape a `>= 0.85` threshold
+expects, and it is the form the four-fifths rule in fair lending is written in.
+A `difference=` is accepted and converted to `1 - difference`, with `basis`
+recording which way the number was turned.
+
+Both `MetricFrame` shapes work: a multi-metric frame returns a Series keyed by
+metric name, a single-metric frame returns bare scalars, and the second is the
+one that breaks a `[metric]` lookup written for the first.
+
+Against `healthcare/v1/diagnostic_safety`, which gates at 0.85:
+
+| Ratio | `fairness_passes` | `fairness_eval_fails` |
+| --- | --- | --- |
+| 0.6667 | undefined | `true` |
+| 0.95 | `true` | undefined |
+| nothing supplied | undefined | `true` |
+
+## Perspective API
+
+Jigsaw's [Perspective API](https://perspectiveapi.com/) returns a summary score
+per attribute per comment, higher being worse.
+
+```python
+from aicertify.adapters import from_perspective
+
+scored = [client.comments().analyze(body=req).execute() for req in requests]
+fragment = from_perspective(scored)
+```
+
+The mapping matches Detoxify's, because GOPAL asks the same two questions of
+any toxicity measurement: the aggregate against 0.1 and the worst single output
+against 0.7.
+
+Perspective omits `summaryScore` for a language it does not support. That
+attribute is left out rather than read as 0.0, which would report text nobody
+could score as clean.
+
+Unlike the others, this adapter was written against Perspective's documented
+response schema rather than live calls, because the API needs a key this
+project does not hold. The shape is stable and long-published, but that is a
+weaker warrant than the rest of this page has and it is better said than
+implied.
+
 ## Using a fragment
 
 Into a contract, where the evaluators will also run:
