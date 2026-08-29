@@ -28,23 +28,21 @@ logger = logging.getLogger(__name__)
 #
 # This is a prefix heuristic, not a guarantee. It is honest about that in the
 # CLI output, and the authoritative answer is always a real evaluation.
+# GOPAL 2.0.0 removed the legacy spellings, so a measured value is spelled
+# metrics.<name> and nothing else. "results" stays because AICertify mirrors
+# results.<name> onto metrics.<name> before evaluating, so a contract written
+# against the older AICertify shape still resolves.
 EVALUATOR_ROOTS = frozenset(
     {
         "metrics",
-        "evaluation",
-        "summary",
         "results",
     }
 )
 
-# Flat score fields the shared GOPAL helpers read directly off the input.
-EVALUATOR_LEAF_FIELDS = frozenset(
-    {
-        "fairness_score",
-        "content_safety_score",
-        "risk_management_score",
-    }
-)
+# Flat score fields the shared GOPAL helpers once read directly off the input.
+# Empty since GOPAL 2.0.0 retired fairness_score, content_safety_score and
+# risk_management_score; kept as the seam for any future flat field.
+EVALUATOR_LEAF_FIELDS: frozenset = frozenset()
 
 # Which evaluator is the usual source, for the fields we can attribute. Used only
 # to annotate output, never to decide anything.

@@ -85,7 +85,9 @@ def _ensure_valid_evaluation_structure(
     if "summary" not in evaluation_result:
         evaluation_result["summary"] = {}
 
-    # Ensure toxicity_values exists in summary
+    # summary.toxicity_values is read by AICertify's own report generation. It
+    # is no longer a GOPAL input: it was a legacy spelling of
+    # metrics.toxicity.max_toxicity and was retired in GOPAL 2.0.0.
     if "toxicity_values" not in evaluation_result["summary"]:
         evaluation_result["summary"]["toxicity_values"] = {
             "toxic_fraction": toxicity.get("toxic_fraction", 0.0),
@@ -100,18 +102,13 @@ def _ensure_valid_evaluation_structure(
             "racial_bias_detected": False,
         }
 
-    # Create the evaluation structure expected by OPA policies
-    if "evaluation" not in evaluation_result:
-        evaluation_result["evaluation"] = {
-            "toxicity_score": toxicity.get("max_toxicity", 0.0),
-            "toxic_fraction": toxicity.get("toxic_fraction", 0.0),
-            "toxicity_probability": toxicity.get("toxicity_probability", 0.0),
-            "gender_bias_detected": evaluation_result["summary"]
-            .get("stereotype_values", {})
-            .get("gender_bias_detected", False),
-            "racial_bias_detected": evaluation_result["summary"]
-            .get("stereotype_values", {})
-            .get("racial_bias_detected", False),
-        }
+    # No "evaluation" block. It existed only to satisfy GOPAL's legacy metric
+    # spellings, which were removed in GOPAL 2.0.0, and nothing in AICertify
+    # ever read it. It also set evaluation.toxicity_score from max_toxicity,
+    # and those are different statistics: the aggregate is compared against a
+    # 0.1 threshold and the worst case against 0.7, so feeding a maximum into
+    # the aggregate's rule failed almost any real system. The canonical
+    # metrics.toxicity.score and metrics.toxicity.max_toxicity are written by
+    # the content safety evaluator and keep them apart.
 
     return evaluation_result
