@@ -26,5 +26,17 @@ from aicertify.adapters.huggingface_adapter import (
     from_model_card,
     from_model_index,
 )
+from aicertify.adapters.model_card import (
+    GopalUnavailable,
+    load_heading_sources,
+    score_model_card,
+)
 
-__all__ = ["from_detoxify", "from_model_card", "from_model_index"]
+__all__ = [
+    "from_detoxify",
+    "from_model_card",
+    "from_model_index",
+    "load_heading_sources",
+    "score_model_card",
+    "GopalUnavailable",
+]

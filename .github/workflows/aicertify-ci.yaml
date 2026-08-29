@@ -47,11 +47,5 @@ jobs:
         run: |
           poetry run python -c "import aicertify; print(f'AICertify version: {aicertify.__version__}')"
 
-      # The GOPAL playground scores model cards in the browser from this
-      # exported rubric. A stale export means the site publishes a different
-      # number from `aicertify score-card` for the same card.
-      - name: Check the exported model-card rubric is current
-        run: poetry run python scripts/export_model_card_rubric.py --check
-
       - name: Run Basic Tests
         run: poetry run pytest tests/ -v

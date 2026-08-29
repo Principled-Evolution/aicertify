@@ -421,14 +421,6 @@ async def evaluate_contract_comprehensive(
                 "workplace_context_threshold": 0.3,
                 "educational_context_threshold": 0.3,
             },
-            "model_card": {
-                "compliance_threshold": 0.7,
-                "content_quality_thresholds": {
-                    "minimal": 50,
-                    "partial": 200,
-                    "comprehensive": 500,
-                },
-            },
         }
 
     # Evaluate with Phase 1 evaluators

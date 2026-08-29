@@ -11,15 +11,30 @@ have moved on.
 import json
 import os
 import shutil
-import subprocess
 from pathlib import Path
 
 import pytest
 
-from aicertify.adapters import from_detoxify, from_model_card, from_model_index
+from aicertify.adapters import (
+    from_detoxify,
+    from_model_card as _from_model_card,
+    from_model_index,
+    load_heading_sources,
+)
+
+
+def from_model_card(card):
+    """The heading table comes from the policy, so tests read it from there too."""
+    return _from_model_card(card, load_heading_sources())
+
 
 GOPAL = Path(__file__).resolve().parent.parent / "aicertify" / "opa_policies"
-METRICS_REGO = GOPAL / "helper_functions" / "metrics.rego"
+SCORE_POLICY = GOPAL / "global" / "v1" / "documentation" / "model_card_score.rego"
+
+needs_gopal = pytest.mark.skipif(
+    shutil.which("opa") is None or not SCORE_POLICY.exists(),
+    reason="needs the opa binary and the pinned gopal checkout",
+)
 
 
 # The current template: "Uses", "Bias, Risks, and Limitations", "Training
@@ -309,86 +324,37 @@ class TestModelIndex:
         assert from_model_index(bad) == {}
 
 
+@needs_gopal
 class TestTheCardActuallyScores:
     """
-    The point of the adapter. Before it, ModelCardEvaluator read
-    data["model_card"] and nothing else, while ComplianceEvaluator hands every
-    evaluator contract.dict(), whose keys never include one. The evaluator ran
-    on every contract, scored all nine sections missing and reported 0.0.
+    Scoring runs GOPAL now. There is no Python rubric to test, only that a card
+    reaches the policy and that the policy's answer comes back intact.
     """
 
-    def test_a_card_scores_above_zero_through_the_pipeline_path(self):
-        from aicertify.evaluators.documentation import ModelCardEvaluator
-        from aicertify.models.contract import create_contract
+    def test_a_card_scores_above_zero(self):
+        from aicertify.adapters import score_model_card
 
-        contract = create_contract(
-            application_name="adapter test",
-            model_info={"model_name": "demo"},
-            interactions=[],
-            context=from_model_card(MODERN_CARD),
-        )
-        result = ModelCardEvaluator().evaluate(contract.dict())
-        emitted = (result.details or {}).get("metrics", {}).get("model_card", {})
-        assert emitted.get("completeness", 0) > 0.0, (
-            "the card did not reach the evaluator; _locate_model_card no longer "
-            "finds it where a contract carries it"
-        )
+        scored = score_model_card(MODERN_CARD)
+        assert scored["completeness"] > 0.0
+        assert scored["section_scores"]
 
     def test_a_well_documented_card_still_fails_the_threshold(self):
         """
-        Not a defect. GOPAL's technical-documentation check wants 0.8, and a
-        model card, however good, answers part of what Annex IV asks. This
-        asserts the honest ceiling rather than a pass.
+        Not a defect. GOPAL wants 0.8, and a model card answers part of what
+        Annex IV asks. This asserts the honest ceiling rather than a pass.
         """
-        from aicertify.evaluators.documentation import ModelCardEvaluator
+        from aicertify.adapters import score_model_card
 
-        result = ModelCardEvaluator().evaluate(from_model_card(MODERN_CARD))
-        emitted = (result.details or {}).get("metrics", {}).get("model_card", {})
-        assert 0.0 < emitted.get("completeness", 0) < 0.8
+        assert 0.0 < score_model_card(MODERN_CARD)["completeness"] < 0.8
 
+    def test_a_card_with_nothing_recognisable_scores_nothing(self):
+        """
+        The policy leaves completeness undefined when there is no card, and
+        undefined is not zero. A zero would read as a real measurement.
+        """
+        from aicertify.adapters import score_model_card
 
-@pytest.mark.skipif(
-    shutil.which("opa") is None or not METRICS_REGO.exists(),
-    reason="needs the opa binary and the pinned gopal checkout",
-)
-def test_the_card_reaches_a_gopal_policy(tmp_path):
-    """End to end: card text in, GOPAL verdict out."""
-    from aicertify.evaluators.documentation import ModelCardEvaluator
-    from aicertify.opa_core.introspection import attach_measured_metrics
-
-    result = ModelCardEvaluator().evaluate(from_model_card(MODERN_CARD))
-    phase1 = {"results": {"model_card": json.loads(result.model_dump_json())}}
-    opa_input = attach_measured_metrics(dict(phase1), phase1)
-
-    probe = tmp_path / "probe.rego"
-    probe.write_text(
-        "package probe\n\nimport rego.v1\nimport data.helper_functions.metrics\n\n"
-        'value := metrics.resolve(input, "metrics.model_card.completeness")\n'
-    )
-    inp = tmp_path / "in.json"
-    inp.write_text(json.dumps(opa_input, default=str))
-    out = subprocess.run(
-        [
-            "opa",
-            "eval",
-            "-d",
-            str(METRICS_REGO),
-            "-d",
-            str(probe),
-            "-i",
-            str(inp),
-            "data.probe.value",
-            "--format",
-            "json",
-        ],
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
-    assert out.returncode == 0, out.stderr
-    payload = json.loads(out.stdout).get("result")
-    assert payload, "GOPAL could not resolve metrics.model_card.completeness"
-    assert payload[0]["expressions"][0]["value"] > 0.0
+        assert score_model_card("# Just a title\n") == {}
 
 
 @pytest.mark.skipif(

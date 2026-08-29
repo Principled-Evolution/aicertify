@@ -32,122 +32,14 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
-__all__ = ["from_model_card", "from_model_index", "SUBSECTION_SOURCES"]
+__all__ = ["from_model_card", "from_model_index"]
 
 
-# (section, subsection) -> the headings that establish it, lowercased.
-#
-# ModelCardEvaluator does not score sections, it scores named subsections
-# inside them, and a section whose subsections are all empty scores zero.
-# So the mapping has to be at subsection granularity or a card with eight
-# well-written sections scores 0.00, which is what the first version of this
-# adapter did.
-#
-# Only mappings where the heading genuinely establishes that subsection are
-# listed. Several subsections have no entry at all: a model card almost never
-# states decision thresholds, intersectional results, or the motivation for
-# choosing an evaluation set. Leaving those unmapped is the point rather than a
-# gap in the table. The resulting score is partial by construction, because a
-# model card really does answer part of what a regulator asks and no more.
-SUBSECTION_SOURCES: Dict[str, Dict[str, Tuple[str, ...]]] = {
-    "model_details": {
-        "model_type": (
-            "model details",
-            "model description",
-            "model summary",
-            "model overview",
-            "model architecture",
-        ),
-    },
-    "intended_use": {
-        "primary_uses": (
-            "direct use",
-            "intended use",
-            "intended uses",
-            "intended uses & limitations",
-            "intended uses and limitations",
-            "uses",
-            "downstream use",
-            "usage",
-        ),
-        "out_of_scope_uses": (
-            "out-of-scope use",
-            "out of scope use",
-            "misuse",
-            "limitations and bias",
-            "known limitations",
-        ),
-    },
-    "factors": {
-        "relevant_factors": (
-            "factors",
-            "relevant factors",
-            "bias, risks, and limitations",
-            "risks, limitations and biases",
-            "limitations and bias",
-        ),
-        "evaluation_factors": ("evaluation factors", "testing data, factors & metrics"),
-    },
-    "metrics": {
-        "performance_metrics": (
-            "metrics",
-            "evaluation",
-            "evaluation results",
-            "results",
-        ),
-    },
-    "evaluation_data": {
-        "datasets": (
-            "evaluation data",
-            "testing data",
-            "test data",
-            "evaluation dataset",
-        ),
-    },
-    "training_data": {
-        "datasets": (
-            "training data",
-            "training dataset",
-            "training details",
-            "training",
-        ),
-        "preprocessing": ("preprocessing", "data preprocessing", "training procedure"),
-    },
-    "quantitative_analyses": {
-        "unitary_results": (
-            "evaluation results",
-            "results",
-            "benchmark results",
-            "performance",
-        ),
-    },
-    "ethical_considerations": {
-        "data_bias": (
-            "bias, risks, and limitations",
-            "risks, limitations and biases",
-            "limitations and bias",
-            "bias",
-        ),
-        "risks": (
-            "risks",
-            "bias, risks, and limitations",
-            "risks, limitations and biases",
-            "ethical considerations",
-        ),
-        "mitigations": ("recommendations", "mitigations", "mitigation"),
-    },
-    "caveats_recommendations": {
-        "limitations": (
-            "limitations",
-            "known limitations",
-            "limitations and bias",
-            "caveats",
-        ),
-        "recommendations": ("recommendations", "caveats and recommendations"),
-    },
-}
-
-
+# The heading table used to live here. It is data in
+# global/v1/documentation/model_card_score now, alongside the scoring it
+# belongs with, and callers pass it in. A copy per parser drifts exactly the
+# way a copy of the scoring did, and there are two parsers: this one and the
+# browser's.
 def _split_frontmatter(text: str) -> Tuple[Dict[str, Any], str]:
     """Separate YAML frontmatter from the markdown body.
 
@@ -215,13 +107,18 @@ def _matches(heading: str, alias: str) -> bool:
     return h == alias or h.startswith(alias)
 
 
-def from_model_card(card: str) -> Dict[str, Any]:
+def from_model_card(
+    card: str, heading_sources: Mapping[str, Mapping[str, Any]]
+) -> Dict[str, Any]:
     """Convert a Hugging Face model card into a GOPAL input fragment.
 
     Args:
         card: the raw text of the card, frontmatter included. Get it with
             ``huggingface_hub.ModelCard.load(repo_id).content``, or read a
             local ``README.md``.
+        heading_sources: which headings establish which subsection, from
+            ``aicertify.adapters.model_card.load_heading_sources()``. Passed in
+            rather than defined here so the policy stays the only copy.
 
     Returns:
         A fragment carrying ``documentation.model_card`` with whichever of the
@@ -247,7 +144,7 @@ def from_model_card(card: str) -> Dict[str, Any]:
     sections = _headed_sections(body)
 
     model_card: Dict[str, Any] = {}
-    for section_id, subsections in SUBSECTION_SOURCES.items():
+    for section_id, subsections in heading_sources.items():
         filled: Dict[str, str] = {}
         for subsection, aliases in subsections.items():
             collected: List[str] = []

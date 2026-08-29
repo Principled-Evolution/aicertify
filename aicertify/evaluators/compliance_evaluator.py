@@ -26,7 +26,6 @@ from aicertify.evaluators.prohibited_practices import (
     SocialScoringEvaluator,
     EmotionRecognitionEvaluator,
 )
-from aicertify.evaluators.documentation import ModelCardEvaluator
 from aicertify.evaluators.audit_logging_evaluator import AuditLoggingEvaluator
 
 # Configure logging
@@ -87,7 +86,6 @@ class ComplianceEvaluator:
         "vulnerability_exploitation": VulnerabilityExploitationEvaluator,
         "social_scoring": SocialScoringEvaluator,
         "emotion_recognition": EmotionRecognitionEvaluator,
-        "model_card": ModelCardEvaluator,
         "audit_logging": AuditLoggingEvaluator,
     }
 

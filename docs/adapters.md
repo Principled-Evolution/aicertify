@@ -65,9 +65,10 @@ fragment = from_model_card(ModelCard.load("bert-base-uncased").content)
 
 Two things come out.
 
-**Documentation sections.** `ModelCardEvaluator` scores nine sections from
-Mitchell et al., *Model Cards for Model Reporting*, each made of named
-subsections. Hugging Face cards use none of those names. They use the current
+**Documentation sections.** GOPAL's
+`global/v1/documentation/model_card_score` scores nine sections from Mitchell
+et al., *Model Cards for Model Reporting*, each made of named subsections.
+Hugging Face cards use none of those names. They use the current
 template (`Uses`, `Bias, Risks, and Limitations`, `Training Details`), or the
 older convention that most high-download repositories still carry (`Intended
 uses & limitations`, `Limitations and bias`, `Training data`), or something
@@ -102,20 +103,37 @@ scored with aicertify 0.7.0, gopal 1.3.1, rubric v1
 
 The version line is not decoration. A figure quoted anywhere has to be
 reproducible, and without it a reader who reruns this later and gets a
-different number cannot tell a changed rubric from a wrong claim.
+different number cannot tell a changed rubric from a wrong claim. It names
+GOPAL rather than a rubric version because the rubric *is* a GOPAL policy.
 
 `--file` scores a local `README.md`, `--json` is machine-readable, and
 `--threshold` compares against something other than 0.8.
 
-The same scoring runs in the browser at
-[the validation preview](https://principledevolution.ai/playground), which
-reads the rubric this exports rather than a copy of it. CI asserts the two
-produce identical scores.
+### Where the rubric lives
+
+Not here. Which sections a card must carry, what each is worth and how much
+text counts as content are normative judgements about required documentation,
+which is what GOPAL is for, so they are a policy:
+[`global/v1/documentation/model_card_score`](https://github.com/Principled-Evolution/gopal/blob/main/global/v1/documentation/model_card_score.rego).
+
+`score_model_card` shells out to `opa` and reads the answer. The playground
+runs the same policy compiled to WebAssembly. Neither reimplements it, so the
+number you get here and the number the site shows are the same number because
+they come from the same rules, not because two implementations happen to agree.
+
+That also means `opa` is required, and a missing binary raises
+`GopalUnavailable` rather than falling back to an approximation. An
+approximation would produce something that looks like the real number and is
+not.
+
+The heading table that maps card headings onto those sections comes from the
+policy too, through `load_heading_sources()`. A copy per parser drifts exactly
+the way a copy of the scoring did.
 
 ### What real cards actually score
 
-Run through the adapter and `ModelCardEvaluator`, against the 0.8 threshold
-GOPAL's EU AI Act technical-documentation check applies:
+Against the 0.8 threshold GOPAL's EU AI Act technical-documentation check
+applies:
 
 | Card | Completeness | Quality | Passes 0.8? |
 | --- | --- | --- | --- |
