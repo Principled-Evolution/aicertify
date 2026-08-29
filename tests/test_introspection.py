@@ -35,16 +35,32 @@ class TestFieldClassification:
         "path",
         [
             "metrics.content_safety.score",
+            "metrics.fairness.score",
+            "metrics.toxicity.max_toxicity",
+            "results.fairness",
+        ],
+    )
+    def test_evaluator_produced_fields(self, path):
+        assert is_evaluator_field(path)
+
+    @pytest.mark.parametrize(
+        "path",
+        [
             "evaluation.fairness_score",
             "summary.toxicity_values.max_toxicity",
-            "results.fairness",
             "fairness_score",
             "content_safety_score",
             "risk_management_score",
         ],
     )
-    def test_evaluator_produced_fields(self, path):
-        assert is_evaluator_field(path)
+    def test_spellings_retired_in_gopal_2_are_not_evaluator_fields(self, path):
+        """GOPAL 2.0.0 removed these, so no policy can read them.
+
+        Classifying one as evaluator-produced would tell a caller an evaluator
+        satisfies a field that nothing reads, and the gap report would show a
+        requirement as met when the value never reaches a rule.
+        """
+        assert not is_evaluator_field(path)
 
     @pytest.mark.parametrize(
         "path",
