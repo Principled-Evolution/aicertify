@@ -28,7 +28,6 @@ from aicertify.evaluators.prohibited_practices import (
 )
 
 # Import documentation evaluators
-from aicertify.evaluators.documentation import ModelCardEvaluator
 
 # Import the API
 from aicertify.evaluators.api import AICertifyEvaluator
@@ -86,5 +85,4 @@ __all__ = [
     "SocialScoringEvaluator",
     "EmotionRecognitionEvaluator",
     # Documentation evaluators
-    "ModelCardEvaluator",
 ]

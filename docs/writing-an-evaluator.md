@@ -24,7 +24,7 @@ python scripts/metric_gap_report.py
 ```
 global  (4/4 measured metrics have an evaluator)
   ok   content_safety.toxicity_score                  ContentSafetyEvaluator
-  ok   documentation.model_card.completeness_score    ModelCardEvaluator
+  calc metrics.model_card.completeness                computed by model_card_score
   ok   evaluation.toxicity_score                      ContentSafetyEvaluator
   ok   governance.audit_logging.completeness_score    AuditLoggingEvaluator
 
@@ -221,8 +221,20 @@ system with complete paperwork clear a patient-safety gate it was never
 assessed against. Supply those from the evaluation that produced them, through
 the contract, or leave them absent and let the policy fail closed.
 
-The fourth is `metrics.model_card.compliance_level`. `ModelCardEvaluator`
-declared it and never computed it, and nothing it measures yields a compliance
-level distinct from completeness. The declaration was removed rather than
-backfilled, which is why the EU AI Act line reads 12/13 rather than 13/13. That
-number went down because it got honest, not because anything regressed.
+The fourth is `metrics.model_card.compliance_level`. It was declared by an
+evaluator that never computed it, and nothing GOPAL derives from a card yields
+a compliance level distinct from completeness, so the declaration was removed
+rather than backfilled.
+
+The other model-card metrics are not gaps and no longer need an evaluator at
+all. `global/v1/documentation/model_card_score` computes them from the card
+itself, and declares as much in a `ProvidedMetrics` block, so the report marks
+them `calc` rather than asking anyone to write tooling for work already done:
+
+```
+calc metrics.model_card.completeness    computed by global.v1.documentation.model_card_score
+```
+
+That is the shape to reach for when a metric turns out to be a judgement about
+supplied documentation rather than a measurement of a running system. Write the
+rule, not the evaluator.

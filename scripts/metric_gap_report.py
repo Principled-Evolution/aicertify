@@ -30,7 +30,7 @@ import re
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Iterator, List, Set
+from typing import Dict, Iterator, List, Optional, Set
 
 ROOT = Path(__file__).resolve().parents[1]
 COVERAGE = ROOT / "aicertify" / "opa_policies" / "docs" / "coverage" / "coverage.json"
@@ -124,6 +124,26 @@ def framework_of(path: str) -> str:
     return parts[0]
 
 
+def provided_metrics() -> Dict[str, str]:
+    """Canonical metric -> the policy that computes it from declared input.
+
+    Some metrics need no evaluator at all. GOPAL's
+    global/v1/documentation/model_card_score derives model-card completeness
+    from the card itself, so supplying the documentation is enough and asking
+    for an evaluator would be asking for work the library already does. A
+    policy says so with a ProvidedMetrics block, which generate-coverage.sh
+    records.
+    """
+    if not COVERAGE.is_file():
+        return {}
+    doc = json.loads(COVERAGE.read_text(encoding="utf-8"))
+    out: Dict[str, str] = {}
+    for p in policies(doc):
+        for name in p.get("provided_metrics") or []:
+            out.setdefault(name, p.get("package") or p.get("path", "?"))
+    return out
+
+
 def required_metrics() -> Dict[str, Dict[str, Set[str]]]:
     """framework -> metric -> set of policy paths requiring it."""
     if not COVERAGE.is_file():
@@ -179,6 +199,22 @@ def registered_evaluators() -> Set[str]:
     return {c.__name__ for c in ComplianceEvaluator.EVALUATOR_CLASSES.values()}
 
 
+def _policy_for(
+    required: str, provided: Dict[str, str], aliases: Dict[str, List[str]]
+) -> Optional[str]:
+    """The policy computing this metric, under any known spelling."""
+    wanted = canonical_forms(required)
+    for canonical, legacy in aliases.items():
+        if required in legacy or required == canonical:
+            wanted |= canonical_forms(canonical)
+            for name in legacy:
+                wanted |= canonical_forms(name)
+    for offered, package in provided.items():
+        if canonical_forms(offered) & wanted:
+            return package
+    return None
+
+
 def match(
     required: str, supplies: Dict[str, List[str]], aliases: Dict[str, List[str]]
 ) -> List[str]:
@@ -210,6 +246,7 @@ def main() -> int:
     supplies = supplied_metrics()
     aliases = load_alias_table()
     registered = registered_evaluators()
+    provided = provided_metrics()
 
     result: Dict[str, dict] = {}
     for framework in sorted(required):
@@ -219,6 +256,7 @@ def main() -> int:
         for metric in sorted(required[framework]):
             evaluators = match(metric, supplies, aliases)
             live = [e for e in evaluators if not registered or e in registered]
+            by_policy = _policy_for(metric, provided, aliases)
             unwired = [e for e in evaluators if e not in live]
             rows.append(
                 {
@@ -226,11 +264,12 @@ def main() -> int:
                     "required_by": sorted(required[framework][metric]),
                     "evaluators": live,
                     "unregistered": unwired,
+                    "computed_by": by_policy,
                 }
             )
         result[framework] = {
             "metrics": rows,
-            "covered": sum(1 for r in rows if r["evaluators"]),
+            "covered": sum(1 for r in rows if r["evaluators"] or r["computed_by"]),
             "total": len(rows),
         }
 
@@ -266,7 +305,10 @@ def main() -> int:
             f"{framework}  ({data['covered']}/{data['total']} measured metrics have an evaluator)"
         )
         for row in data["metrics"]:
-            if row["evaluators"]:
+            if row["computed_by"]:
+                mark = "calc"
+                who = f"computed by {row['computed_by']}, no evaluator needed"
+            elif row["evaluators"]:
                 mark, who = "ok  ", ", ".join(row["evaluators"])
             elif row["unregistered"]:
                 mark = "WIRE"

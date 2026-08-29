@@ -470,11 +470,10 @@ def _inject_evaluate_for_legacy_invocation(argv: list) -> list:
 
 
 def _cmd_score_card(args) -> int:
-    """Score a Hugging Face model card against GOPAL's documentation rubric."""
+    """Score a Hugging Face model card by running GOPAL's rubric."""
     import json as _json
 
-    from aicertify.adapters import from_model_card
-    from aicertify.evaluators.documentation import ModelCardEvaluator
+    from aicertify.adapters import GopalUnavailable, score_model_card
 
     if args.file:
         card = pathlib.Path(args.file).read_text(encoding="utf-8")
@@ -496,18 +495,19 @@ def _cmd_score_card(args) -> int:
             return 2
         source = args.repo_id
 
-    fragment = from_model_card(card)
-    if not fragment:
+    try:
+        scored = score_model_card(card)
+    except GopalUnavailable as exc:
+        print(f"Cannot score: {exc}", file=sys.stderr)
+        return 2
+
+    if not scored:
         print(f"{source}: no readable model card content", file=sys.stderr)
         return 2
 
-    evaluator = ModelCardEvaluator()
-    result = evaluator.evaluate(fragment.get("documentation", {}))
-    emitted = (result.details or {}).get("metrics", {}).get("model_card", {})
-    completeness = emitted.get("completeness", 0.0)
-    quality = emitted.get("quality", 0.0)
+    completeness = scored["completeness"]
+    quality = scored["quality"]
     threshold = args.threshold
-
     versions = _versions()
 
     if args.json:
@@ -519,7 +519,8 @@ def _cmd_score_card(args) -> int:
                     "quality": quality,
                     "threshold": threshold,
                     "passes": completeness >= threshold,
-                    "sections": (result.details or {}).get("section_scores", {}),
+                    "sections": scored["section_scores"],
+                    "weakest_sections": scored["weakest_sections"],
                     "versions": versions,
                 },
                 indent=2,
@@ -533,9 +534,10 @@ def _cmd_score_card(args) -> int:
     print(f"  quality       {quality:.2f}")
     print(f"  {verdict}\n")
 
-    scores = (result.details or {}).get("section_scores", {})
-    if scores and not args.quiet:
-        for section, score in sorted(scores.items(), key=lambda kv: -kv[1]):
+    if scored["section_scores"] and not args.quiet:
+        for section, score in sorted(
+            scored["section_scores"].items(), key=lambda kv: -kv[1]
+        ):
             bar = "#" * int(round(score * 20))
             print(f"    {section:<24} {score:4.2f}  {bar}")
         print()
@@ -546,15 +548,15 @@ def _cmd_score_card(args) -> int:
             "This is the documentation-completeness gap, not a compliance verdict."
         )
     print(
-        f"\nscored with aicertify {versions['aicertify']}, "
-        f"gopal {versions['gopal']}, rubric v{versions['rubric']}"
+        f"\nscored by GOPAL {versions['gopal']} "
+        f"(global/v1/documentation/model_card_score), via aicertify "
+        f"{versions['aicertify']}"
     )
     return 0
 
 
 def _versions() -> dict:
     """What produced this number, so a rerun can be compared against it."""
-    import json as _json
 
     try:
         import importlib.metadata as _md
@@ -568,20 +570,12 @@ def _versions() -> dict:
     if changelog.exists():
         gopal_version = changelog.read_text().strip()
 
-    rubric_version = "unknown"
-    rubric = (
-        pathlib.Path(__file__).resolve().parent / "adapters" / "model_card_rubric.json"
-    )
-    if rubric.exists():
-        try:
-            rubric_version = str(_json.loads(rubric.read_text()).get("version", "?"))
-        except Exception:  # noqa: BLE001
-            pass
-
+    # No rubric version of its own any more. The rubric is a GOPAL policy, so
+    # the GOPAL version identifies it, and a figure quoted anywhere can be
+    # reproduced by pinning that one number.
     return {
         "aicertify": aicertify_version,
         "gopal": gopal_version,
-        "rubric": rubric_version,
     }
 
 

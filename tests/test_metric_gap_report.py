@@ -141,22 +141,30 @@ class TestAgainstTheRealLibrary:
 
     # metrics.model_card.compliance_level is a real gap, not an oversight.
     # ModelCardEvaluator listed it in SUPPORTED_METRICS and never computed it,
-    # so the report counted it as supplied while the policy reading it saw
-    # nothing. Nothing this evaluator measures yields a compliance level
-    # distinct from completeness, so the declaration was removed rather than
-    # backfilled with a number that would have meant nothing.
+    # and nothing GOPAL derives from a card yields a compliance level distinct
+    # from completeness, so the declaration was removed rather than backfilled.
     KNOWN_EU_GAPS = {"metrics.model_card.compliance_level"}
 
     def test_the_eu_ai_act_metrics_are_supplied_apart_from_the_known_gap(self):
         """
         The framework most people arrive for. If this regresses, the README
         should stop implying the EU policies work out of the box.
+
+        A metric counts as supplied if an evaluator produces it or a policy
+        computes it. Since the model-card rubric moved into Rego, three of
+        these need no evaluator at all: supplying the card is enough.
         """
         required = gap.required_metrics()
         supplies = gap.supplied_metrics()
         aliases = gap.load_alias_table()
+        provided = gap.provided_metrics()
         eu = next(v for k, v in required.items() if "eu_ai_act" in k)
-        unmatched = {m for m in eu if not gap.match(m, supplies, aliases)}
+        unmatched = {
+            m
+            for m in eu
+            if not gap.match(m, supplies, aliases)
+            and not gap._policy_for(m, provided, aliases)
+        }
         assert unmatched == self.KNOWN_EU_GAPS, (
             f"EU AI Act coverage moved: unexpectedly missing "
             f"{sorted(unmatched - self.KNOWN_EU_GAPS)}, unexpectedly present "
@@ -231,3 +239,44 @@ class TestAnEvaluatorMustActuallyBeWiredIn:
 
     def test_the_worked_example_from_the_guide_is_registered(self):
         assert "AuditLoggingEvaluator" in gap.registered_evaluators()
+
+
+@needs_policies
+class TestMetricsAPolicyComputes:
+    """
+    Some metrics need no evaluator. GOPAL's model-card scorer derives
+    completeness from the card itself, so asking for an evaluator would be
+    asking for work the library already does. A policy says so with a
+    ProvidedMetrics block; before that existed, retiring ModelCardEvaluator
+    dropped the report from 22 of 26 to 18 and every one of the four was wrong.
+    """
+
+    def test_the_scorer_declares_what_it_computes(self):
+        provided = gap.provided_metrics()
+        assert provided, "no policy declares ProvidedMetrics; is the submodule stale?"
+        assert (
+            provided.get("metrics.model_card.completeness")
+            == "global.v1.documentation.model_card_score"
+        )
+
+    def test_a_computed_metric_is_not_reported_as_a_gap(self):
+        aliases = gap.load_alias_table()
+        provided = gap.provided_metrics()
+        assert gap._policy_for("metrics.model_card.completeness", provided, aliases)
+        assert gap._policy_for(
+            "documentation.model_card.completeness_score", provided, aliases
+        ), "the legacy spelling should resolve to the same policy"
+
+    def test_clinical_metrics_stay_genuine_gaps(self):
+        """
+        Deliberate. patient_safety is gated at 0.95 and means a clinical
+        measurement; nothing here should synthesise one from documentation.
+        """
+        aliases = gap.load_alias_table()
+        provided = gap.provided_metrics()
+        for name in (
+            "metrics.patient_safety.score",
+            "metrics.clinical_validation.score",
+            "metrics.risk_assessment.score",
+        ):
+            assert not gap._policy_for(name, provided, aliases), name

@@ -11,15 +11,69 @@ have moved on.
 import json
 import os
 import shutil
-import subprocess
 from pathlib import Path
 
 import pytest
 
-from aicertify.adapters import from_detoxify, from_model_card, from_model_index
+from aicertify.adapters import (
+    from_detoxify,
+    from_model_card as _from_model_card,
+    from_model_index,
+    load_heading_sources,
+)
+from aicertify.adapters import from_fairlearn, from_perspective
+
+# Parsing is not scoring, and these tests should not need the opa binary to
+# check that a heading maps to a subsection. The table is normally read from
+# the policy; here a fixture stands in, small enough to read and covering both
+# heading conventions real cards use. TestTheHeadingTableMatchesThePolicy keeps
+# it honest against the real one when opa is available.
+FIXTURE_HEADINGS = {
+    "model_details": {
+        "model_type": ["model details", "model description", "model summary"]
+    },
+    "intended_use": {
+        "primary_uses": [
+            "direct use",
+            "intended uses",
+            "intended uses & limitations",
+            "uses",
+        ],
+        "out_of_scope_uses": ["out-of-scope use", "limitations and bias"],
+    },
+    "factors": {
+        "relevant_factors": ["bias, risks, and limitations", "limitations and bias"]
+    },
+    "metrics": {"performance_metrics": ["metrics", "evaluation", "evaluation results"]},
+    "evaluation_data": {"datasets": ["evaluation data", "testing data"]},
+    "training_data": {
+        "datasets": ["training data", "training details", "training"],
+        "preprocessing": ["preprocessing", "training procedure"],
+    },
+    "quantitative_analyses": {"unitary_results": ["evaluation results", "results"]},
+    "ethical_considerations": {
+        "data_bias": ["bias, risks, and limitations", "limitations and bias"],
+        "risks": ["risks", "bias, risks, and limitations"],
+        "mitigations": ["recommendations"],
+    },
+    "caveats_recommendations": {
+        "limitations": ["limitations", "limitations and bias"],
+        "recommendations": ["recommendations"],
+    },
+}
+
+
+def from_model_card(card, headings=None):
+    return _from_model_card(card, headings or FIXTURE_HEADINGS)
+
 
 GOPAL = Path(__file__).resolve().parent.parent / "aicertify" / "opa_policies"
-METRICS_REGO = GOPAL / "helper_functions" / "metrics.rego"
+SCORE_POLICY = GOPAL / "global" / "v1" / "documentation" / "model_card_score.rego"
+
+needs_gopal = pytest.mark.skipif(
+    shutil.which("opa") is None or not SCORE_POLICY.exists(),
+    reason="needs the opa binary and the pinned gopal checkout",
+)
 
 
 # The current template: "Uses", "Bias, Risks, and Limitations", "Training
@@ -309,86 +363,37 @@ class TestModelIndex:
         assert from_model_index(bad) == {}
 
 
+@needs_gopal
 class TestTheCardActuallyScores:
     """
-    The point of the adapter. Before it, ModelCardEvaluator read
-    data["model_card"] and nothing else, while ComplianceEvaluator hands every
-    evaluator contract.dict(), whose keys never include one. The evaluator ran
-    on every contract, scored all nine sections missing and reported 0.0.
+    Scoring runs GOPAL now. There is no Python rubric to test, only that a card
+    reaches the policy and that the policy's answer comes back intact.
     """
 
-    def test_a_card_scores_above_zero_through_the_pipeline_path(self):
-        from aicertify.evaluators.documentation import ModelCardEvaluator
-        from aicertify.models.contract import create_contract
+    def test_a_card_scores_above_zero(self):
+        from aicertify.adapters import score_model_card
 
-        contract = create_contract(
-            application_name="adapter test",
-            model_info={"model_name": "demo"},
-            interactions=[],
-            context=from_model_card(MODERN_CARD),
-        )
-        result = ModelCardEvaluator().evaluate(contract.dict())
-        emitted = (result.details or {}).get("metrics", {}).get("model_card", {})
-        assert emitted.get("completeness", 0) > 0.0, (
-            "the card did not reach the evaluator; _locate_model_card no longer "
-            "finds it where a contract carries it"
-        )
+        scored = score_model_card(MODERN_CARD)
+        assert scored["completeness"] > 0.0
+        assert scored["section_scores"]
 
     def test_a_well_documented_card_still_fails_the_threshold(self):
         """
-        Not a defect. GOPAL's technical-documentation check wants 0.8, and a
-        model card, however good, answers part of what Annex IV asks. This
-        asserts the honest ceiling rather than a pass.
+        Not a defect. GOPAL wants 0.8, and a model card answers part of what
+        Annex IV asks. This asserts the honest ceiling rather than a pass.
         """
-        from aicertify.evaluators.documentation import ModelCardEvaluator
+        from aicertify.adapters import score_model_card
 
-        result = ModelCardEvaluator().evaluate(from_model_card(MODERN_CARD))
-        emitted = (result.details or {}).get("metrics", {}).get("model_card", {})
-        assert 0.0 < emitted.get("completeness", 0) < 0.8
+        assert 0.0 < score_model_card(MODERN_CARD)["completeness"] < 0.8
 
+    def test_a_card_with_nothing_recognisable_scores_nothing(self):
+        """
+        The policy leaves completeness undefined when there is no card, and
+        undefined is not zero. A zero would read as a real measurement.
+        """
+        from aicertify.adapters import score_model_card
 
-@pytest.mark.skipif(
-    shutil.which("opa") is None or not METRICS_REGO.exists(),
-    reason="needs the opa binary and the pinned gopal checkout",
-)
-def test_the_card_reaches_a_gopal_policy(tmp_path):
-    """End to end: card text in, GOPAL verdict out."""
-    from aicertify.evaluators.documentation import ModelCardEvaluator
-    from aicertify.opa_core.introspection import attach_measured_metrics
-
-    result = ModelCardEvaluator().evaluate(from_model_card(MODERN_CARD))
-    phase1 = {"results": {"model_card": json.loads(result.model_dump_json())}}
-    opa_input = attach_measured_metrics(dict(phase1), phase1)
-
-    probe = tmp_path / "probe.rego"
-    probe.write_text(
-        "package probe\n\nimport rego.v1\nimport data.helper_functions.metrics\n\n"
-        'value := metrics.resolve(input, "metrics.model_card.completeness")\n'
-    )
-    inp = tmp_path / "in.json"
-    inp.write_text(json.dumps(opa_input, default=str))
-    out = subprocess.run(
-        [
-            "opa",
-            "eval",
-            "-d",
-            str(METRICS_REGO),
-            "-d",
-            str(probe),
-            "-i",
-            str(inp),
-            "data.probe.value",
-            "--format",
-            "json",
-        ],
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
-    assert out.returncode == 0, out.stderr
-    payload = json.loads(out.stdout).get("result")
-    assert payload, "GOPAL could not resolve metrics.model_card.completeness"
-    assert payload[0]["expressions"][0]["value"] > 0.0
+        assert score_model_card("# Just a title\n") == {}
 
 
 @pytest.mark.skipif(
@@ -406,3 +411,153 @@ def test_against_real_cards(repo_id):
     mc = from_model_card(ModelCard.load(repo_id).content)
     sections = mc.get("documentation", {}).get("model_card", {})
     assert len(sections) >= 6, f"{repo_id} parsed to only {sorted(sections)}"
+
+
+class TestFairlearn:
+    """
+    GOPAL compares metrics.fairness.score with >=, so higher is better.
+    Fairlearn's difference() is 0 at its best and points the other way. Handing
+    it over unchanged reports the fairest possible system as the least fair,
+    which is exactly how is_toxic once answered true for a clean system.
+    """
+
+    def test_a_difference_is_turned_the_right_way_up(self):
+        f = from_fairlearn(difference=0.2)["metrics"]["fairness"]
+        assert f["score"] == pytest.approx(0.8)
+        assert f["basis"] == "1 - difference"
+
+    def test_no_disparity_scores_at_the_top_not_the_bottom(self):
+        """The polarity test. A perfectly fair system must score 1.0, not 0.0."""
+        assert from_fairlearn(difference=0.0)["metrics"]["fairness"]["score"] == 1.0
+        assert from_fairlearn(ratio=1.0)["metrics"]["fairness"]["score"] == 1.0
+
+    def test_a_ratio_is_used_as_it_stands(self):
+        f = from_fairlearn(ratio=0.6667)["metrics"]["fairness"]
+        assert f["score"] == pytest.approx(0.6667)
+        assert f["basis"] == "ratio"
+
+    def test_the_ratio_wins_when_both_are_given(self):
+        """
+        A ratio is already bounded with 1 as the ideal, which is the shape a
+        >= 0.85 threshold expects, and it is how the four-fifths rule is
+        written. Converting a difference is the fallback, not the default.
+        """
+        f = from_fairlearn(ratio=0.9, difference=0.2)["metrics"]["fairness"]
+        assert f["score"] == pytest.approx(0.9)
+        assert f["difference"] == pytest.approx(0.2)
+
+    def test_a_score_clears_or_fails_the_threshold_the_way_gopal_reads_it(self):
+        """A 0.67 selection-rate ratio is below the 0.85 healthcare gate."""
+        assert from_fairlearn(ratio=0.6667)["metrics"]["fairness"]["score"] < 0.85
+        assert from_fairlearn(ratio=0.95)["metrics"]["fairness"]["score"] >= 0.85
+
+    @pytest.mark.parametrize("bad", [None, object(), {}, "x"])
+    def test_nothing_measurable_produces_nothing(self, bad):
+        assert from_fairlearn(bad) == {}
+
+    def test_a_real_metric_frame_multi_metric(self):
+        fairlearn = pytest.importorskip("fairlearn.metrics")
+        sklearn = pytest.importorskip("sklearn.metrics")
+        y, p = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0], [1, 0, 1, 0, 0, 1, 1, 0, 1, 0]
+        g = ["a"] * 5 + ["b"] * 5
+        frame = fairlearn.MetricFrame(
+            metrics={
+                "accuracy": sklearn.accuracy_score,
+                "selection_rate": fairlearn.selection_rate,
+            },
+            y_true=y,
+            y_pred=p,
+            sensitive_features=g,
+        )
+        f = from_fairlearn(frame)["metrics"]["fairness"]
+        assert f["score"] == pytest.approx(0.6666666, abs=1e-6)
+        assert f["by_group"] == {"a": pytest.approx(0.4), "b": pytest.approx(0.6)}
+
+    def test_a_single_metric_frame_returns_scalars_not_a_series(self):
+        """
+        The shape most people hit first, and the one that breaks a [metric]
+        lookup written for the multi-metric case.
+        """
+        fairlearn = pytest.importorskip("fairlearn.metrics")
+        y, p = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0], [1, 0, 1, 0, 0, 1, 1, 0, 1, 0]
+        g = ["a"] * 5 + ["b"] * 5
+        frame = fairlearn.MetricFrame(
+            metrics=fairlearn.selection_rate, y_true=y, y_pred=p, sensitive_features=g
+        )
+        assert from_fairlearn(frame)["metrics"]["fairness"]["score"] == pytest.approx(
+            0.6666666, abs=1e-6
+        )
+
+
+class TestPerspective:
+    """
+    Perspective returns one summary score per attribute per comment, higher
+    being worse. The mapping matches Detoxify's because GOPAL asks the same two
+    questions of any toxicity measurement.
+    """
+
+    BATCH = [
+        {
+            "attributeScores": {
+                "TOXICITY": {"summaryScore": {"value": v, "type": "PROBABILITY"}},
+                "INSULT": {"summaryScore": {"value": v * 0.8}},
+            }
+        }
+        for v in (0.02, 0.83, 0.05)
+    ]
+
+    def test_the_aggregate_and_the_maximum_stay_apart(self):
+        t = from_perspective(self.BATCH)["metrics"]["toxicity"]
+        assert t["score"] == pytest.approx((0.02 + 0.83 + 0.05) / 3)
+        assert t["max_toxicity"] == 0.83
+        assert t["score"] < 0.7 < t["max_toxicity"]
+
+    def test_a_single_response_works(self):
+        one = {"attributeScores": {"TOXICITY": {"summaryScore": {"value": 0.9}}}}
+        assert from_perspective(one)["metrics"]["toxicity"]["score"] == 0.9
+
+    def test_other_attributes_are_kept_not_dropped(self):
+        t = from_perspective(self.BATCH)["metrics"]["toxicity"]
+        assert t["categories"]["insult"]["max"] == pytest.approx(0.664)
+
+    def test_an_unscorable_attribute_is_absent_rather_than_zero(self):
+        """
+        Perspective omits summaryScore for an unsupported language. Reading
+        that as 0.0 reports text nobody could score as clean.
+        """
+        assert from_perspective({"attributeScores": {"TOXICITY": {}}}) == {}
+
+    @pytest.mark.parametrize(
+        "bad", [{}, None, [], "x", {"attributeScores": None}, [{"nope": 1}]]
+    )
+    def test_nothing_measurable_produces_nothing(self, bad):
+        assert from_perspective(bad) == {}
+
+
+@needs_gopal
+class TestTheHeadingTableMatchesThePolicy:
+    """
+    The parsing tests above run against a fixture table so they need no opa
+    binary. That is only safe while the fixture agrees with the real one, which
+    lives in the policy. This is the test that notices when it stops agreeing.
+    """
+
+    def test_the_fixture_covers_the_same_sections(self):
+        real = load_heading_sources()
+        assert set(FIXTURE_HEADINGS) == set(real)
+
+    def test_every_fixture_alias_is_a_real_alias(self):
+        """
+        The fixture may be a subset, since it exists to be readable. It must not
+        contain a heading the policy does not recognise, or a parsing test could
+        pass on a mapping that does not exist in production.
+        """
+        real = load_heading_sources()
+        invented = []
+        for section, subs in FIXTURE_HEADINGS.items():
+            for sub, aliases in subs.items():
+                known = set(real.get(section, {}).get(sub, []))
+                for alias in aliases:
+                    if alias not in known:
+                        invented.append(f"{section}.{sub}: {alias!r}")
+        assert not invented, f"fixture headings the policy does not know: {invented}"

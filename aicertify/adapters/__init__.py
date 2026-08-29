@@ -22,9 +22,25 @@ Two rules every adapter follows:
 """
 
 from aicertify.adapters.detoxify_adapter import from_detoxify
+from aicertify.adapters.fairlearn_adapter import from_fairlearn
+from aicertify.adapters.perspective_adapter import from_perspective
 from aicertify.adapters.huggingface_adapter import (
     from_model_card,
     from_model_index,
 )
+from aicertify.adapters.model_card import (
+    GopalUnavailable,
+    load_heading_sources,
+    score_model_card,
+)
 
-__all__ = ["from_detoxify", "from_model_card", "from_model_index"]
+__all__ = [
+    "from_detoxify",
+    "from_fairlearn",
+    "from_perspective",
+    "from_model_card",
+    "from_model_index",
+    "load_heading_sources",
+    "score_model_card",
+    "GopalUnavailable",
+]

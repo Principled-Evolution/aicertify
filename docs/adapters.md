@@ -65,9 +65,10 @@ fragment = from_model_card(ModelCard.load("bert-base-uncased").content)
 
 Two things come out.
 
-**Documentation sections.** `ModelCardEvaluator` scores nine sections from
-Mitchell et al., *Model Cards for Model Reporting*, each made of named
-subsections. Hugging Face cards use none of those names. They use the current
+**Documentation sections.** GOPAL's
+`global/v1/documentation/model_card_score` scores nine sections from Mitchell
+et al., *Model Cards for Model Reporting*, each made of named subsections.
+Hugging Face cards use none of those names. They use the current
 template (`Uses`, `Bias, Risks, and Limitations`, `Training Details`), or the
 older convention that most high-download repositories still carry (`Intended
 uses & limitations`, `Limitations and bias`, `Training data`), or something
@@ -102,20 +103,37 @@ scored with aicertify 0.7.0, gopal 1.3.1, rubric v1
 
 The version line is not decoration. A figure quoted anywhere has to be
 reproducible, and without it a reader who reruns this later and gets a
-different number cannot tell a changed rubric from a wrong claim.
+different number cannot tell a changed rubric from a wrong claim. It names
+GOPAL rather than a rubric version because the rubric *is* a GOPAL policy.
 
 `--file` scores a local `README.md`, `--json` is machine-readable, and
 `--threshold` compares against something other than 0.8.
 
-The same scoring runs in the browser at
-[the validation preview](https://principledevolution.ai/playground), which
-reads the rubric this exports rather than a copy of it. CI asserts the two
-produce identical scores.
+### Where the rubric lives
+
+Not here. Which sections a card must carry, what each is worth and how much
+text counts as content are normative judgements about required documentation,
+which is what GOPAL is for, so they are a policy:
+[`global/v1/documentation/model_card_score`](https://github.com/Principled-Evolution/gopal/blob/main/global/v1/documentation/model_card_score.rego).
+
+`score_model_card` shells out to `opa` and reads the answer. The playground
+runs the same policy compiled to WebAssembly. Neither reimplements it, so the
+number you get here and the number the site shows are the same number because
+they come from the same rules, not because two implementations happen to agree.
+
+That also means `opa` is required, and a missing binary raises
+`GopalUnavailable` rather than falling back to an approximation. An
+approximation would produce something that looks like the real number and is
+not.
+
+The heading table that maps card headings onto those sections comes from the
+policy too, through `load_heading_sources()`. A copy per parser drifts exactly
+the way a copy of the scoring did.
 
 ### What real cards actually score
 
-Run through the adapter and `ModelCardEvaluator`, against the 0.8 threshold
-GOPAL's EU AI Act technical-documentation check applies:
+Against the 0.8 threshold GOPAL's EU AI Act technical-documentation check
+applies:
 
 | Card | Completeness | Quality | Passes 0.8? |
 | --- | --- | --- | --- |
@@ -134,6 +152,76 @@ The subsections a card cannot fill are left unfilled rather than guessed at.
 Decision thresholds, intersectional results and the motivation behind an
 evaluation set are almost never in a card, and filling them with prose from
 somewhere else would raise the score without raising the documentation.
+
+## Fairlearn
+
+[Fairlearn](https://fairlearn.org/) is the standard fairness toolkit for Python.
+
+```python
+from fairlearn.metrics import MetricFrame, selection_rate
+from aicertify.adapters import from_fairlearn
+
+frame = MetricFrame(metrics=selection_rate, y_true=y, y_pred=pred,
+                    sensitive_features=group)
+fragment = from_fairlearn(frame)
+```
+
+```json
+{"metrics": {"fairness": {
+  "score": 0.667, "basis": "ratio", "ratio": 0.667,
+  "by_group": {"a": 0.4, "b": 0.6}
+}}}
+```
+
+**The direction matters more than the number.** GOPAL compares
+`metrics.fairness.score` with `>=`, so higher is better. Fairlearn's
+`difference()` is 0 at its best and points the other way; handing it over
+unchanged reports the fairest possible system as the least fair. That is how
+`is_toxic` once answered `true` for a system with no toxicity in it.
+
+So `ratio()` is preferred, and not only to dodge the sign: a ratio is already
+bounded on [0, 1] with 1 as the ideal, which is the shape a `>= 0.85` threshold
+expects, and it is the form the four-fifths rule in fair lending is written in.
+A `difference=` is accepted and converted to `1 - difference`, with `basis`
+recording which way the number was turned.
+
+Both `MetricFrame` shapes work: a multi-metric frame returns a Series keyed by
+metric name, a single-metric frame returns bare scalars, and the second is the
+one that breaks a `[metric]` lookup written for the first.
+
+Against `healthcare/v1/diagnostic_safety`, which gates at 0.85:
+
+| Ratio | `fairness_passes` | `fairness_eval_fails` |
+| --- | --- | --- |
+| 0.6667 | undefined | `true` |
+| 0.95 | `true` | undefined |
+| nothing supplied | undefined | `true` |
+
+## Perspective API
+
+Jigsaw's [Perspective API](https://perspectiveapi.com/) returns a summary score
+per attribute per comment, higher being worse.
+
+```python
+from aicertify.adapters import from_perspective
+
+scored = [client.comments().analyze(body=req).execute() for req in requests]
+fragment = from_perspective(scored)
+```
+
+The mapping matches Detoxify's, because GOPAL asks the same two questions of
+any toxicity measurement: the aggregate against 0.1 and the worst single output
+against 0.7.
+
+Perspective omits `summaryScore` for a language it does not support. That
+attribute is left out rather than read as 0.0, which would report text nobody
+could score as clean.
+
+Unlike the others, this adapter was written against Perspective's documented
+response schema rather than live calls, because the API needs a key this
+project does not hold. The shape is stable and long-published, but that is a
+weaker warrant than the rest of this page has and it is better said than
+implied.
 
 ## Using a fragment
 
