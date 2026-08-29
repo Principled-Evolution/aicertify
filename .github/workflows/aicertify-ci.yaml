@@ -47,5 +47,18 @@ jobs:
         run: |
           poetry run python -c "import aicertify; print(f'AICertify version: {aicertify.__version__}')"
 
+      # Model-card scoring runs GOPAL rather than a copy of it, so the binary
+      # is needed to test that path at all. Without it those tests skip, and a
+      # capability nobody exercises in CI is a capability nobody is checking.
+      # Pinned to the version gopal's own CI uses.
+      - name: Install OPA
+        env:
+          OPA_VERSION: v1.20.1
+        run: |
+          curl -L -o opa "https://openpolicyagent.org/downloads/${OPA_VERSION}/opa_linux_amd64"
+          chmod 755 opa
+          sudo mv opa /usr/local/bin/
+          opa version
+
       - name: Run Basic Tests
         run: poetry run pytest tests/ -v

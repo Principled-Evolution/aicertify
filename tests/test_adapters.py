@@ -23,10 +23,48 @@ from aicertify.adapters import (
 )
 from aicertify.adapters import from_fairlearn, from_perspective
 
+# Parsing is not scoring, and these tests should not need the opa binary to
+# check that a heading maps to a subsection. The table is normally read from
+# the policy; here a fixture stands in, small enough to read and covering both
+# heading conventions real cards use. TestTheHeadingTableMatchesThePolicy keeps
+# it honest against the real one when opa is available.
+FIXTURE_HEADINGS = {
+    "model_details": {
+        "model_type": ["model details", "model description", "model summary"]
+    },
+    "intended_use": {
+        "primary_uses": [
+            "direct use",
+            "intended uses",
+            "intended uses & limitations",
+            "uses",
+        ],
+        "out_of_scope_uses": ["out-of-scope use", "limitations and bias"],
+    },
+    "factors": {
+        "relevant_factors": ["bias, risks, and limitations", "limitations and bias"]
+    },
+    "metrics": {"performance_metrics": ["metrics", "evaluation", "evaluation results"]},
+    "evaluation_data": {"datasets": ["evaluation data", "testing data"]},
+    "training_data": {
+        "datasets": ["training data", "training details", "training"],
+        "preprocessing": ["preprocessing", "training procedure"],
+    },
+    "quantitative_analyses": {"unitary_results": ["evaluation results", "results"]},
+    "ethical_considerations": {
+        "data_bias": ["bias, risks, and limitations", "limitations and bias"],
+        "risks": ["risks", "bias, risks, and limitations"],
+        "mitigations": ["recommendations"],
+    },
+    "caveats_recommendations": {
+        "limitations": ["limitations", "limitations and bias"],
+        "recommendations": ["recommendations"],
+    },
+}
 
-def from_model_card(card):
-    """The heading table comes from the policy, so tests read it from there too."""
-    return _from_model_card(card, load_heading_sources())
+
+def from_model_card(card, headings=None):
+    return _from_model_card(card, headings or FIXTURE_HEADINGS)
 
 
 GOPAL = Path(__file__).resolve().parent.parent / "aicertify" / "opa_policies"
@@ -494,3 +532,32 @@ class TestPerspective:
     )
     def test_nothing_measurable_produces_nothing(self, bad):
         assert from_perspective(bad) == {}
+
+
+@needs_gopal
+class TestTheHeadingTableMatchesThePolicy:
+    """
+    The parsing tests above run against a fixture table so they need no opa
+    binary. That is only safe while the fixture agrees with the real one, which
+    lives in the policy. This is the test that notices when it stops agreeing.
+    """
+
+    def test_the_fixture_covers_the_same_sections(self):
+        real = load_heading_sources()
+        assert set(FIXTURE_HEADINGS) == set(real)
+
+    def test_every_fixture_alias_is_a_real_alias(self):
+        """
+        The fixture may be a subset, since it exists to be readable. It must not
+        contain a heading the policy does not recognise, or a parsing test could
+        pass on a mapping that does not exist in production.
+        """
+        real = load_heading_sources()
+        invented = []
+        for section, subs in FIXTURE_HEADINGS.items():
+            for sub, aliases in subs.items():
+                known = set(real.get(section, {}).get(sub, []))
+                for alias in aliases:
+                    if alias not in known:
+                        invented.append(f"{section}.{sub}: {alias!r}")
+        assert not invented, f"fixture headings the policy does not know: {invented}"
