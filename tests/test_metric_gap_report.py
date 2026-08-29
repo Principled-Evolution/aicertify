@@ -186,24 +186,35 @@ class TestTheAliasTableIsActuallyRead:
     list, so widening was a silent no-op and the report under-counted coverage.
     An empty list per entry looks like a working parser from the outside, which
     is why these assert content rather than shape.
+
+    GOPAL 2.0.0 retired the 20 legacy spellings, so every entry now lists
+    exactly one path: its own. The parser still has to read the paths rather
+    than the keys, because an entry parsed as empty and an entry parsed as
+    itself are indistinguishable by count alone once the table is one-to-one.
     """
 
     def test_aliases_are_parsed_not_just_the_keys(self):
         table = gap.load_alias_table()
         assert table, "no alias table parsed from the pinned gopal checkout"
+        assert all(v for v in table.values()), "some entry parsed as an empty path list"
         total = sum(len(v) for v in table.values())
-        assert total >= 20, f"only {total} aliases parsed across {len(table)} metrics"
+        assert total == len(
+            table
+        ), f"{total} paths across {len(table)} metrics; GOPAL 2.0.0 is one-to-one"
 
     def test_every_entry_lists_itself_first(self):
         for name, paths in gap.load_alias_table().items():
             assert paths and paths[0] == name, f"{name} does not list itself first"
 
-    def test_a_known_legacy_spelling_is_present(self):
+    def test_retired_spellings_are_absent(self):
+        """GOPAL 2.0.0 removed these. A gap report that still resolved them
+        would report a metric as supplied by a policy that cannot read it."""
         table = gap.load_alias_table()
-        assert (
-            "documentation.model_card.completeness_score"
-            in table["metrics.model_card.completeness"]
-        )
+        for retired in (
+            "documentation.model_card.completeness_score",
+            "documentation.model_card.completeness",
+        ):
+            assert retired not in table["metrics.model_card.completeness"]
 
     def test_the_two_toxicity_statistics_stay_separate(self):
         """gopal split these deliberately; merging them here would undo it."""
@@ -263,9 +274,19 @@ class TestMetricsAPolicyComputes:
         aliases = gap.load_alias_table()
         provided = gap.provided_metrics()
         assert gap._policy_for("metrics.model_card.completeness", provided, aliases)
-        assert gap._policy_for(
-            "documentation.model_card.completeness_score", provided, aliases
-        ), "the legacy spelling should resolve to the same policy"
+
+    def test_a_retired_spelling_resolves_to_nothing(self):
+        """It resolved to the scoring policy until GOPAL 2.0.0 retired it.
+        Continuing to resolve it would mark a requirement as met while the
+        value never reaches a rule."""
+        aliases = gap.load_alias_table()
+        provided = gap.provided_metrics()
+        assert (
+            gap._policy_for(
+                "documentation.model_card.completeness_score", provided, aliases
+            )
+            is None
+        )
 
     def test_clinical_metrics_stay_genuine_gaps(self):
         """

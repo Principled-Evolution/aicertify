@@ -206,6 +206,20 @@ class TestAgainstTheBundledLibrary:
             pytest.skip("gopal submodule not checked out")
 
         source = policy.read_text(encoding="utf-8")
-        read_paths = set(re.findall(r"input\.([a-z_]+\.[a-z_]+)", source))
-        for metric in parse_rego_file_metadata(str(policy)).required_metrics:
+
+        # Two read forms. `input.a.b` was the only one until GOPAL's
+        # declarations migration rewrote every declaration read as
+        # `declarations.resolve(input, ["a", "b"])`. Matching only the first
+        # left read_paths empty, and a loop over an empty set asserts nothing,
+        # so this test passed while checking nothing at all.
+        read_paths = set(re.findall(r"input\.([a-z_0-9]+\.[a-z_0-9]+)", source))
+        for args in re.findall(r"resolve(?:_or)?\(\s*input,\s*\[([^\]]+)\]", source):
+            parts = re.findall(r'"([^"]+)"', args)
+            if len(parts) >= 2:
+                read_paths.add(".".join(parts[:2]))
+
+        declared = parse_rego_file_metadata(str(policy)).required_metrics
+        assert declared, "nothing parsed; the assertion below would be vacuous"
+        assert read_paths, "no reads found; the parser or the read form changed"
+        for metric in declared:
             assert metric in read_paths, f"{metric} is declared but never read"
