@@ -1,66 +1,79 @@
-# Why AICertify?
+# Why AICertify
 
-## The gap
+AICertify exists to make the evidence used in AI-governance decisions inspectable, repeatable, and suitable for automation.
 
-Most AI governance programs live in PDFs, spreadsheets, and policy documents. They describe what *should* happen — but do not prove what *did*.
+## The problem it addresses
 
-Auditors don't accept "we have a policy." They accept evidence: a dated record of the AI system under test, the rule it was evaluated against, the result, and the document signed off by the responsible owner. Producing that evidence by hand, every release, for every regulation, for every AI system in your portfolio, is not a sustainable program.
+An AI system can change independently of the documents that describe its governance or compliance state. Model versions, prompts, retrieval indexes, application logic, and operating context can change between formal reviews. When the system state and the evidence record are maintained separately, a later report may describe a different system from the one currently being operated.
 
-## The shift
+AICertify does not solve that problem by assigning a universal compliance score. Within a pinned source checkout, it assembles the available system evidence, evaluates that evidence against the checkout's GOPAL revision, and produces structured verdicts and reports. Reproducing the evaluation later requires retaining or recording the relevant AICertify/GOPAL revision together with the policy inputs.
 
-The DevOps and platform engineering communities solved a similar problem ten years ago by moving infrastructure from documents into code: Terraform replaced cloud-architecture diagrams, Helm replaced runbooks, [Open Policy Agent](https://www.openpolicyagent.org/) replaced security-policy memos. The pattern in every case was the same — *take the rule out of the document and put it into a thing that runs.*
+## The evidence model
 
-AICertify applies that shift to AI governance.
+An AICertify evaluation can contain four distinct inputs and outputs:
 
-## The artifact AICertify produces
+1. **Declared facts** — information about the system or governance process that is supplied in the contract, such as whether human intervention is available or whether a required assessment has been completed.
+2. **Captured interactions** — prompts, outputs, and related application data used as evaluation material.
+3. **Measured metrics** — values computed or imported by evaluators and adapters, such as fairness, toxicity, content-safety, or model-card completeness metrics.
+4. **Versioned policy decisions** — OPA evaluates the assembled input against Rego policies from the pinned [GOPAL](https://github.com/Principled-Evolution/gopal) revision, and AICertify exposes the resulting verdicts and reports.
 
-Instead of saying:
+These evidence types are intentionally not treated as equivalent. A measured metric can support a threshold check. A declared fact records an assertion and allows a rule to require it, but the rule does not independently verify that the asserted process or event occurred.
 
-> "Our customer-support chatbot follows our responsible AI policy."
+## Reproducibility and provenance
 
-You produce:
+The GOPAL policy library is pinned as a git submodule. An AICertify repository revision therefore identifies the policy revision used by that checkout.
 
-> "Here is the contract that captured the chatbot's model version, the captured user-AI interactions, the EU AI Act v1 transparency policy (commit `a52d605`), the OPA evaluation result, the per-rule deny messages where applicable, and the dated PDF report sent to the audit committee."
+Once the policy input values and Rego revision are fixed, OPA rule evaluation is deterministic. Reproducibility of the inputs themselves depends on how they were produced: deterministic metric adapters can be reproduced from the same source data, while evaluators that call external or generative models may have additional model-version, service, and sampling dependencies.
 
-Every artifact is reproducible: same input, same policy, same result. Every claim is traceable: the policy is code in git, the evaluation is deterministic, the report is generated, not handwritten.
+A reproducible evaluation record therefore needs the following provenance chain:
 
-## Who is this for?
+**system/version → contract and interactions → measured metrics + declared facts → policy revision → OPA verdicts → retained report**
 
-AICertify exists for teams that need to **read, run, review, and repeat** their AI compliance evidence:
+AICertify makes these stages explicit; the calling workflow is responsible for retaining the revisions and source evidence needed to reproduce them.
 
-- **AI engineers** building under the EU AI Act, NIST AI RMF, India Digital Policy, Brazil AI Bill, FERPA/COPPA, FAA UAS rules, or any other named framework.
-- **Governance, risk, and compliance (GRC) teams** who want their controls to *execute*, not just describe.
-- **Auditors and model risk professionals** evaluating third-party AI systems.
-- **Platform engineers** integrating AI compliance checks into CI/CD next to their linting, type-checking, and dependency scanning.
-- **OPA / Rego users** who already trust policy-as-code for infrastructure and want the same discipline for AI.
-- **Responsible AI researchers** who need reproducible bias, content-safety, and risk-management benchmarks.
+## Where AICertify fits
 
-## How AICertify is different
+AICertify combines components that are useful independently:
 
-| | AICertify | Vendor SaaS (Credo AI, Holistic AI) | Research toolkit (Fairlearn, AIF360, MS RAI Toolbox) |
-|---|---|---|---|
-| Open source | ✅ Apache 2.0 | ❌ Closed | ✅ MIT |
-| Air-gapped / on-prem deployable | ✅ | ❌ | ✅ |
-| Policy-as-code (versioned, diff-able, reviewable) | ✅ OPA / Rego | ❌ | ❌ |
-| Named regulatory frameworks (EU AI Act, NIST RMF, +6 more) | ✅ via [gopal](https://github.com/Principled-Evolution/gopal) | ✅ | ❌ (fairness/explainability only) |
-| Industry verticals out of the box (aviation, banking, healthcare, education, automotive) | ✅ | Partial | ❌ |
-| Audit-ready report output (PDF / Markdown / JSON / HTML) | ✅ | ✅ | Partial |
-| Custom policies | ✅ Drop a `.rego` file | ✅ (paid tier) | N/A |
-| Reproducible from a git checkout | ✅ | ❌ | ✅ |
+- **Evaluator libraries** produce measurements from application behavior or artifacts.
+- **GOPAL** provides named AI-governance and regulatory policies as readable Rego.
+- **OPA** evaluates those policies against a supplied input document.
+- **AICertify** captures application context, runs or ingests evaluators, assembles policy input, invokes OPA, and generates retained outputs for local, CI, and assurance workflows.
 
-## The honest scope
+If your facts and metrics already exist and you only need Rego evaluation, GOPAL with OPA is the smaller tool. AICertify is useful when the evaluation pipeline also needs application context, measured metrics, policy discovery, reporting, or CI integration.
 
-AICertify is **infrastructure**, not magic.
+## Who it is for
 
-- It does not interpret regulations for you. Encoding "EU AI Act Article 13 transparency" as a Rego policy is a deliberate, reviewable act, and the policy is a human's interpretation, not a legal opinion. Read [SECURITY.md](../SECURITY.md), the per-framework READMEs, and the disclaimer on every policy directory before claiming compliance.
-- It does not certify your AI system. It produces the evidence a human or organisation needs in order to assert compliance, internally or to a regulator. The certification authority remains your auditor, your legal counsel, or the relevant supervisor.
-- It does not replace your governance program. It replaces the *paperwork* in your governance program.
+AICertify is designed for teams that need the evaluation record to be understandable by both engineering and governance functions:
 
-What it *does* give you is the missing link between *"we have a responsible-AI policy"* and *"we can prove it."*
+- **AI engineers** integrating policy checks with application development and release workflows.
+- **Governance, risk, and compliance teams** maintaining evidence for named controls or regulatory requirements.
+- **Auditors and model-risk teams** reviewing the inputs, policy version, and resulting decisions.
+- **Platform engineers and OPA/Rego users** applying existing policy-as-code practices to AI-system evidence.
+- **Responsible-AI researchers and evaluator authors** connecting measured behavior to explicit policy thresholds.
+
+## What AICertify does not establish
+
+AICertify is an evaluation and evidence framework, not a certification authority.
+
+- A Rego policy is an explicit implementation of a regulatory or governance interpretation; it is reviewable code, not legal advice.
+- A passing verdict means the supplied evidence satisfies the encoded rule at the evidence depth that rule uses. It does not convert a declaration into independent verification.
+- A generated report records an evaluation result. Whether that result is sufficient for a regulatory submission, assurance opinion, internal approval, or certification remains a decision for the responsible organization and its advisers.
+- AICertify complements governance processes; it does not replace organizational controls that cannot be established from software inputs.
+
+This boundary is a design property rather than a limitation to hide. The policy, required inputs, evidence type, and resulting verdict remain inspectable.
+
+## Why policy-as-code matters here
+
+Readable Rego policies make the evaluation criteria reviewable in the same workflow as other code. A policy revision can be diffed, tested, pinned, cited, and run against the same input before it is adopted. That makes changes to the rule itself distinguishable from changes to the AI system or its measured behavior.
+
+For policy coverage and per-policy input requirements, see [GOPAL](https://github.com/Principled-Evolution/gopal). For AICertify's evaluator adapters, see [adapters.md](adapters.md).
 
 ## Next steps
 
-- **See the output without installing:** open [demo-report-eu-ai-act.pdf](demo-report-eu-ai-act.pdf).
-- **Run the quickstart:** [`examples/quickstart.py`](../examples/quickstart.py).
-- **Explore the policy library:** [gopal](https://github.com/Principled-Evolution/gopal) — 85 production Rego policies across 8 frameworks and 5 industries.
-- **Open a [good first issue](https://github.com/Principled-Evolution/aicertify/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).**
+- **Inspect a generated artifact without installing:** [demo-report-eu-ai-act.pdf](demo-report-eu-ai-act.pdf)
+- **Run the bundled demo:** `aicertify demo`
+- **See what a framework requires:** `aicertify explain eu_ai_act`
+- **Scaffold a contract:** `aicertify init-contract --policy eu_ai_act > contract.json`
+- **Run the Python example:** [`examples/quickstart.py`](../examples/quickstart.py)
+- **Integrate a pull-request gate:** [GitHub Actions guide](integrations/github-actions.md)

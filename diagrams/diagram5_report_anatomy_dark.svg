@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg viewBox="0 0 680 420" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
-<title>Anatomy of an audit-ready report</title>
+<title>Anatomy of an AICertify evidence report</title>
 <desc>Stylized AICertify report showing header, executive summary, policy results, risk assessment, and remediation sections.</desc>
 <defs><clipPath id="dcD"><rect x="60" y="20" width="260" height="380" rx="8"/></clipPath></defs>
 

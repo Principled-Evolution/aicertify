@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
 <title>How AICertify works</title>
-<desc>Four-step flow from AI application to audit-ready report.</desc>
+<desc>Four-step flow from AI application to evidence report.</desc>
 <defs>
 <marker id="ad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#6e7681" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
 </defs>

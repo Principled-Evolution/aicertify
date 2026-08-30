@@ -1,12 +1,13 @@
 # Plugging in tools you already run
 
-You probably already measure some of this. Adapters take what an existing tool
-produced and turn it into the metric names GOPAL policies read, so you do not
-have to write an evaluator for something you have already measured.
+Adapters convert outputs from existing evaluation tools into the canonical
+metric names read by GOPAL policies. Use an adapter when the measurement already
+exists and only the data shape needs to be translated.
 
-Every adapter is a pure function of one argument. It imports nothing from the
-tool it adapts, so you can convert a saved Detoxify result without installing
-Detoxify, and none of them adds a dependency for anyone not using them.
+Every adapter is a pure function of one argument. It does not import the tool
+it adapts, so a saved Detoxify result can be converted without installing
+Detoxify. Adapters therefore do not add dependencies for users who do not call
+them.
 
 ```python
 from aicertify.adapters import from_detoxify, from_model_card
@@ -36,25 +37,25 @@ fragment = from_detoxify(Detoxify("original").predict(outputs))
 }}}
 ```
 
-Two numbers come out because GOPAL asks two different questions.
-`metrics.toxicity.score` is the aggregate, compared against 0.1.
-`metrics.toxicity.max_toxicity` is the worst single output, compared against
-0.7. In the example above the average is 0.317 and the maximum is 0.92: report
-only the average and the one genuinely toxic output has been averaged into
-invisibility.
+The adapter emits two toxicity statistics because GOPAL evaluates them
+separately. `metrics.toxicity.score` is the aggregate, compared against 0.1,
+while `metrics.toxicity.max_toxicity` is the maximum per-output score, compared
+against 0.7. In the example above the aggregate is 0.317 and the maximum is
+0.92. Retaining both prevents an aggregate from obscuring an individual
+high-toxicity output.
 
-`predict()` returns a list per class for a list of texts and a numpy scalar per
-class for a single string. Both are accepted, and numpy floats are coerced,
-because a `float32` reaching OPA fails there rather than here.
+`predict()` returns a list per class for a list of texts and a NumPy scalar per
+class for a single string. Both shapes are accepted. NumPy floating-point
+values are converted to native Python values before the fragment reaches OPA.
 
 The five other Detoxify classes have no canonical GOPAL name. They are kept
 under `metrics.toxicity.categories` rather than dropped.
 
 ## Hugging Face model cards
 
-A model card is the most widely published description of an AI system that
-exists. It is not a compliance document, and this adapter is a good way to see
-exactly how far short it falls.
+Model cards are widely used to document AI models, but their structure and
+scope differ from a compliance evidence record. This adapter maps model-card
+content into the documentation metrics that GOPAL policies can evaluate.
 
 ```python
 from huggingface_hub import ModelCard
@@ -63,7 +64,7 @@ from aicertify.adapters import from_model_card
 fragment = from_model_card(ModelCard.load("bert-base-uncased").content)
 ```
 
-Two things come out.
+The adapter produces two groups of output.
 
 **Documentation sections.** GOPAL's
 `global/v1/documentation/model_card_score` scores nine sections from Mitchell
@@ -77,10 +78,10 @@ genuinely establish.
 
 **Reported results.** `model-index` frontmatter is a structured record of
 benchmark results. These land under `metrics.reported.*`, deliberately not
-under `metrics.accuracy.score`. A self-reported number on a benchmark of the
-author's choosing is a claim about a dataset, not a measurement of your
-deployed system, and promoting it would let a good SST-2 score answer a
-question nobody asked about it.
+under `metrics.accuracy.score`. A self-reported benchmark result describes the
+reported dataset and evaluation configuration; it does not establish the
+accuracy of the deployed system. Keeping it under `metrics.reported.*`
+preserves that distinction.
 
 ### One command
 
@@ -101,34 +102,33 @@ bert-base-uncased
 scored with aicertify 0.7.0, gopal 1.3.1, rubric v1
 ```
 
-The version line is not decoration. A figure quoted anywhere has to be
-reproducible, and without it a reader who reruns this later and gets a
-different number cannot tell a changed rubric from a wrong claim. It names
-GOPAL rather than a rubric version because the rubric *is* a GOPAL policy.
+The version line records the implementations needed to reproduce the score. If
+a later run produces a different result, the recorded AICertify and GOPAL
+versions allow a changed rubric to be distinguished from a change in the input.
+GOPAL is recorded because the rubric is implemented as a GOPAL policy.
 
 `--file` scores a local `README.md`, `--json` is machine-readable, and
 `--threshold` compares against something other than 0.8.
 
 ### Where the rubric lives
 
-Not here. Which sections a card must carry, what each is worth and how much
-text counts as content are normative judgements about required documentation,
-which is what GOPAL is for, so they are a policy:
+The rubric is defined in GOPAL rather than in the adapter. Requirements about
+which sections are expected, how they are weighted, and what counts as content
+are policy decisions, so they are implemented as a Rego policy:
 [`global/v1/documentation/model_card_score`](https://github.com/Principled-Evolution/gopal/blob/main/global/v1/documentation/model_card_score.rego).
 
-`score_model_card` shells out to `opa` and reads the answer. The playground
-runs the same policy compiled to WebAssembly. Neither reimplements it, so the
-number you get here and the number the site shows are the same number because
-they come from the same rules, not because two implementations happen to agree.
+`score_model_card` invokes `opa` and reads the policy result. The playground
+runs the same policy compiled to WebAssembly. Both surfaces therefore use the
+same scoring rules rather than separate implementations of the rubric.
 
-That also means `opa` is required, and a missing binary raises
-`GopalUnavailable` rather than falling back to an approximation. An
-approximation would produce something that looks like the real number and is
-not.
+`opa` is therefore required. If the binary is unavailable,
+`score_model_card` raises `GopalUnavailable` rather than returning an
+approximate score under the same metric name.
 
-The heading table that maps card headings onto those sections comes from the
-policy too, through `load_heading_sources()`. A copy per parser drifts exactly
-the way a copy of the scoring did.
+The heading table that maps card headings onto those sections is also loaded
+from the policy through `load_heading_sources()`. Keeping the mapping and the
+scoring rubric in the same policy prevents independent parser copies from
+diverging.
 
 ### What real cards actually score
 
@@ -143,10 +143,10 @@ applies:
 | `HuggingFaceTB/SmolLM2-135M-Instruct` | 0.17 | 0.31 | No |
 | `sentence-transformers/all-MiniLM-L6-v2` | 0.16 | 0.19 | No |
 
-None of them passes, and the two best are among the most downloaded models in
-the world. That is not a defect in the cards or in the adapter. A model card
-answers part of what Annex IV asks and stops, and the gap is the point: see
-[GOPAL's field-by-field accounting](https://github.com/Principled-Evolution/gopal/blob/main/docs/model-cards-vs-compliance.md).
+None of these cards reaches the 0.8 threshold. The result reflects a scope
+difference rather than a defect in the cards: a model card can supply part of
+the documentation requested by Annex IV without covering the complete set of
+fields. See [GOPAL's field-by-field accounting](https://github.com/Principled-Evolution/gopal/blob/main/docs/model-cards-vs-compliance.md).
 
 The subsections a card cannot fill are left unfilled rather than guessed at.
 Decision thresholds, intersectional results and the motivation behind an
@@ -173,21 +173,22 @@ fragment = from_fairlearn(frame)
 }}}
 ```
 
-**The direction matters more than the number.** GOPAL compares
-`metrics.fairness.score` with `>=`, so higher is better. Fairlearn's
-`difference()` is 0 at its best and points the other way; handing it over
-unchanged reports the fairest possible system as the least fair. That is how
-`is_toxic` once answered `true` for a system with no toxicity in it.
+### Metric direction
 
-So `ratio()` is preferred, and not only to dodge the sign: a ratio is already
-bounded on [0, 1] with 1 as the ideal, which is the shape a `>= 0.85` threshold
-expects, and it is the form the four-fifths rule in fair lending is written in.
+GOPAL compares `metrics.fairness.score` with `>=`, so higher values must
+represent better outcomes. Fairlearn's `difference()` uses the opposite
+direction, with 0 as its best value. Passing that value through unchanged would
+invert the meaning of the policy threshold.
+
+`ratio()` is therefore preferred. It is bounded on [0, 1] with 1 as the ideal,
+which matches the direction expected by a `>= 0.85` threshold and the ratio
+form used by the four-fifths rule in fair lending.
 A `difference=` is accepted and converted to `1 - difference`, with `basis`
 recording which way the number was turned.
 
-Both `MetricFrame` shapes work: a multi-metric frame returns a Series keyed by
-metric name, a single-metric frame returns bare scalars, and the second is the
-one that breaks a `[metric]` lookup written for the first.
+Both `MetricFrame` result shapes are supported. A multi-metric frame returns a
+Series keyed by metric name, while a single-metric frame returns bare scalars;
+the adapter handles both explicitly.
 
 Against `healthcare/v1/diagnostic_safety`, which gates at 0.85:
 
@@ -214,14 +215,14 @@ any toxicity measurement: the aggregate against 0.1 and the worst single output
 against 0.7.
 
 Perspective omits `summaryScore` for a language it does not support. That
-attribute is left out rather than read as 0.0, which would report text nobody
-could score as clean.
+attribute is omitted rather than converted to 0.0, because an unavailable
+measurement must not be represented as a clean result.
 
-Unlike the others, this adapter was written against Perspective's documented
-response schema rather than live calls, because the API needs a key this
-project does not hold. The shape is stable and long-published, but that is a
-weaker warrant than the rest of this page has and it is better said than
-implied.
+This adapter is implemented against Perspective's documented response schema
+rather than live integration tests because the repository does not hold a
+Perspective API key. The documented schema is stable, but this provides weaker
+validation than testing against live API responses; that limitation is stated
+explicitly here.
 
 ## Using a fragment
 
@@ -272,19 +273,21 @@ def from_your_tool(report: dict) -> dict:
     }}}
 ```
 
-Three rules, each of which exists because breaking it caused a real bug here.
+Three constraints apply to new adapters.
 
-**Absent is not zero.** Nothing measurable in, empty dict out. Never a default
-score. On a scale where lower is worse a zero reports an unmeasured system as
-clean, and GOPAL will believe it.
+**Do not convert absence to zero.** If no measurement is available, return an
+empty fragment rather than a default score. A default numeric value would cause
+policy evaluation to treat an unmeasured system as if a measurement had been
+performed.
 
-**The name has to describe what you measured.** Do not map a documentation
-count onto `metrics.patient_safety.score` because it is the nearest available
-slot. GOPAL gates that at 0.95 and means a clinical measurement.
+**Use a metric name that describes the measurement.** Do not map a
+documentation count onto `metrics.patient_safety.score` because it is the
+nearest available field. GOPAL interprets that field as a clinical measurement
+and applies a 0.95 threshold.
 
 **Keep statistics apart.** An average and a maximum answer different
 questions. If your tool gives you both, emit both.
 
-If you find yourself needing an evaluator rather than an adapter, because there
-is a measurement to run rather than a result to convert, that is
-[docs/writing-an-evaluator.md](writing-an-evaluator.md).
+If a measurement must be executed rather than an existing result converted,
+implement an evaluator instead; see
+[Writing an evaluator](writing-an-evaluator.md).
