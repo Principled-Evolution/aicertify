@@ -1,0 +1,164 @@
+name: Release to PyPI
+
+# GitHub had v0.8.0 from 28 August while PyPI served v0.7.3 from 14 May, so
+# `pip install aicertify` did not install what this repository represented as
+# the product. Publishing was a manual step and manual steps get skipped.
+#
+# A tag now publishes. The tag is the only trigger, the version in the tag must
+# match the version in pyproject.toml, and the wheel is installed into a clean
+# environment and made to produce real verdicts before anything is uploaded.
+#
+# Authentication is PyPI Trusted Publishing (OIDC). There is no API token in
+# this repository. Configure the publisher once at
+# https://pypi.org/manage/project/aicertify/settings/publishing/ with:
+#   owner        Principled-Evolution
+#   repository   aicertify
+#   workflow     release.yaml
+#   environment  pypi
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build and smoke-test only; do not publish"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and verify the wheel
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      # The policy library is a submodule. Without it the wheel builds and
+      # installs but contains no .rego files, so every evaluation returns
+      # nothing while still exiting successfully.
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Read the version from pyproject.toml
+        id: version
+        run: |
+          version="$(poetry version --short)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "pyproject version is ${version}"
+
+      # A tag that disagrees with pyproject.toml is how the published version
+      # and the represented version come apart in the first place.
+      - name: Check the tag matches the version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF#refs/tags/v}"
+          version="${{ steps.version.outputs.version }}"
+          if [ "${tag}" != "${version}" ]; then
+            echo "::error::tag v${tag} does not match pyproject version ${version}" >&2
+            exit 1
+          fi
+          echo "tag v${tag} matches pyproject version ${version}"
+
+      - name: Build sdist and wheel
+        run: poetry build
+
+      # The policies are data files, not code, so a packaging change can drop
+      # them silently. An empty policy directory is indistinguishable from a
+      # passing run at the CLI, so it is checked here.
+      - name: Check the wheel carries the policy library
+        run: |
+          wheel="$(ls dist/*.whl)"
+          rego="$(unzip -l "${wheel}" | grep -c '\.rego' || true)"
+          echo "${rego} .rego files in ${wheel}"
+          if [ "${rego}" -lt 50 ]; then
+            echo "::error::wheel contains ${rego} .rego files; the submodule is missing or unpackaged" >&2
+            exit 1
+          fi
+          unzip -l "${wheel}" | grep -q 'opa_policies/docs/coverage/coverage.json' || {
+            echo "::error::wheel has no coverage.json; verdict extraction reads it to find each policy's decision rule" >&2
+            exit 1
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  smoke:
+    name: Clean-install smoke test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      # Deliberately no repository checkout beyond the smoke script: the point
+      # is to exercise what a user gets from `pip install aicertify`, not what
+      # a developer gets from a working tree. A source checkout would mask a
+      # missing package data file, because the file would be on disk anyway.
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/smoke_test_wheel.py
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install OPA
+        env:
+          OPA_VERSION: v1.20.1
+        run: |
+          curl -L -o opa "https://openpolicyagent.org/downloads/${OPA_VERSION}/opa_linux_amd64"
+          chmod 755 opa
+          sudo mv opa /usr/local/bin/
+          opa version
+
+      - name: Install the built wheel into a clean environment
+        run: |
+          python -m venv /tmp/smoke
+          /tmp/smoke/bin/pip install --upgrade pip
+          /tmp/smoke/bin/pip install dist/*.whl
+
+      # Runs a real framework evaluation and asserts on the number of verdicts.
+      # The CLI exits 0 and prints "OPA Evaluation: Successful" whether it
+      # produced 29 verdicts or none, so the exit code cannot detect the
+      # regression this is here to catch.
+      - name: Evaluate real frameworks from the installed wheel
+        run: /tmp/smoke/bin/python scripts/smoke_test_wheel.py
+
+  publish:
+    name: Publish to PyPI
+    needs: [build, smoke]
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/aicertify/${{ needs.build.outputs.version }}/
+    permissions:
+      id-token: write   # Trusted Publishing exchanges this for a PyPI token.
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1

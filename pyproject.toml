@@ -142,6 +142,12 @@ black = ">=26.3.1,<27.0.0"
 # broken, that autoload crashes pytest itself, regardless of whether any test
 # imports deepeval. Disabling it here is unrelated to test content.
 addopts = "-p no:plugins"
+markers = [
+    # Real OPA evaluations over the vendored policy library. Deselect with
+    # -m "not slow" for a fast loop; CI runs them, because they are the only
+    # tests that can catch a framework silently returning no verdicts.
+    "slow: runs a real OPA evaluation against the policy library",
+]
 
 [tool.ruff]
 line-length = 88
