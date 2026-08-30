@@ -13,7 +13,7 @@
   <a href="https://pypi.org/project/aicertify/"><img src="https://img.shields.io/pypi/v/aicertify?style=flat-square&color=blue" alt="PyPI"></a>
   <a href="https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml"><img src="https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml/badge.svg" alt="CI"></a>
   <a href="https://github.com/Principled-Evolution/aicertify/stargazers"><img src="https://img.shields.io/github/stars/Principled-Evolution/aicertify?style=flat-square" alt="Stars"></a>
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12%2B-blue.svg?style=flat-square" alt="Python 3.12+"></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12-blue.svg?style=flat-square" alt="Python 3.12"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="Apache 2.0"></a>
   <a href="https://www.openpolicyagent.org/ecosystem/entry/principled-evolution"><img src="https://img.shields.io/badge/built%20on-OPA-7D4698.svg?style=flat-square" alt="Built on OPA"></a>
   <a href="https://github.com/Principled-Evolution/gopal"><img src="https://img.shields.io/badge/policies-92%20rego-2f9e44.svg?style=flat-square" alt="92 Rego Policies"></a>
@@ -148,7 +148,7 @@ Each example ships an `input_contract.json`, `policy_config.yaml`, `sample_inter
 You don't have to install anything to see what AICertify produces. A sample pre-generated PDF is in the repo:
 
 - **[demo-report-eu-ai-act.pdf](https://github.com/Principled-Evolution/aicertify/blob/main/docs/demo-report-eu-ai-act.pdf)**: a customer-support agent evaluated against the EU AI Act
-- **[examples/outputs/](https://github.com/Principled-Evolution/aicertify/tree/main/examples/outputs)**: canonical full outputs for EU AI Act, loan evaluation, and medical diagnosis
+- **[expected reports](https://github.com/Principled-Evolution/aicertify/tree/main/examples)**: committed Markdown reports for the customer-support, healthcare-triage and hiring-screening examples, and a retained fair-lending PDF under `examples/outputs/loan_evaluation/`
 
 ---
 

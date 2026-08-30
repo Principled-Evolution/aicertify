@@ -21,7 +21,7 @@
   <a href="https://pypi.org/project/aicertify/"><img src="https://img.shields.io/pypi/v/aicertify?style=flat-square&color=blue" alt="PyPI"></a>
   <a href="https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml"><img src="https://github.com/Principled-Evolution/aicertify/actions/workflows/aicertify-ci.yaml/badge.svg" alt="CI"></a>
   <a href="https://github.com/Principled-Evolution/aicertify/stargazers"><img src="https://img.shields.io/github/stars/Principled-Evolution/aicertify?style=flat-square" alt="Stars"></a>
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12%2B-blue.svg?style=flat-square" alt="Python 3.12+"></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12-blue.svg?style=flat-square" alt="Python 3.12"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="Apache 2.0"></a>
   <a href="https://www.openpolicyagent.org/ecosystem/entry/principled-evolution"><img src="https://img.shields.io/badge/built%20on-OPA-7D4698.svg?style=flat-square" alt="Built on OPA"></a>
   <a href="https://github.com/Principled-Evolution/gopal"><img src="https://img.shields.io/badge/policies-92%20rego-2f9e44.svg?style=flat-square" alt="92 Rego Policies"></a>
@@ -276,7 +276,6 @@ Useful flags:
 | `--contract` | Path to the AI application contract JSON |
 | `--policy` | Framework name or path to an OPA policy folder |
 | `--report-format` | `pdf`, `markdown`, `json`, `html` (default: `pdf`) |
-| `--evaluators` | Restrict to specific evaluators (e.g. `Fairness ContentSafety`) |
 | `--output-dir` | Where reports land (default: `./reports`) |
 | `--verbose` | Verbose logging |
 
@@ -289,9 +288,10 @@ See [`examples/quickstart.py`](examples/quickstart.py) for the full Python API.
 You don't have to install anything to see what AICertify produces. Pre-generated reports are committed to the repo:
 
 - **[demo-report-eu-ai-act.pdf](docs/demo-report-eu-ai-act.pdf)**: a customer-support agent evaluated against the EU AI Act
-- [examples/outputs/eu_ai_act/](examples/outputs/eu_ai_act/): the canonical full output
-- [examples/outputs/loan_evaluation/](examples/outputs/loan_evaluation/): a credit-scoring model evaluated for fair lending
-- [examples/outputs/medical_diagnosis/](examples/outputs/medical_diagnosis/): a clinical-decision-support model evaluated for patient safety
+- **[report_Loan_Application_20250226_212152.pdf](examples/outputs/loan_evaluation/report_Loan_Application_20250226_212152.pdf)**: a credit-scoring model evaluated for fair lending, with the [contract](examples/outputs/loan_evaluation/contract_2025-02-26_212149.json) that produced it
+- **[healthcare-triage-bot/expected_report.md](examples/healthcare-triage-bot/expected_report.md)**: a clinical-decision-support model evaluated for patient safety
+- **[hiring-screening-bot/expected_report.md](examples/hiring-screening-bot/expected_report.md)**: a hiring model evaluated for bias
+- **[customer-support-bot/expected_report.md](examples/customer-support-bot/expected_report.md)**: the Markdown form of the demo report above
 
 <p align="center">
   <picture>
@@ -381,7 +381,7 @@ For security issues, please follow the [Security Policy](SECURITY.md): report pr
 
 - **[gopal](https://github.com/Principled-Evolution/gopal)**: the OPA policy library AICertify uses under the hood. Use it standalone with the OPA CLI if you don't need the Python framework.
 - **[Open Policy Agent](https://www.openpolicyagent.org/)**: the policy engine.
-- **[Regal](https://github.com/StyraInc/regal)**: Rego linter used to keep policies clean.
+- **[Regal](https://github.com/open-policy-agent/regal)**: Rego linter used to keep policies clean.
 
 ---
 
