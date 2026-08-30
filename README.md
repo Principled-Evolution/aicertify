@@ -43,7 +43,7 @@
 
 <p align="center">
   <sub>Scoring a real Hugging Face card, then asking what the EU AI Act actually needs.<br>
-  <a href="https://principledevolution.ai/aicertify">Watch the full four-minute walkthrough</a>, including running a contract and the metrics still missing an evaluator.</sub>
+  <a href="https://principledevolution.ai/aicertify">Watch the full walkthrough</a>, which goes on to answer the declarations and evaluate them.</sub>
 </p>
 
 <br>
