@@ -1,48 +1,50 @@
 # Running AICertify in GitHub Actions
 
-AI compliance checks belong on every pull request, not only at release time. This page shows how to copy [`.github/workflows/example-aicertify.yaml`](../../.github/workflows/example-aicertify.yaml) into your own repository and turn it into a required status check.
+AICertify can run as a pull-request status check so that the same contract, evaluator configuration, and policy set used locally can also be evaluated in CI. This page shows how to adapt [`.github/workflows/example-aicertify.yaml`](../../.github/workflows/example-aicertify.yaml) into a required check.
 
 ## What you copy
 
 | File | Where it goes | What it does |
 | --- | --- | --- |
 | [`.github/workflows/example-aicertify.yaml`](../../.github/workflows/example-aicertify.yaml) | `.github/workflows/ai-compliance.yaml` | Installs AICertify and OPA, evaluates a contract, uploads the report |
-| [`examples/github-actions/gate.py`](../../examples/github-actions/gate.py) | anywhere the workflow can reach | Turns the verdict into an exit code |
+| [`examples/github-actions/gate.py`](../../examples/github-actions/gate.py) | anywhere the workflow can reach | Converts policy results into an exit code |
 
 ## Inputs
 
-Three values control the run. In the example they are `workflow_dispatch` inputs so you can try combinations from the Actions tab; in your own copy, hard-code them in `env:` and drop the inputs block.
+Three values control the example workflow. They are exposed as `workflow_dispatch` inputs for interactive testing; in a repository-specific workflow they can be fixed in `env:` instead.
 
 | Input | Meaning | Default |
 | --- | --- | --- |
-| `contract` | Path to the contract JSON describing your AI system | `examples/customer-support-bot/input_contract.json` |
+| `contract` | Path to the contract JSON describing the AI system | `examples/customer-support-bot/input_contract.json` |
 | `framework` | Framework to evaluate against: `eu_ai_act`, `uk`, `bfs`, `legal`, `nist`, … | `eu_ai_act` |
-| `fail_on` | `any` fails the build when a policy denies. `none` reports only | `none` |
+| `fail_on` | `any` fails the job when a policy denies; `none` reports without gating | `none` |
 
-Run `aicertify explain <framework>` to see the frameworks available and the fields each one reads.
+Run `aicertify explain <framework>` to list the fields read by the selected framework before creating the contract.
 
 ## Adopt it in three steps
 
-**1. Start on `fail_on: none`.**
+**1. Begin with `fail_on: none`.**
 
-Your first run will almost certainly report denials, and that is informative rather than alarming: most GOPAL obligations turn on facts no evaluator can observe, and a contract that has not declared them cannot satisfy them. Reporting first lets you see the gap without a red build.
+A contract that omits required declarations or measured inputs will produce policy denials. Reporting without gating on the first run lets you inspect those gaps before making the check required.
 
 **2. Populate the contract.**
 
 ```bash
-aicertify explain eu_ai_act                              # what the policies read
-aicertify init-contract --policy eu_ai_act > contract.json   # the same fields, to fill in
+aicertify explain eu_ai_act
+aicertify init-contract --policy eu_ai_act > contract.json
 ```
 
-`init-contract` writes every declared field as a `null` under `context`, nested into the shape the policies read. Replace the nulls. A field left as `null` is dropped rather than sent as an explicit null, so a half-filled contract denies rather than being read as "assessed, and false".
+`init-contract` writes the declared fields under `context` as `null`, nested into the shape read by the policies. Replace the values that apply to the system. A field left as `null` is omitted from policy input, so missing evidence remains missing rather than being converted into an explicit `false` value.
 
-**3. Switch to `fail_on: any` and make it required.**
+**3. Enable gating.**
 
-Once the report is clean, set `fail_on: any`, then **Settings → Branches → Branch protection rules → Require status checks to pass** and select the job.
+After the contract and evaluator inputs represent the evidence you intend to enforce, set `fail_on: any`. Then configure the workflow job as a required status check under the repository's branch-protection settings.
 
-## Two things that will bite you
+## Two implementation details
 
-**Check out the submodule.** The policy library lives at `aicertify/opa_policies` as a git submodule. Without `submodules: true` on `actions/checkout`, there are no policies at all, and the failure mode is quiet: the evaluation produces zero verdicts rather than an obvious error.
+### Check out the policy submodule
+
+The GOPAL policy library is pinned at `aicertify/opa_policies` as a git submodule. Configure `actions/checkout` with `submodules: true`:
 
 ```yaml
 - uses: actions/checkout@v4
@@ -50,9 +52,11 @@ Once the report is clean, set `fail_on: any`, then **Settings → Branches → B
     submodules: true
 ```
 
-`gate.py` treats zero verdicts as exit code 2 rather than a pass, specifically so this misconfiguration cannot look like success.
+Without the submodule, the policy directory is empty and an evaluation can produce zero policy verdicts. `gate.py` maps zero verdicts to exit code 2 so that missing policy input cannot be reported as a passing compliance gate.
 
-**Cache the model downloads.** The fairness and content-safety evaluators pull transformer models on first use, and that dominates the run time. A cold run takes many minutes; a warm one is far quicker.
+### Cache evaluator model downloads
+
+Fairness and content-safety evaluators may download transformer models on first use. Caching the Hugging Face and Torch directories avoids repeating those downloads on warm CI runs:
 
 ```yaml
 - uses: actions/cache@v4
@@ -65,21 +69,23 @@ Once the report is clean, set `fail_on: any`, then **Settings → Branches → B
 
 ## Exit codes
 
-`gate.py` distinguishes three outcomes, and the distinction is the point:
+`gate.py` distinguishes policy denial from evaluation failure:
 
 | Code | Meaning |
 | --- | --- |
-| 0 | Every policy passed, or `--fail-on none` |
-| 1 | At least one policy denied, and `--fail-on any` |
-| 2 | The evaluation could not be carried out |
+| 0 | Every policy passed, or `--fail-on none` is configured |
+| 1 | At least one policy denied and `--fail-on any` is configured |
+| 2 | The evaluation could not produce a valid set of policy verdicts |
 
-Code 2 covers a missing contract, an OPA failure, and an evaluation that produced no verdicts. A run that failed to produce verdicts has told you nothing, and folding that into "not a failure" is how a compliance pipeline reports green while checking nothing.
+Exit code 2 covers conditions such as a missing contract, an OPA failure, or an evaluation that produced no verdicts. Those conditions do not establish a policy result and therefore must not be folded into the passing case.
 
-## What you get out
+## Outputs
 
-- **A job summary table** of every policy and its verdict, visible on the run page without opening the log.
-- **Annotations** on each denied policy, so the reason appears inline on the pull request.
-- **`compliance-summary.json`**, machine-readable, for anything downstream:
+The example workflow produces:
+
+- **A job-summary table** containing each policy and its verdict.
+- **Pull-request annotations** for denied policies, including the reported reason.
+- **`compliance-summary.json`** for downstream automation:
 
   ```json
   {
@@ -91,11 +97,11 @@ Code 2 covers a missing contract, an OPA failure, and an evaluation that produce
   }
   ```
 
-- **The generated report**, uploaded with `if: always()` so it survives a failing gate. That artifact is the evidence the check ran and what it decided.
+- **The generated report**, uploaded with `if: always()` so the artifact remains available when the gate fails.
 
 ## Evaluating more than one framework
 
-Call the gate once per framework with a matrix. `fail-fast: false` so one denial does not hide the rest:
+Use a matrix when the same contract must be evaluated against multiple framework policy sets. `fail-fast: false` allows every framework to complete even when one produces a denial:
 
 ```yaml
 strategy:
@@ -112,8 +118,8 @@ steps:
         --summary-json compliance-summary-${{ matrix.framework }}.json
 ```
 
-## Policies without the Python stack
+## When GOPAL alone is sufficient
 
-If you only want the Rego verdicts and none of the evaluator machinery, skip AICertify and run the GOPAL bundles directly. That job needs OPA and nothing else, and finishes in seconds. See [gopal's GitHub Actions example](https://github.com/Principled-Evolution/gopal/tree/main/examples/github-actions).
+If the required facts and metrics already exist and the workflow only needs Rego policy verdicts, the GOPAL bundles can be evaluated directly with OPA. See [GOPAL's GitHub Actions example](https://github.com/Principled-Evolution/gopal/tree/main/examples/github-actions).
 
-Use AICertify's workflow when you want fairness and content-safety metrics computed from real interactions, and the audit-ready report. Use the GOPAL bundle when your compliance facts are declarations and you just need them checked.
+Use the AICertify workflow when CI also needs application-contract handling, evaluator-produced metrics, or generated evidence reports around the policy evaluation.

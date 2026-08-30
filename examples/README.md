@@ -34,9 +34,9 @@ example-name/
 | [`healthcare-triage-bot/`](healthcare-triage-bot/) | **High risk** (Annex III) | EU AI Act high-risk + gopal healthcare patient-safety |
 | [`hiring-screening-bot/`](hiring-screening-bot/) | **High risk** (Annex III) | EU AI Act high-risk + fair-lending proxy + global fairness |
 
-### Wanted: more examples
+### Contributing an example
 
-The community is welcome to contribute additional examples following the same shape. Open issues track current asks:
+Additional examples should follow the same directory shape so they remain directly forkable. Current contribution areas include:
 
 - FastAPI integration example
 - LangChain integration example
@@ -47,22 +47,22 @@ The community is welcome to contribute additional examples following the same sh
 
 See the [`good first issue`](https://github.com/Principled-Evolution/aicertify/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and [`help wanted`](https://github.com/Principled-Evolution/aicertify/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) labels.
 
-## Pre-generated sample reports
+## Inspecting expected output
 
-If you want to see the AICertify deliverable before installing anything, the `outputs/` directory has historical reports from real runs:
+Each maintained application example includes an `expected_report.md`, so its report structure and expected policy results can be inspected without running evaluator dependencies:
 
-- [`outputs/eu_ai_act/`](outputs/eu_ai_act/) — EU AI Act evaluations
-- [`outputs/loan_evaluation/`](outputs/loan_evaluation/) — fair-lending evaluations
-- [`outputs/medical_diagnosis/`](outputs/medical_diagnosis/) — patient-safety evaluations
+- [`customer-support-bot/expected_report.md`](customer-support-bot/expected_report.md)
+- [`healthcare-triage-bot/expected_report.md`](healthcare-triage-bot/expected_report.md)
+- [`hiring-screening-bot/expected_report.md`](hiring-screening-bot/expected_report.md)
 
-A clean one is also bundled as [`docs/demo-report-eu-ai-act.pdf`](../docs/demo-report-eu-ai-act.pdf).
+A generated PDF from the bundled demonstration is available at [`docs/demo-report-eu-ai-act.pdf`](../docs/demo-report-eu-ai-act.pdf). The [`outputs/loan_evaluation/`](outputs/loan_evaluation/) directory also retains a historical contract and PDF from a fair-lending run.
 
 ## Authoring conventions
 
 When you add an example:
 
-1. Match the directory layout above. The shape matters more than the content; it's what makes the examples forkable.
+1. Match the directory layout above. Keep the directory shape consistent so examples can be forked and compared directly.
 2. The `metadata` block in `input_contract.json` must declare jurisdiction, risk class, and (if Annex III) the relevant subpoint.
 3. `policy_config.yaml` must include a `rationale:` for each framework explaining *why* that framework applies.
-4. `expected_report.md` should describe both the pass case **and** the common failure modes a fork might hit.
-5. Be honest about scope. A green AICertify report is necessary but not sufficient for production deployment — say so explicitly.
+4. `expected_report.md` should describe both the pass case **and** the common failure modes expected when the example is adapted.
+5. State scope and evidence limitations explicitly. A passing policy result establishes only that the supplied evidence satisfied the encoded rule at that rule's evidence depth.

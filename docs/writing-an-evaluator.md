@@ -1,19 +1,18 @@
 # Writing an evaluator
 
-A gopal policy reads two kinds of input. **Declared facts**, which a person
-asserts about their organisation, and **measured metrics**, which a tool
-computes. You can answer the declared facts yourself. The measured ones you
-cannot, and a policy that reads one you cannot supply can never be satisfied.
+A GOPAL policy can read **declared facts** supplied about the system or its
+operating context and **measured metrics** produced by an evaluation tool. An
+evaluator supplies measured values in the canonical input fields expected by
+the policy.
 
-An evaluator is what supplies them. This is how to write one.
+This guide describes how to implement and register an AICertify evaluator.
 
-None of this is required to use GOPAL. A shell script that writes JSON and
-calls `opa` is a complete integration, and GOPAL's
+GOPAL does not require AICertify. A shell script can write the expected JSON
+and invoke `opa` directly; GOPAL's
 [Plug your evaluator into GOPAL](https://github.com/Principled-Evolution/gopal/blob/main/docs/tutorials/supplying-metrics.md)
-walks that path with no Python in it. What AICertify adds is the scaffolding:
-the base class, the discovery, the gap report, and the merge that puts your
-measurements where the policies actually read them. Read this one if you want
-that; read the other if you would rather own the plumbing.
+documents that path. AICertify adds evaluator base classes, discovery, metric-gap
+reporting, registration, and delivery of measured values into the OPA input
+shape.
 
 ## 1. Find out what is missing
 
@@ -39,13 +38,14 @@ international/eu_ai_act  (12/13 measured metrics have an evaluator)
 TOTAL: 22 of 26 measured metrics can be supplied today.
 ```
 
-Every `GAP` is a metric some policy needs and nothing produces. That is the
-list. Add `--framework eu_ai_act` to narrow it, or `--json` to consume it.
+Each `GAP` identifies a metric required by a policy for which no registered
+evaluator currently declares coverage. Use `--framework eu_ai_act` to restrict
+the report or `--json` for machine-readable output.
 
 ## 2. Write the evaluator
 
-Three things: subclass `BaseEvaluator`, declare which metrics you supply, and
-implement `evaluate`.
+An evaluator requires three elements: subclass `BaseEvaluator`, declare the
+metrics it supplies, and implement `evaluate`.
 
 ```python
 from aicertify.evaluators.base_evaluator import BaseEvaluator, EvaluationResult
@@ -79,17 +79,16 @@ class AuditLoggingEvaluator(BaseEvaluator):
         return self.evaluate(data)
 ```
 
-That is the whole of
-[`aicertify/evaluators/audit_logging_evaluator.py`](../aicertify/evaluators/audit_logging_evaluator.py),
-lightly trimmed. It needs no model, no API key and no inference: it counts how
-many audit-logging facts a contract actually carries, which is a real
-measurement of a real thing.
+The implementation in
+[`aicertify/evaluators/audit_logging_evaluator.py`](../aicertify/evaluators/audit_logging_evaluator.py)
+follows this pattern. It requires no model, API key, or inference; it computes
+a completeness score from the audit-logging fields present in the contract.
 
-**Use gopal's canonical name in `SUPPORTED_METRICS`.** The gap report matches
-evaluators to policies by name. Invent a spelling and the policy still looks
-unsupplied, however good your evaluator is. `helper_functions/metrics.rego` in
-gopal is the list of canonical names, and it accepts the historical spellings
-as fallbacks.
+**Use GOPAL's canonical metric names in `SUPPORTED_METRICS`.** The gap report
+matches evaluators to policy requirements by field name. A non-canonical name
+therefore does not satisfy the policy requirement. GOPAL's
+`helper_functions/metrics.rego` defines the canonical names and supported
+historical aliases.
 
 ## 3. Wire it in
 
@@ -102,14 +101,13 @@ EVALUATOR_CLASSES = {
 }
 ```
 
-This is the step that is easy to skip, because everything looks fine without
-it. `SUPPORTED_METRICS` is what the gap report reads, so an unregistered
-evaluator still shows up there, while `ComplianceEvaluator` only ever
-instantiates what is in this dict. You get an evaluator that is discovered,
-reported as coverage, and never run.
+Registration is separate from metric declaration. The gap report reads
+`SUPPORTED_METRICS`, while `ComplianceEvaluator` instantiates only evaluators
+listed in `EVALUATOR_CLASSES`. An evaluator can therefore declare coverage but
+remain unavailable at runtime if it is not registered.
 
-The report now refuses to be fooled by that. Leave the registration out and
-the row reads:
+The gap report distinguishes this state with `WIRE`. Without registration, the
+row reads:
 
 ```
   WIRE governance.audit_logging.completeness_score    AuditLoggingEvaluator declares
@@ -123,23 +121,20 @@ global  (4/4 measured metrics have an evaluator)
   ok   governance.audit_logging.completeness_score    AuditLoggingEvaluator
 ```
 
-`WIRE` does not count toward the total. A metric nothing produces at runtime is
-not covered, whatever the class attributes say.
+`WIRE` does not count toward runtime metric coverage because the evaluator is
+not instantiated during evaluation.
 
 ## 4. Publish under the canonical name
 
-Registration gets your evaluator run. It does not get its numbers to a policy.
+Registration controls whether the evaluator runs; metric delivery is a separate
+step.
 
-GOPAL reads measured metrics at `input.metrics.<domain>.<name>`. Evaluator
-output arrives keyed by evaluator name, as `results.<evaluator>`, and for a long
-time the only canonical names that resolved were the three where those two
-happened to coincide: `metrics.fairness.score`, `metrics.content_safety.score`
-and `metrics.risk_management.score` each spell an evaluator name in the middle
-with `score` on the end. `metrics.model_card.completeness` does not, so no
-policy reading it ever saw a measurement.
+GOPAL reads measured metrics at `input.metrics.<domain>.<name>`, while raw
+evaluator results are keyed by evaluator name as `results.<evaluator>`. Those
+names are not generally equivalent, so evaluator output must be published
+explicitly under the canonical metric path read by GOPAL.
 
-So publish explicitly, by putting the metric under `details["metrics"]` in the
-shape GOPAL reads:
+Publish the metric under `details["metrics"]` in the shape read by GOPAL:
 
 ```python
 return EvaluationResult(
@@ -148,30 +143,27 @@ return EvaluationResult(
 )
 ```
 
-`attach_measured_metrics` merges every evaluator's block into the top level of
-the OPA input. What you emit there is what the policy sees, under the name you
-gave it. `SUPPORTED_METRICS` is a claim about what you supply; this is the
-supply.
+`attach_measured_metrics` merges each evaluator's metric block into the OPA
+input. `SUPPORTED_METRICS` declares which metrics the evaluator can provide;
+`details["metrics"]` carries the values provided by a specific evaluation.
 
-`tests/test_metric_delivery.py` checks the whole path with `opa eval` against
-GOPAL's own resolver, so a metric that stops arriving fails a test rather than
-quietly reverting to a policy that can never be satisfied.
+`tests/test_metric_delivery.py` checks the delivery path with `opa eval` against
+GOPAL's resolver. A regression that prevents a metric from reaching the policy
+therefore fails a test.
 
-## Two things worth getting right
+## Metric semantics
 
-**Absent is not zero.** If your metric cannot be computed, say so rather than
-returning a flattering default. A toxicity evaluator that returns `0.0` when it
-could not run reports an unmeasured system as safe, and gopal will believe it.
-This is the failure mode the whole library exists to prevent, and it has caught
-us more than once.
+**Represent missing measurements as missing.** If a metric cannot be computed,
+do not substitute a default numeric value. Returning `0.0` for an unavailable
+toxicity measurement would cause policy evaluation to treat an unmeasured
+system as if it had received a clean score.
 
-**Say which direction your number points.** A *safety* score where higher is
-better and a *toxicity* score where higher is worse are not interchangeable, and
-gopal's `is_toxic` once answered `true` for one of the safest possible systems
-because they had been treated as if they were. If your metric is a rate, a
-maximum and an average are also different questions: gopal keeps
-`metrics.toxicity.score` and `metrics.toxicity.max_toxicity` apart precisely
-because one is compared against 0.1 and the other against 0.7.
+**Match the policy's metric direction and statistic.** A safety score where
+higher is better is not interchangeable with a toxicity score where higher is
+worse. A maximum and an average also represent different properties. GOPAL
+therefore keeps `metrics.toxicity.score` and
+`metrics.toxicity.max_toxicity` separate and applies different thresholds to
+them.
 
 ## Using it in CI
 
@@ -183,11 +175,11 @@ fail a pull request:
   run: aicertify evaluate --contract contract.json --policy eu_ai_act
 ```
 
-Two related commands are worth knowing before you write anything:
-`aicertify explain <framework>` prints what input a framework's policies need
-and why, and `aicertify init-contract <framework>` scaffolds a contract with
-every field in it. Between them and the gap report, you should not have to read
-any Rego to find out what is expected of you.
+Before implementing an evaluator, use `aicertify explain <framework>` to inspect
+the required inputs and `aicertify init-contract --policy <framework>` to
+scaffold the declared fields. Together with the metric-gap report, these
+commands expose the required input paths without manual inspection of each Rego
+file.
 
 The evaluators run, their metrics are written into the contract, and the gopal
 bundle is evaluated against the result. A policy that is not satisfied fails the
@@ -197,7 +189,8 @@ step, naming the article and the control. See
 ## Testing yours
 
 [`tests/test_audit_logging_evaluator.py`](../tests/test_audit_logging_evaluator.py)
-is a short model. The case worth copying is this one:
+provides a compact test pattern. In particular, preserve the distinction between
+an explicit negative value and a missing value:
 
 ```python
 def test_a_negative_answer_still_counts_as_answered(self, evaluator):
@@ -207,19 +200,17 @@ def test_a_negative_answer_still_counts_as_answered(self, evaluator):
     """
 ```
 
-Distinguishing "answered no" from "not answered" is the single most common way
-an evaluator quietly reports a system as better than it is.
+An explicit negative answer must remain distinct from an absent answer; otherwise
+the denominator and resulting completeness score can be incorrect.
 
 ## The four metrics still showing GAP
 
-Three of them are clinical: `patient_safety`, `clinical_validation` and
-`risk_assessment`. They are deliberately not closed. GOPAL gates the first at
-0.95, and it means a measurement from a clinical evaluation. The only thing
-this codebase could compute in-process is how many safety fields a document
-contains, and publishing that under the name `patient_safety.score` would let a
-system with complete paperwork clear a patient-safety gate it was never
-assessed against. Supply those from the evaluation that produced them, through
-the contract, or leave them absent and let the policy fail closed.
+Three are clinical: `patient_safety`, `clinical_validation`, and
+`risk_assessment`. GOPAL interprets these as measurements from clinical
+evaluation. A documentation-completeness count is not equivalent to a clinical
+patient-safety score and must not be published under that metric name. Supply
+these metrics from the evaluation that produced them or leave them absent so
+the policy can fail closed.
 
 The fourth is `metrics.model_card.compliance_level`. It was declared by an
 evaluator that never computed it, and nothing GOPAL derives from a card yields
@@ -235,6 +226,6 @@ them `calc` rather than asking anyone to write tooling for work already done:
 calc metrics.model_card.completeness    computed by global.v1.documentation.model_card_score
 ```
 
-That is the shape to reach for when a metric turns out to be a judgement about
-supplied documentation rather than a measurement of a running system. Write the
-rule, not the evaluator.
+When a value is a policy judgement over supplied documentation rather than a
+measurement of running-system behavior, implement that derivation as a policy
+rule rather than as an evaluator.
