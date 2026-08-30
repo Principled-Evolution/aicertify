@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 """AICertify command-line interface.
 
-Two subcommands:
+Primary subcommands:
 
-* ``aicertify demo`` — loads a bundled sample contract, runs an OPA evaluation
-  against the EU AI Act policy set, and writes a Markdown report to the
-  current directory. No contract file or API keys required.
-
-* ``aicertify evaluate`` — evaluates a user-provided contract JSON against a
-  user-provided policy folder. Equivalent to the legacy flat invocation.
+* ``aicertify demo`` — run the bundled local demonstration.
+* ``aicertify evaluate`` — evaluate a contract against a policy set.
+* ``aicertify explain`` — show the fields a framework's policies require.
+* ``aicertify init-contract`` — scaffold those required fields into a contract.
+* ``aicertify score-card`` — score model-card documentation with GOPAL's rubric.
 
 For backwards compatibility, ``aicertify --contract X --policy Y`` (no
 subcommand) is treated as ``aicertify evaluate --contract X --policy Y``.
@@ -267,7 +266,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="aicertify",
         description=(
             "AICertify — compliance-as-code for AI systems. "
-            "Run `aicertify demo` for a 10-second self-contained demo."
+            "Run `aicertify demo` for a self-contained local demonstration."
         ),
     )
     parser.add_argument("--verbose", action="store_true", help="Enable debug logging")
