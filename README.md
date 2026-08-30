@@ -37,6 +37,17 @@
 
 <br>
 
+<p align="center">
+  <img src="docs/demo/aicertify-animated.svg" alt="A terminal session. aicertify score-card bert-base-uncased reports completeness 0.49 against a threshold of 0.8 and prints BELOW THRESHOLD, with a per-section bar chart. aicertify explain eu_ai_act then reports 150 fields you must declare, which no evaluator can observe, and 14 fields produced by evaluators, noting that asserting your own fairness score defeats the point." width="92%" />
+</p>
+
+<p align="center">
+  <sub>Scoring a real Hugging Face card, then asking what the EU AI Act actually needs.<br>
+  <a href="https://principledevolution.ai/aicertify">Watch the full four-minute walkthrough</a>, including running a contract and the metrics still missing an evaluator.</sub>
+</p>
+
+<br>
+
 **AICertify is the open execution and evidence layer for AI governance.** Describe an AI system in a contract, supply the facts only your organisation can know, attach or compute measured metrics, evaluate that evidence against versioned [GOPAL](https://github.com/Principled-Evolution/gopal) policies through [Open Policy Agent](https://www.openpolicyagent.org/), and generate dated PDF, Markdown, JSON, or HTML reports.
 
 **The goal is simple: move from “we have an AI policy” to evidence another engineer, auditor, or risk team can inspect and reproduce.**

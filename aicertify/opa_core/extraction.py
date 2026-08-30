@@ -359,10 +359,19 @@ def extract_policy_results_with_schema(
         return extracted_policies
 
     except Exception as e:
-        logger.error(f"Error validating OPA results against schema: {e}")
-        # Dont try to recover using a more flexible approach
-        logger.warning(
-            "Failed to validate OPA results against schema, returning empty list"
+        # Expected, and the common case. This path validates against the
+        # `report_output` schema, which four of gopal's policies define. Every
+        # other policy fails it, and the caller then reads the decision rules
+        # instead (see the note on extract_results_from_packages below).
+        #
+        # Logged at error until the #78 fallback landed, which meant a normal
+        # successful evaluation printed a pydantic validation report per policy
+        # and looked to a first-time user like a crash. The behaviour was
+        # already correct; only the log level was left behind.
+        logger.debug(
+            "No report_output schema match (%s); the caller falls back to "
+            "decision rules.",
+            e.__class__.__name__,
         )
         return []
 
