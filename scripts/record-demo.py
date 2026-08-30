@@ -2,9 +2,9 @@
 """Compose the AICertify demo asciicast: real output, typed at a human pace.
 
 Every command here is actually run and its output captured, so nothing on the
-screen is written by hand. What is synthesised is the *timing*. The four
-commands take about three minutes between them, most of it downloading model
-weights and waiting on OPA, and a cast at real speed is unwatchable. A `script`
+screen is written by hand. What is synthesised is the *timing*. The commands
+take about three minutes between them, most of it downloading model weights and
+waiting on OPA, and a cast at real speed is unwatchable. A `script`
 capture would also have no typing in it at all, and output that materialises
 instantly reads as a screenshot rather than a session.
 
@@ -12,26 +12,35 @@ Being explicit about which half is real matters. The scores, the field counts,
 the verdicts and the report are what the commands printed. The rhythm is
 invented, the way any screencast's rhythm is invented by the person recording.
 
-Four acts, because AICertify does a different job from GOPAL and needs the
+Three acts, because AICertify does a different job from GOPAL and needs the
 room. GOPAL decides things, so its demo is one beat: swap the model, the build
 fails. AICertify gathers things, and the interesting thing about it is how
 honest it is about the part it cannot gather.
 
     1. score-card   a real Hugging Face card, scored, in one screen
     2. explain      150 fields you must declare, 14 an evaluator computes
-    3. init/eval    scaffold a contract, run it, get 0 of 29
-    4. gap report   22 of 27 metrics supplied, and the five that are not
+    3. init/eval    answer them, evaluate, and get a named article back
 
-Act 3 ends on nothing passing. That is the point rather than an embarrassment:
-the scaffold asserts none of the 150 declarations, so none of the obligations
-that turn on them can be met. It is the same argument act 2 makes, arriving as
-a verdict instead of a number.
+Act 3 used to end on an empty contract failing all 29 policies. That is true
+and it is the argument act 2 makes, but as an ending it reads as "the tool does
+not work" to anyone who has not followed the reasoning. So it now answers the
+declarations first and ends where the product is actually differentiated: not
+on a score, but on `Article 14(1)-(2) oversight designed into the system`. A
+named provision and the specific control, which is what you can act on.
+
+The gap report was act 4 and has been dropped. Enumerating the metrics nobody
+has written an evaluator for is a good thing to show a contributor and a poor
+thing to show someone deciding whether to adopt. It lives in the contributing
+section of the page instead.
 
 Usage:
     record-demo.py <full.cast> [short.cast]
 
-The short cast is acts 1 and 2 only, for the README, where a 90-second loop is
-too long and JavaScript does not run.
+The short cast is acts 1 and 2 only, about 36 seconds, for the README. That
+loop autoplays above the fold and JavaScript does not run there, so it is a
+CSS-animated SVG and it has to be short enough to watch before deciding to
+scroll. The full cut runs about 70 seconds on the page, where a reader has
+chosen to watch it.
 """
 
 from __future__ import annotations
@@ -59,18 +68,18 @@ REACH_FOR_ENTER = 0.42  # hand leaves the letters, finds the return key
 ENTER_SETTLES = 0.16  # and the press registers before anything happens
 FIRST_BYTE = 0.30  # a command does not answer instantly
 THINKING = 1.9  # a command that clearly did some work
-READ_SHORT = 2.6
-READ_LONG = 5.4  # long enough to read a verdict and understand it
+READ_SHORT = 2.0
+READ_LONG = 3.4  # long enough to read a verdict and understand it
 BLINK = 0.53
-BLINKS = 6
+BLINKS = 4
 CURSOR = "█"
 
-SWEEP = 0.028  # per character, the pace of a pen moving
+SWEEP = 0.022  # per character, the pace of a pen moving
 HL_ON = "\x1b[43;30m"
 HL_OFF = "\x1b[0m"
 SAVE, RESTORE = "\x1b7", "\x1b8"
 
-TYPO_CHANCE = 0.55  # per command, not per character
+TYPO_CHANCE = 0.25  # per command, not per character
 NOTICE_TYPO = (0.22, 0.46)
 AFTER_FIX = (0.08, 0.19)
 
@@ -203,7 +212,7 @@ class Cast:
                 if needle in line and phrase in line:
                     up = sum(rows(rest) for rest in lines[idx:])
                     self.highlight(up, line.index(phrase), phrase)
-                    self.wait(0.34)
+                    self.wait(0.24)
                     break
 
     def write(self, dst: Path, title: str) -> None:
@@ -275,22 +284,32 @@ def main() -> int:
             contract.exists() and contract.stat().st_size > 1000,
             "init-contract produced no usable contract",
         )
-        # A declarations-only contract. The scaffold ships one placeholder
-        # interaction, and evaluating it pulls DeepEval into an LLM call that
-        # needs a provider key. The point of this act is the policy verdict,
-        # not the toxicity classifier, and act 4 covers the evaluators.
+        # Answer the declarations, the way a reader would before evaluating.
+        # The scaffold leaves all 150 null, and an unanswered contract fails
+        # everything: true, and the argument act 2 makes, but as an ending it
+        # reads as a broken tool rather than an unanswered questionnaire.
+        #
+        # Interactions are cleared because evaluating the placeholder one pulls
+        # DeepEval into an LLM call needing a provider key. This act is about
+        # the policy verdict, not the toxicity classifier.
         doc = json.loads(contract.read_text())
         doc["interactions"] = []
+        doc["application_name"] = "acme-triage-assistant"
+        answered = _answer_declarations(doc["context"])
         contract.write_text(json.dumps(doc, indent=2))
+        require(
+            answered > 100,
+            f"only {answered} declarations were answered; the scaffold shape "
+            "changed and act 3 would show an unanswered contract",
+        )
 
         evaluate = shell(
             f"{PY} -m aicertify.cli evaluate --contract contract.json "
             f"--policy eu_ai_act --report-format markdown --output-dir ./reports "
-            "2>&1 | tail -5",
+            "2>&1 | tail -4",
             cwd=work,
         )
-        summary = shell("head -8 reports/*.md", cwd=work)
-        gaps = shell(f"{PY} scripts/metric_gap_report.py 2>/dev/null | tail -12")
+        controls = shell('grep -m2 "Not Satisfied" reports/*.md | cut -c1-96', cwd=work)
 
         # Guards. Each of these is a fact the cast puts on screen, so if the
         # tool stops saying it the recording is a lie and must not be written.
@@ -312,17 +331,12 @@ def main() -> int:
             "the line explaining why you must not hand-write metrics is gone",
         )
         require(
-            "Red Count:** 29" in summary and "Green Count:** 0" in summary,
-            "an empty contract no longer fails all 29 policies, so act 3 "
-            "has lost its point",
-        )
-        require(
-            "22 of 27" in gaps,
-            "the metric gap report no longer says 22 of 27; act 4's "
-            "contribution hook needs the real number",
+            "Article 14" in controls and "Not Satisfied" in controls,
+            "the report no longer names an unsatisfied Article 14 control, and "
+            "act 3 ends on a named provision rather than on a score",
         )
 
-        acts = build(card, declare, measure, evaluate, summary, gaps)
+        acts = build(card, declare, measure, evaluate, controls)
         acts.write(full_dst, "AICertify: what it measures, and what it cannot")
 
         if short_dst:
@@ -331,6 +345,87 @@ def main() -> int:
         return 0
     finally:
         shutil.rmtree(work, ignore_errors=True)
+
+
+def _answer_declarations(context: dict) -> int:
+    """Fill every unanswered declaration with a plausible answer.
+
+    The scaffold leaves all 150 as null. Types are taken from GOPAL's coverage
+    data where it has inferred one, and from the field name otherwise: anything
+    that reads as a quantity gets a number, anything plural gets a list, and the
+    rest are the yes/no assertions that make up most of the Act.
+
+    These are not claims about a real system. They stand in for a compliance
+    officer having answered the questionnaire, which is the state act 3 needs
+    to show and the state the scaffold exists to reach.
+    """
+    types: dict[str, str] = {}
+    coverage = (
+        REPO / "aicertify" / "opa_policies" / "docs" / "coverage" / "coverage.json"
+    )
+    if coverage.exists():
+        data = json.loads(coverage.read_text())
+        for framework in data.get("frameworks", []):
+            if "eu_ai_act" in (framework.get("id") or ""):
+                for policy in framework.get("policies", []):
+                    types.update(policy.get("input_field_types", {}))
+
+    quantities = (
+        "completeness",
+        "score",
+        "months",
+        "days",
+        "count",
+        "risk",
+        "level",
+        "number",
+        "percentage",
+        "rate",
+        "size",
+    )
+    collections_ = (
+        "measures",
+        "fields",
+        "controls",
+        "reasons",
+        "sections",
+        "list",
+        "categories",
+        "purposes",
+        "records",
+    )
+
+    def answer(path: str):
+        kind = types.get(path)
+        if kind == "boolean":
+            return True
+        if kind == "number":
+            return 0.95
+        if kind == "string":
+            return "documented"
+        if kind == "list":
+            return []
+        leaf = path.rsplit(".", 1)[-1]
+        if any(word in leaf for word in quantities):
+            return 0.95
+        if any(word in leaf for word in collections_):
+            return []
+        return True
+
+    filled = 0
+
+    def walk(node: dict, path: str = "") -> None:
+        nonlocal filled
+        for key, value in list(node.items()):
+            here = f"{path}.{key}" if path else key
+            if isinstance(value, dict):
+                walk(value, here)
+            elif value is None:
+                node[key] = answer(here)
+                filled += 1
+
+    walk(context)
+    return filled
 
 
 def act_one(cast: Cast, card: str) -> None:
@@ -349,10 +444,16 @@ def act_one(cast: Cast, card: str) -> None:
     cast.wait(READ_LONG)
 
 
-def act_two(cast: Cast, declare: str, measure: str) -> None:
-    """The split that the whole product turns on."""
-    cast.command("# so what does the EU AI Act actually ask for?")
-    cast.wait(0.5)
+def act_two(cast: Cast, declare: str, measure: str, narrate: bool = True) -> None:
+    """The split that the whole product turns on.
+
+    `narrate` is off for the README cut. That loop autoplays above the fold and
+    has to be short enough that a reader sees the whole thing before deciding to
+    scroll, so it drops the framing line the page version can afford.
+    """
+    if narrate:
+        cast.command("# so what does the EU AI Act actually ask for?")
+        cast.wait(0.5)
     cast.command("aicertify explain eu_ai_act | head -12")
     cast.block(declare, first_byte=THINKING)
     cast.wait(0.7)
@@ -375,37 +476,32 @@ def act_two(cast: Cast, declare: str, measure: str) -> None:
 def build_short(card: str, declare: str, measure: str) -> Cast:
     cast = Cast()
     act_one(cast, card)
-    act_two(cast, declare, measure)
-    cast.blink()
+    act_two(cast, declare, measure, narrate=False)
+    cast.blink(3)
     return cast
 
 
-def build(card, declare, measure, evaluate, summary, gaps) -> Cast:
+def build(card, declare, measure, evaluate, controls) -> Cast:
     cast = Cast()
     act_one(cast, card)
     act_two(cast, declare, measure)
 
-    # Act 3: scaffold, run, and find out you have answered nothing.
+    # Act 3: answer them, evaluate, and get a provision back rather than a score.
     cast.command("aicertify init-contract --policy eu_ai_act > contract.json")
-    cast.wait(THINKING + 0.9)
+    cast.wait(THINKING + 0.7)
+    cast.command("# 150 declarations to answer. answered, then:")
+    cast.wait(0.5)
     cast.command("aicertify evaluate --contract contract.json --policy eu_ai_act")
     cast.block(evaluate, first_byte=THINKING)
     cast.wait(0.8)
 
-    cast.command("head -8 reports/*.md")
-    cast.block(summary)
+    # The ending. Not a count, which reads as a grade, but the named provision
+    # and the specific control, which is the thing you can act on and the thing
+    # a black-box compliance score cannot give you.
+    cast.command('grep -m2 "Not Satisfied" reports/*.md')
+    cast.block(controls)
     cast.wait(0.7)
-    cast.sweep(summary, [("Red Count", "29"), ("Green Count", "0")])
-    cast.wait(READ_LONG)
-
-    # Act 4: the tool enumerating its own gaps, which is a contributor's
-    # to-do list rather than a caveat.
-    cast.command("# which metrics can an evaluator supply today?")
-    cast.wait(0.5)
-    cast.command("python scripts/metric_gap_report.py | tail -12")
-    cast.block(gaps, first_byte=THINKING)
-    cast.wait(0.8)
-    cast.sweep(gaps, [("TOTAL", "22 of 27")])
+    cast.sweep(controls, [("Article 14", "Article 14(1)-(2)")])
     cast.wait(READ_LONG)
     cast.blink()
     return cast
