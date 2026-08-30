@@ -33,18 +33,24 @@ from pathlib import Path
 # The library logs at INFO through evaluation; the report below is the output.
 logging.disable(logging.WARNING)
 
-# Floors, not exact counts. See tests/test_framework_golden.py for the same
-# table and the reasoning behind floors: the policy library is a submodule that
-# is bumped deliberately, and a bump that adds a policy must not fail a release.
-# A bump that removes verdicts must.
+# Floors: 80% of the count declared today, never below 1. The same rule and the
+# same values as MINIMUM_EXPECTED in tests/test_framework_golden.py, which
+# carries the reasoning; the two cannot import from each other because this runs
+# against an installed wheel with no repository on the path.
+#
+# This covers the eight frameworks a release most needs to prove, not all
+# fourteen. A packaging failure that drops the policy library fails every
+# framework at once, so eight demonstrates it as well as fourteen and keeps the
+# release gate quick. The golden tests cover all fourteen, where the risk being
+# checked is delivery rather than packaging.
 MINIMUM_VERDICTS = {
-    "eu_ai_act": 25,
-    "uk": 6,
-    "nist": 5,
-    "bfs": 4,
-    "legal": 3,
+    "eu_ai_act": 23,
+    "uk": 4,
+    "nist": 4,
+    "bfs": 3,
+    "legal": 2,
     "global": 4,
-    "healthcare": 2,
+    "healthcare": 1,
     "education": 4,
 }
 
