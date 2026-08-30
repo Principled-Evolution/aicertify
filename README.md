@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <em>Audit your AI against the EU AI Act, the UK AI framework, NIST AI RMF and six more international frameworks: one contract, one command, one report.</em>
+  <em>Open-source compliance-as-code for AI systems: one contract, executable OPA/Rego policies, and reproducible evidence across the EU AI Act, UK AI governance, NIST AI RMF, and more.</em>
 </p>
 
 <p align="center">
@@ -24,7 +24,7 @@
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12%2B-blue.svg?style=flat-square" alt="Python 3.12+"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="Apache 2.0"></a>
   <a href="https://www.openpolicyagent.org/ecosystem/entry/principled-evolution"><img src="https://img.shields.io/badge/built%20on-OPA-7D4698.svg?style=flat-square" alt="Built on OPA"></a>
-  <a href="https://github.com/Principled-Evolution/gopal"><img src="https://img.shields.io/badge/policies-91%20rego-2f9e44.svg?style=flat-square" alt="91 Rego Policies"></a>
+  <a href="https://github.com/Principled-Evolution/gopal"><img src="https://img.shields.io/badge/policies-92%20rego-2f9e44.svg?style=flat-square" alt="92 Rego Policies"></a>
   <a href="https://makeapullrequest.com"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome"></a>
 </p>
 
@@ -37,21 +37,30 @@
 
 <br>
 
-Regulators are moving faster than your governance docs. The EU AI Act is in force. NIST AI RMF is the de-facto US standard. India, Brazil, and Singapore are next. `AICertify` lets you encode those obligations as executable [Open Policy Agent](https://www.openpolicyagent.org/) policies, run them against captured AI interactions, and produce audit-ready reports in PDF, Markdown, JSON, or HTML.
+**AICertify is the open execution and evidence layer for AI governance.** Describe an AI system in a contract, supply the facts only your organisation can know, attach or compute measured metrics, evaluate that evidence against versioned [GOPAL](https://github.com/Principled-Evolution/gopal) policies through [Open Policy Agent](https://www.openpolicyagent.org/), and generate dated PDF, Markdown, JSON, or HTML reports.
 
-It's the missing link between *"we have a responsible-AI policy"* and *"we can prove it."*
+**The goal is simple: move from “we have an AI policy” to evidence another engineer, auditor, or risk team can inspect and reproduce.**
 
-**Use it when you need to:**
+**Use AICertify to:**
 
-- turn AI governance policies into executable checks
-- produce audit-ready compliance evidence on every release
-- evaluate AI interactions against named regulatory frameworks (EU AI Act, NIST AI RMF, FERPA, fair-lending, FAA/EASA aviation, …)
-- generate Markdown, JSON, HTML, or PDF reports your auditor can read
-- integrate AI compliance checks into CI/CD ([GitHub Actions guide](docs/integrations/github-actions.md))
+- evaluate an AI system against named governance and regulatory policy sets, including the EU AI Act, UK AI governance, NIST AI RMF, fair lending, education, healthcare, and aviation
+- keep organisation-declared facts distinct from evaluator-produced measurements
+- run the same inspectable OPA/Rego policy logic locally, in CI/CD, or in an air-gapped environment
+- generate portable PDF, Markdown, JSON, or HTML evidence with per-policy results
+- extend the stack with your own Rego policies and evaluator adapters ([GitHub Actions guide](docs/integrations/github-actions.md))
 
-AICertify is part of the [Open Policy Agent ecosystem](https://www.openpolicyagent.org/ecosystem/entry/principled-evolution), built on the same policy engine that powers Kubernetes admission, microservice authorisation, and infrastructure governance at scale.
+AICertify is part of the [Open Policy Agent ecosystem](https://www.openpolicyagent.org/ecosystem/entry/principled-evolution), using the same policy engine widely used for Kubernetes admission, service authorisation, and infrastructure policy.
 
-> ⭐ **If AICertify helps you, please star the repo.** It helps AI governance and policy-as-code practitioners discover the project.
+> ⭐ **Building AI governance as code? Star AICertify so other engineers, auditors, and policy-as-code practitioners can find it.**
+
+<p align="center">
+  <b>Jump to:</b>
+  <a href="#quick-start">Run the demo</a> &middot;
+  <a href="#why-aicertify">Why AICertify</a> &middot;
+  <a href="#regulatory-coverage">Coverage</a> &middot;
+  <a href="#see-the-output">See a report</a> &middot;
+  <a href="#contributing">Contribute</a>
+</p>
 
 ---
 
@@ -68,19 +77,11 @@ curl -L https://openpolicyagent.org/downloads/latest/opa_linux_amd64 -o /usr/loc
 aicertify demo
 ```
 
-`aicertify demo` loads a bundled sample contract, evaluates it against the EU AI Act policy set via OPA, and writes `aicertify_demo_report.md` to the current directory. Open the report: that's what your audit deliverable looks like.
+`aicertify demo` loads a bundled sample contract, evaluates it against the EU AI Act policy set via OPA, and writes `aicertify_demo_report.md` to the current directory. Open the report to inspect the actual output format before integrating AICertify.
 
-> **Expect around two minutes, and expect denials.** Most of the time goes on
-> importing the evaluator stack, which pulls torch and transformers. The bundled
-> contract declares no compliance evidence, so the policies deny — that is the
-> correct answer, and the demo now tells you which two commands show what to
-> declare. No API keys are used, even if `OPENAI_API_KEY` is set in your
-> environment; pass `--with-llm-metrics` to opt in to the LLM-judged fairness and
-> toxicity scoring, which is billable and much slower.
+> **The bundled demo intentionally fails closed.** Its contract contains no compliance declarations, so policies that require that evidence deny. Most runtime is evaluator-stack import, including torch and transformers. No API keys are used, even if `OPENAI_API_KEY` is set; pass `--with-llm-metrics` to opt in to LLM-judged fairness and toxicity scoring, which can incur model/API cost and takes longer.
 >
-> If you only want the Rego verdicts and none of the evaluator machinery, the
-> [gopal](https://github.com/Principled-Evolution/gopal) policy bundles evaluate
-> in seconds with just the `opa` binary.
+> If you only need policy verdicts without the evaluator stack, the [gopal](https://github.com/Principled-Evolution/gopal) bundles run directly with the `opa` binary.
 
 <p align="center">
   <img src="docs/demo.gif" alt="aicertify demo recording: banner, spinners, evaluation progress, generated report path" width="85%" />
@@ -90,9 +91,7 @@ For richer evaluations (LangFair fairness metrics, DeepEval content-safety scori
 
 ### Finding out what a framework needs
 
-The hard part of a first real run is not installing anything, it is knowing what to put
-in the contract. The EU AI Act policies need 155 distinct input fields, and guessing
-them from evaluation failures is miserable. Two commands answer it up front.
+The first integration question is what the selected policies actually read. The EU AI Act policy set needs 155 distinct input fields; `aicertify explain` and `aicertify init-contract` expose them before evaluation rather than requiring you to infer them from failures.
 
 `aicertify explain` lists every field a framework's policies read, split by who is
 supposed to supply it:
@@ -182,30 +181,25 @@ app.add_interaction(
 await app.evaluate(regulations=regs, report_format="pdf", output_dir="reports")
 ```
 
-That's the whole loop. **Contract → interactions → evaluate → report.**
+That's the whole loop. **Contract → evidence → policy evaluation → report.**
 
 ---
 
 ## Why AICertify
 
-Most AI-governance tooling is either:
+Evaluation libraries such as Fairlearn and AI Fairness 360 are designed to measure specific properties. Governance platforms address broader inventory, workflow, and assurance-management needs. **AICertify addresses the open execution layer between them:** it combines declared system facts with measured evidence, runs inspectable GOPAL/Rego policies through OPA, and emits portable, dated results.
 
-- **A vendor SaaS** that locks your audit trail behind a login (Credo AI, Holistic AI), or
-- **A research toolkit** focused on a single dimension: fairness metrics (Fairlearn, AI Fairness 360) or explainability (Microsoft RAI Toolbox).
+The differentiator is reproducibility. You can inspect the policy logic, pin versions, run locally or air-gapped, review changes in Git, and retain the resulting evidence outside a vendor account.
 
-Neither produces the document a regulator actually asks for: *evidence that you tested this AI system against a named regulation, with reproducible policies and a dated report.*
-
-AICertify is built for that artifact.
-
-| | AICertify | Fairlearn / AIF360 | MS RAI Toolbox | Credo AI |
+| | AICertify | Fairlearn / AIF360 | MS RAI Toolbox | Governance SaaS |
 |---|---|---|---|---|
-| Open source | ✅ Apache 2.0 | ✅ MIT | ✅ MIT | ❌ Closed |
-| On-prem / air-gapped | ✅ | ✅ | ✅ | ❌ |
-| Named regulatory frameworks | **EU AI Act, NIST RMF, Brazil AI Bill, India Digital Policy, +9 more** | ❌ (fairness only) | ❌ (toolkit) | ✅ |
-| Policy-as-code (auditable, diff-able) | ✅ OPA / Rego | ❌ | ❌ | ❌ |
-| Industry verticals out of the box | Aviation, Banking, Healthcare, Automotive, Education | ❌ | ❌ | Partial |
-| Generates audit-ready reports | ✅ PDF / MD / JSON / HTML | ❌ | Partial | ✅ |
-| Custom policies | ✅ Drop a `.rego` file | ❌ | N/A | ✅ (paid) |
+| Open source | ✅ Apache 2.0 | ✅ MIT | ✅ MIT | Varies |
+| Local / air-gapped execution | ✅ | ✅ | ✅ | Varies |
+| Named governance / regulatory policy sets | ✅ via GOPAL | ❌ (measurement library) | ❌ (toolkit) | Common |
+| Inspectable policy-as-code | ✅ OPA / Rego | ❌ | ❌ | Varies |
+| Industry-specific policy coverage | ✅ | ❌ | ❌ | Varies |
+| Portable dated reports | ✅ PDF / MD / JSON / HTML | ❌ | Partial | Common |
+| Custom policy logic | ✅ Rego | ❌ | N/A | Product-specific |
 
 ---
 
@@ -214,16 +208,16 @@ AICertify is built for that artifact.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram2_architecture_dark.svg">
-    <img src="diagrams/diagram2_architecture_light.svg" alt="AICertify architecture: Your AI App feeds a Contract, which flows through Evaluators (Fairness, ContentSafety, RiskManagement, Compliance) into the OPA Engine with 91 Rego policies, producing an audit deliverable via the Report Generator" width="85%" />
+    <img src="diagrams/diagram2_architecture_light.svg" alt="AICertify architecture: an AI application contract supplies system facts and interactions; evaluators and adapters produce measured metrics; OPA evaluates 92 GOPAL Rego policies; the report generator emits portable evidence" width="85%" />
   </picture>
 </p>
 
-1. **Contract**: a JSON description of your AI application: model, version, captured interactions, metadata.
-2. **Evaluators**: pluggable Python evaluators (Fairness, ContentSafety, RiskManagement, Compliance) extract metrics from your interactions.
-3. **OPA policies**: the metrics get evaluated against the regulation's Rego policies (sourced from the [gopal](https://github.com/Principled-Evolution/gopal) policy library).
-4. **Report**: a formatted, dated artifact you can hand to legal, an auditor, or your AI risk committee.
+1. **Contract**: identifies the AI application and carries captured interactions plus the declared facts supplied by the organisation.
+2. **Evaluators and adapters**: produce measured metrics or map outputs from tools you already run onto the canonical fields GOPAL reads.
+3. **Policy evaluation**: OPA evaluates the combined declarations and measurements against versioned [gopal](https://github.com/Principled-Evolution/gopal) Rego policies.
+4. **Report**: emits a dated PDF, Markdown, JSON, or HTML artifact with the resulting policy evaluations.
 
-Because the policies are declarative Rego, they version, diff, and review like any other code. When a regulation changes, you bump the policy, not your evaluation harness.
+AICertify keeps evidence production separate from policy semantics: evaluators and adapters supply evidence, GOPAL defines the rules, and OPA produces the verdicts. That separation makes both evidence mappings and policy changes independently reviewable.
 
 ---
 
@@ -232,11 +226,11 @@ Because the policies are declarative Rego, they version, diff, and review like a
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram3_regulatory_coverage_dark.svg">
-    <img src="diagrams/diagram3_regulatory_coverage_light.svg" alt="Regulatory coverage: 91 policies across 9 frameworks and 6 industries -- EU AI Act, NIST AI RMF, India Digital Policy, Brazil AI Bill, RTCA DO-365, FAA Part 107, EASA SORA, ICAO Doc 10019, Healthcare, Banking and Financial Services, Automotive, Education, Global, Aviation, AIOps, Corporate" width="85%" />
+    <img src="diagrams/diagram3_regulatory_coverage_light.svg" alt="Regulatory coverage: 92 executable policies spanning international frameworks, industry-specific requirements, and global/operational AI governance" width="85%" />
   </picture>
 </p>
 
-AICertify runs against the [gopal](https://github.com/Principled-Evolution/gopal) policy library: **91 production OPA policies** across these frameworks:
+AICertify runs against the [gopal](https://github.com/Principled-Evolution/gopal) 2.0.0 policy library: **92 executable OPA policies** across these frameworks:
 
 ### International
 - **EU AI Act** (29 policies): prohibited practices, biometric ID, manipulation, transparency, technical documentation, human oversight, GPAI obligations, conformity assessment and CE marking. Every obligation area is implemented; see [gopal's coverage matrix](https://github.com/Principled-Evolution/gopal/blob/main/docs/coverage/eu-ai-act.md) for the article-by-article mapping.
@@ -268,9 +262,9 @@ Don't see your regulation? [Add a Rego file](https://github.com/Principled-Evolu
 ## CLI
 
 ```bash
-python -m aicertify.cli \
+aicertify evaluate \
   --contract path/to/contract.json \
-  --policy aicertify/opa_policies/international/eu_ai_act/v1 \
+  --policy eu_ai_act \
   --report-format pdf \
   --output-dir reports/
 ```
@@ -280,7 +274,7 @@ Useful flags:
 | Flag | Purpose |
 |---|---|
 | `--contract` | Path to the AI application contract JSON |
-| `--policy` | Path to the OPA policy folder to evaluate against |
+| `--policy` | Framework name or path to an OPA policy folder |
 | `--report-format` | `pdf`, `markdown`, `json`, `html` (default: `pdf`) |
 | `--evaluators` | Restrict to specific evaluators (e.g. `Fairness ContentSafety`) |
 | `--output-dir` | Where reports land (default: `./reports`) |
@@ -306,24 +300,19 @@ You don't have to install anything to see what AICertify produces. Pre-generated
   </picture>
 </p>
 
-Open the PDFs. That's what your auditor wants.
+Open the PDFs to inspect the actual deliverable before installing AICertify.
 
 ---
 
 ## Status
 
-AICertify is in **beta (v0.8.0)**. The API may evolve before the 1.0 release. Production-ready frameworks today:
+AICertify is in **beta (v0.8.0)**. The API may evolve before the 1.0 release. All bundled GOPAL policies are executable; the important distinction is **the depth of evidence behind each check**:
 
-Every policy in the library is implemented. There are no scaffolds left, so the useful
-distinction is no longer implemented-or-not but **how deep the check goes**:
+- ✅ **Threshold checks against measured values.** Global fairness/content-safety/toxicity checks, EU AI Act fairness, healthcare diagnostic safety, and BFS fair lending/model risk compare evaluator-produced measurements against explicit thresholds.
+- ✅ **Structural checks against supplied artifacts.** EU AI Act, aviation, automotive, education, and legal policies validate fields extracted or declared from the documentation and evidence supplied to the contract.
+- ⚠️ **Declared facts.** NIST AI RMF Map/Measure/Manage, the UK principles, and operational policies include assertions that an evaluator cannot independently infer, such as `input.map.intended_use_documented`. AICertify records and evaluates those assertions; it does not convert them into independent verification.
 
-- ✅ **Threshold checks against measured values.** Global (fairness, content safety, toxicity, transparency), EU AI Act fairness, healthcare diagnostic safety, BFS fair lending and model risk. These compare a number your evaluators produced against a threshold.
-- ✅ **Structural checks against the document you supply.** The EU AI Act's 29 policies, the aviation set (19 across the regulators and the vertical), automotive, education, legal.
-- ⚠️ **Declared booleans.** NIST AI RMF Map, Measure and Manage, the UK principles, and the operational categories gate on a self-attestation such as `input.map.intended_use_documented` rather than inspecting the artefact behind it. That is a claim the policy records and enforces, not independent verification. gopal's [NIST matrix](https://github.com/Principled-Evolution/gopal/blob/main/docs/coverage/nist-ai-rmf.md) states this in the same terms, and notes that the orchestrator's verdict inherits that shallowness.
-
-Which category a policy falls into is derivable: `docs/coverage/coverage.json` in gopal
-lists the fields each policy requires, and a policy asking for `metrics.*` is comparing
-measurements while one asking for `governance.*` is recording declarations.
+GOPAL's generated coverage metadata makes this distinction inspectable: policies reading `metrics.*` depend on measured inputs, while declaration paths identify facts supplied by the organisation.
 
 ---
 
@@ -332,29 +321,24 @@ measurements while one asking for `governance.*` is recording declarations.
 If you already use OPA for Kubernetes admission, microservice authorisation, or infrastructure governance, AICertify is the AI-system slot in your existing policy strategy.
 
 - **Bring your own Rego policies.** Drop a `.rego` file into the policy folder and it evaluates alongside the bundled set.
-- **Evaluate AI interactions through OPA.** Captured inputs, outputs, and metrics flow into your policies via the standard OPA `input` document.
-- **Generate audit-ready evidence.** PDF / Markdown / JSON / HTML, one command.
-- **Use [gopal](https://github.com/Principled-Evolution/gopal) as the policy library underneath.** 91 production Rego policies covering the EU AI Act, the UK AI framework, NIST AI RMF, aviation safety, FERPA, fair lending, UK financial services and legal practice.
+- **Evaluate AI interactions through OPA.** Captured inputs, outputs, declarations, and metrics flow into policies via the standard OPA `input` document.
+- **Generate portable evidence.** PDF / Markdown / JSON / HTML, one command.
+- **Use [gopal](https://github.com/Principled-Evolution/gopal) as the policy library underneath.** 92 executable Rego policies cover the EU AI Act, UK AI governance, NIST AI RMF, aviation safety, FERPA/COPPA, fair lending, UK financial services, legal practice, and more.
 
 AICertify is listed in the [Open Policy Agent ecosystem](https://www.openpolicyagent.org/ecosystem/entry/principled-evolution) as the AI-governance entry alongside Gopal.
 
 ---
 
-## Why AICertify?
+## What makes an AICertify result reproducible
 
-Most AI governance programs live in PDFs, spreadsheets, and policy documents. They describe what *should* happen but do not prove what *did*.
+AICertify does not ask you to trust a proprietary compliance score. A result can be traced through four layers:
 
-AICertify turns governance rules into executable policy checks.
+1. **System evidence** — the contract identifies the application, model/version, interactions, and organisation-supplied facts.
+2. **Measurements** — evaluators and adapters publish the metrics they actually produced under canonical GOPAL field names.
+3. **Policy** — the applicable governance logic is readable, versioned Rego from GOPAL.
+4. **Evaluation** — OPA produces the policy verdicts, which AICertify packages into a dated report.
 
-Instead of saying:
-
-> "Our chatbot follows our responsible AI policy."
-
-You can produce:
-
-> "Here is the captured interaction, the policy version, the OPA evaluation result, and the generated audit report."
-
-AICertify is for AI teams, governance teams, auditors, and platform engineers who need AI compliance evidence that can be **read, run, reviewed, and repeated**.
+The objective is evidence that can be **read, rerun, reviewed, and repeated**—not a claim that the software replaces legal judgment, regulatory conformity assessment, or independent assurance.
 
 See the full positioning in [docs/why-aicertify.md](docs/why-aicertify.md).
 
