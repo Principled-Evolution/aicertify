@@ -1,0 +1,407 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="714" height="932" viewBox="0 0 714 932" role="img" aria-label="aicertify: 150 declared, 14 measured">
+<title>aicertify: 150 declared, 14 measured</title>
+<desc>$ aicertify score-card bert-base-uncased
+
+bert-base-uncased
+  completeness  0.49   (threshold 0.8)
+  quality       0.66
+  BELOW THRESHOLD
+
+    intended_use             1.00  ####################
+    training_data            0.67  #############
+    caveats_recommendations  0.50  ##########
+    factors                  0.50  ##########
+    metrics                  0.50  ##########
+    quantitative_analyses    0.50  ##########
+    ethical_considerations   0.33  #######
+    model_details            0.33  ######
+    evaluation_data          0.00
+
+A model card answers part of what Annex IV asks and then stops.
+This is the documentation-completeness gap, not a compliance verdict.
+
+scored by GOPAL 2.0.0 (global/v1/documentation/model_card_score), via aicertify 0.7.0
+$ # so what does the EU AI Act actually ask for?
+$ aicertify explain eu_ai_act | head -12
+
+eu_ai_act  —  29 policies
+
+Fields you must declare (150)
+  No evaluator can observe these. They are facts about your system,
+  your process, or your paperwork, so you assert them in the contract.
+
+  accuracy.declared_in_instructions              technical_robustness
+  accuracy.metrics_declared                      technical_robustness
+  assessment.completed                           conformity_assessment
+  assessment.harmonised_standards_applied        conformity_assessment
+  assessment.notified_body_involved              conformity_assessment
+$ aicertify explain eu_ai_act | grep -A8 "produced by evaluators"
+Fields produced by evaluators (14)
+  Computed at evaluation time from your interactions. Do not hand-write
+  these: asserting your own fairness score defeats the point.
+
+  metrics.content_safety.score                   eu_fairness [content_safety evaluator]
+  metrics.emotion_recognition.combined_score     emotion_recognition
+  metrics.emotion_recognition.educational_context emotion_recognition
+  metrics.emotion_recognition.workplace_context  emotion_recognition
+  metrics.fairness.gender_bias                   eu_fairness [fairness evaluator]
+$</desc>
+<style>.c0_0{animation:c0_0 40.30s linear infinite}@keyframes c0_0{0%,1.489%{opacity:0}1.609%,100%{opacity:1}}.c0_2{animation:c0_2 40.30s linear infinite}@keyframes c0_2{0%,1.702%{opacity:0}1.822%,100%{opacity:1}}.c0_3{animation:c0_3 40.30s linear infinite}@keyframes c0_3{0%,1.856%{opacity:0}1.976%,100%{opacity:1}}.c0_4{animation:c0_4 40.30s linear infinite}@keyframes c0_4{0%,2.066%{opacity:0}2.186%,100%{opacity:1}}.c0_5{animation:c0_5 40.30s linear infinite}@keyframes c0_5{0%,2.177%{opacity:0}2.297%,100%{opacity:1}}.c0_6{animation:c0_6 40.30s linear infinite}@keyframes c0_6{0%,2.353%{opacity:0}2.473%,100%{opacity:1}}.c0_7{animation:c0_7 40.30s linear infinite}@keyframes c0_7{0%,2.464%{opacity:0}2.584%,100%{opacity:1}}.c0_8{animation:c0_8 40.30s linear infinite}@keyframes c0_8{0%,2.582%{opacity:0}2.702%,100%{opacity:1}}.c0_9{animation:c0_9 40.30s linear infinite}@keyframes c0_9{0%,2.780%{opacity:0}2.900%,100%{opacity:1}}.c0_10{animation:c0_10 40.30s linear infinite}@keyframes c0_10{0%,2.927%{opacity:0}3.047%,100%{opacity:1}}.c0_12{animation:c0_12 40.30s linear infinite}@keyframes c0_12{0%,3.275%{opacity:0}3.395%,100%{opacity:1}}.c0_13{animation:c0_13 40.30s linear infinite}@keyframes c0_13{0%,3.427%{opacity:0}3.547%,100%{opacity:1}}.c0_14{animation:c0_14 40.30s linear infinite}@keyframes c0_14{0%,3.598%{opacity:0}3.718%,100%{opacity:1}}.c0_15{animation:c0_15 40.30s linear infinite}@keyframes c0_15{0%,3.794%{opacity:0}3.914%,100%{opacity:1}}.c0_16{animation:c0_16 40.30s linear infinite}@keyframes c0_16{0%,3.935%{opacity:0}4.055%,100%{opacity:1}}.c0_17{animation:c0_17 40.30s linear infinite}@keyframes c0_17{0%,4.072%{opacity:0}4.192%,100%{opacity:1}}.c0_18{animation:c0_18 40.30s linear infinite}@keyframes c0_18{0%,4.264%{opacity:0}4.384%,100%{opacity:1}}.c0_19{animation:c0_19 40.30s linear infinite}@keyframes c0_19{0%,4.476%{opacity:0}4.596%,100%{opacity:1}}.c0_20{animation:c0_20 40.30s linear infinite}@keyframes c0_20{0%,4.635%{opacity:0}4.755%,100%{opacity:1}}.c0_21{animation:c0_21 40.30s linear infinite}@keyframes c0_21{0%,4.755%{opacity:0}4.875%,100%{opacity:1}}.c0_23{animation:c0_23 40.30s linear infinite}@keyframes c0_23{0%,5.012%{opacity:0}5.132%,100%{opacity:1}}.c0_24{animation:c0_24 40.30s linear infinite}@keyframes c0_24{0%,5.156%{opacity:0}5.276%,100%{opacity:1}}.c0_25{animation:c0_25 40.30s linear infinite}@keyframes c0_25{0%,5.322%{opacity:0}5.442%,100%{opacity:1}}.c0_26{animation:c0_26 40.30s linear infinite}@keyframes c0_26{0%,5.461%{opacity:0}5.581%,100%{opacity:1}}.c0_27{animation:c0_27 40.30s linear infinite}@keyframes c0_27{0%,5.677%{opacity:0}5.797%,100%{opacity:1}}.c0_28{animation:c0_28 40.30s linear infinite}@keyframes c0_28{0%,5.808%{opacity:0}5.928%,100%{opacity:1}}.c0_29{animation:c0_29 40.30s linear infinite}@keyframes c0_29{0%,5.967%{opacity:0}6.087%,100%{opacity:1}}.c0_30{animation:c0_30 40.30s linear infinite}@keyframes c0_30{0%,6.109%{opacity:0}6.229%,100%{opacity:1}}.c0_31{animation:c0_31 40.30s linear infinite}@keyframes c0_31{0%,6.229%{opacity:0}6.349%,100%{opacity:1}}.c0_32{animation:c0_32 40.30s linear infinite}@keyframes c0_32{0%,6.434%{opacity:0}6.554%,100%{opacity:1}}.c0_33{animation:c0_33 40.30s linear infinite}@keyframes c0_33{0%,6.603%{opacity:0}6.723%,100%{opacity:1}}.c0_34{animation:c0_34 40.30s linear infinite}@keyframes c0_34{0%,6.774%{opacity:0}6.894%,100%{opacity:1}}.c0_35{animation:c0_35 40.30s linear infinite}@keyframes c0_35{0%,6.906%{opacity:0}7.026%,100%{opacity:1}}.c0_36{animation:c0_36 40.30s linear infinite}@keyframes c0_36{0%,7.078%{opacity:0}7.198%,100%{opacity:1}}.c0_37{animation:c0_37 40.30s linear infinite}@keyframes c0_37{0%,7.173%{opacity:0}7.293%,100%{opacity:1}}.c0_38{animation:c0_38 40.30s linear infinite}@keyframes c0_38{0%,7.277%{opacity:0}7.397%,100%{opacity:1}}.c0_39{animation:c0_39 40.30s linear infinite}@keyframes c0_39{0%,7.385%{opacity:0}7.505%,100%{opacity:1}}.l2{animation:l2 40.30s linear infinite}@keyframes l2{0%,13.539%{opacity:0}13.659%,100%{opacity:1}}.l3{animation:l3 40.30s linear infinite}@keyframes l3{0%,13.539%{opacity:0}13.659%,100%{opacity:1}}.l4{animation:l4 40.30s linear infinite}@keyframes l4{0%,13.763%{opacity:0}13.883%,100%{opacity:1}}.l5{animation:l5 40.30s linear infinite}@keyframes l5{0%,13.763%{opacity:0}13.883%,100%{opacity:1}}.l7{animation:l7 40.30s linear infinite}@keyframes l7{0%,13.986%{opacity:0}14.106%,100%{opacity:1}}.l8{animation:l8 40.30s linear infinite}@keyframes l8{0%,13.986%{opacity:0}14.106%,100%{opacity:1}}.l9{animation:l9 40.30s linear infinite}@keyframes l9{0%,13.986%{opacity:0}14.106%,100%{opacity:1}}.l10{animation:l10 40.30s linear infinite}@keyframes l10{0%,14.209%{opacity:0}14.329%,100%{opacity:1}}.l11{animation:l11 40.30s linear infinite}@keyframes l11{0%,14.209%{opacity:0}14.329%,100%{opacity:1}}.l12{animation:l12 40.30s linear infinite}@keyframes l12{0%,14.209%{opacity:0}14.329%,100%{opacity:1}}.l13{animation:l13 40.30s linear infinite}@keyframes l13{0%,14.433%{opacity:0}14.553%,100%{opacity:1}}.l14{animation:l14 40.30s linear infinite}@keyframes l14{0%,14.433%{opacity:0}14.553%,100%{opacity:1}}.l15{animation:l15 40.30s linear infinite}@keyframes l15{0%,14.433%{opacity:0}14.553%,100%{opacity:1}}.l17{animation:l17 40.30s linear infinite}@keyframes l17{0%,14.656%{opacity:0}14.776%,100%{opacity:1}}.l18{animation:l18 40.30s linear infinite}@keyframes l18{0%,14.656%{opacity:0}14.776%,100%{opacity:1}}.l20{animation:l20 40.30s linear infinite}@keyframes l20{0%,14.879%{opacity:0}14.999%,100%{opacity:1}}.c21_0{animation:c21_0 40.30s linear infinite}@keyframes c21_0{0%,33.496%{opacity:0}33.616%,100%{opacity:1}}.c21_2{animation:c21_2 40.30s linear infinite}@keyframes c21_2{0%,33.633%{opacity:0}33.753%,100%{opacity:1}}.c21_4{animation:c21_4 40.30s linear infinite}@keyframes c21_4{0%,33.916%{opacity:0}34.036%,100%{opacity:1}}.c21_5{animation:c21_5 40.30s linear infinite}@keyframes c21_5{0%,34.050%{opacity:0}34.170%,100%{opacity:1}}.c21_7{animation:c21_7 40.30s linear infinite}@keyframes c21_7{0%,34.348%{opacity:0}34.468%,100%{opacity:1}}.c21_8{animation:c21_8 40.30s linear infinite}@keyframes c21_8{0%,34.496%{opacity:0}34.616%,100%{opacity:1}}.c21_9{animation:c21_9 40.30s linear infinite}@keyframes c21_9{0%,34.692%{opacity:0}34.812%,100%{opacity:1}}.c21_10{animation:c21_10 40.30s linear infinite}@keyframes c21_10{0%,34.831%{opacity:0}34.951%,100%{opacity:1}}.c21_12{animation:c21_12 40.30s linear infinite}@keyframes c21_12{0%,35.574%{opacity:0}35.694%,100%{opacity:1}}.c21_13{animation:c21_13 40.30s linear infinite}@keyframes c21_13{0%,35.751%{opacity:0}35.871%,100%{opacity:1}}.c21_14{animation:c21_14 40.30s linear infinite}@keyframes c21_14{0%,35.863%{opacity:0}35.983%,100%{opacity:1}}.c21_15{animation:c21_15 40.30s linear infinite}@keyframes c21_15{0%,35.990%{opacity:0}36.110%,100%{opacity:1}}.c21_17{animation:c21_17 40.30s linear infinite}@keyframes c21_17{0%,36.550%{opacity:0}36.670%,100%{opacity:1}}.c21_18{animation:c21_18 40.30s linear infinite}@keyframes c21_18{0%,36.747%{opacity:0}36.867%,100%{opacity:1}}.c21_19{animation:c21_19 40.30s linear infinite}@keyframes c21_19{0%,36.885%{opacity:0}37.005%,100%{opacity:1}}.c21_21{animation:c21_21 40.30s linear infinite}@keyframes c21_21{0%,37.360%{opacity:0}37.480%,100%{opacity:1}}.c21_22{animation:c21_22 40.30s linear infinite}@keyframes c21_22{0%,37.514%{opacity:0}37.634%,100%{opacity:1}}.c21_24{animation:c21_24 40.30s linear infinite}@keyframes c21_24{0%,38.117%{opacity:0}38.237%,100%{opacity:1}}.c21_25{animation:c21_25 40.30s linear infinite}@keyframes c21_25{0%,38.237%{opacity:0}38.357%,100%{opacity:1}}.c21_27{animation:c21_27 40.30s linear infinite}@keyframes c21_27{0%,38.632%{opacity:0}38.752%,100%{opacity:1}}.c21_28{animation:c21_28 40.30s linear infinite}@keyframes c21_28{0%,38.763%{opacity:0}38.883%,100%{opacity:1}}.c21_29{animation:c21_29 40.30s linear infinite}@keyframes c21_29{0%,38.965%{opacity:0}39.085%,100%{opacity:1}}.c21_31{animation:c21_31 40.30s linear infinite}@keyframes c21_31{0%,39.501%{opacity:0}39.621%,100%{opacity:1}}.c21_32{animation:c21_32 40.30s linear infinite}@keyframes c21_32{0%,39.691%{opacity:0}39.811%,100%{opacity:1}}.c21_33{animation:c21_33 40.30s linear infinite}@keyframes c21_33{0%,39.887%{opacity:0}40.007%,100%{opacity:1}}.c21_34{animation:c21_34 40.30s linear infinite}@keyframes c21_34{0%,40.098%{opacity:0}40.218%,100%{opacity:1}}.c21_35{animation:c21_35 40.30s linear infinite}@keyframes c21_35{0%,40.205%{opacity:0}40.325%,100%{opacity:1}}.c21_36{animation:c21_36 40.30s linear infinite}@keyframes c21_36{0%,40.396%{opacity:0}40.516%,100%{opacity:1}}.c21_37{animation:c21_37 40.30s linear infinite}@keyframes c21_37{0%,40.556%{opacity:0}40.676%,41.603%{opacity:1}41.723%,100%{opacity:0}}.c21_39{animation:c21_39 40.30s linear infinite}@keyframes c21_39{0%,42.010%{opacity:0}42.130%,100%{opacity:1}}.c21_40{animation:c21_40 40.30s linear infinite}@keyframes c21_40{0%,42.237%{opacity:0}42.357%,100%{opacity:1}}.c21_42{animation:c21_42 40.30s linear infinite}@keyframes c21_42{0%,42.631%{opacity:0}42.751%,100%{opacity:1}}.c21_43{animation:c21_43 40.30s linear infinite}@keyframes c21_43{0%,42.729%{opacity:0}42.849%,100%{opacity:1}}.c21_44{animation:c21_44 40.30s linear infinite}@keyframes c21_44{0%,42.832%{opacity:0}42.952%,100%{opacity:1}}.c21_46{animation:c21_46 40.30s linear infinite}@keyframes c21_46{0%,43.084%{opacity:0}43.204%,100%{opacity:1}}.c21_47{animation:c21_47 40.30s linear infinite}@keyframes c21_47{0%,43.258%{opacity:0}43.378%,100%{opacity:1}}.c21_48{animation:c21_48 40.30s linear infinite}@keyframes c21_48{0%,43.404%{opacity:0}43.524%,100%{opacity:1}}.c21_49{animation:c21_49 40.30s linear infinite}@keyframes c21_49{0%,43.511%{opacity:0}43.631%,100%{opacity:1}}.c22_0{animation:c22_0 40.30s linear infinite}@keyframes c22_0{0%,46.191%{opacity:0}46.311%,100%{opacity:1}}.c22_2{animation:c22_2 40.30s linear infinite}@keyframes c22_2{0%,46.341%{opacity:0}46.461%,100%{opacity:1}}.c22_3{animation:c22_3 40.30s linear infinite}@keyframes c22_3{0%,46.487%{opacity:0}46.607%,100%{opacity:1}}.c22_4{animation:c22_4 40.30s linear infinite}@keyframes c22_4{0%,46.701%{opacity:0}46.821%,100%{opacity:1}}.c22_5{animation:c22_5 40.30s linear infinite}@keyframes c22_5{0%,46.885%{opacity:0}47.005%,100%{opacity:1}}.c22_6{animation:c22_6 40.30s linear infinite}@keyframes c22_6{0%,47.032%{opacity:0}47.152%,100%{opacity:1}}.c22_7{animation:c22_7 40.30s linear infinite}@keyframes c22_7{0%,47.179%{opacity:0}47.299%,100%{opacity:1}}.c22_8{animation:c22_8 40.30s linear infinite}@keyframes c22_8{0%,47.357%{opacity:0}47.477%,100%{opacity:1}}.c22_9{animation:c22_9 40.30s linear infinite}@keyframes c22_9{0%,47.561%{opacity:0}47.681%,100%{opacity:1}}.c22_10{animation:c22_10 40.30s linear infinite}@keyframes c22_10{0%,47.765%{opacity:0}47.885%,100%{opacity:1}}.c22_12{animation:c22_12 40.30s linear infinite}@keyframes c22_12{0%,48.472%{opacity:0}48.592%,100%{opacity:1}}.c22_13{animation:c22_13 40.30s linear infinite}@keyframes c22_13{0%,48.700%{opacity:0}48.820%,100%{opacity:1}}.c22_14{animation:c22_14 40.30s linear infinite}@keyframes c22_14{0%,48.855%{opacity:0}48.975%,100%{opacity:1}}.c22_15{animation:c22_15 40.30s linear infinite}@keyframes c22_15{0%,48.985%{opacity:0}49.105%,100%{opacity:1}}.c22_16{animation:c22_16 40.30s linear infinite}@keyframes c22_16{0%,49.198%{opacity:0}49.318%,100%{opacity:1}}.c22_17{animation:c22_17 40.30s linear infinite}@keyframes c22_17{0%,49.295%{opacity:0}49.415%,100%{opacity:1}}.c22_18{animation:c22_18 40.30s linear infinite}@keyframes c22_18{0%,49.395%{opacity:0}49.515%,100%{opacity:1}}.c22_20{animation:c22_20 40.30s linear infinite}@keyframes c22_20{0%,49.663%{opacity:0}49.783%,100%{opacity:1}}.c22_21{animation:c22_21 40.30s linear infinite}@keyframes c22_21{0%,49.816%{opacity:0}49.936%,100%{opacity:1}}.c22_22{animation:c22_22 40.30s linear infinite}@keyframes c22_22{0%,49.986%{opacity:0}50.106%,100%{opacity:1}}.c22_23{animation:c22_23 40.30s linear infinite}@keyframes c22_23{0%,50.086%{opacity:0}50.206%,100%{opacity:1}}.c22_24{animation:c22_24 40.30s linear infinite}@keyframes c22_24{0%,50.211%{opacity:0}50.331%,100%{opacity:1}}.c22_25{animation:c22_25 40.30s linear infinite}@keyframes c22_25{0%,50.316%{opacity:0}50.436%,100%{opacity:1}}.c22_26{animation:c22_26 40.30s linear infinite}@keyframes c22_26{0%,50.428%{opacity:0}50.548%,100%{opacity:1}}.c22_27{animation:c22_27 40.30s linear infinite}@keyframes c22_27{0%,50.617%{opacity:0}50.737%,100%{opacity:1}}.c22_28{animation:c22_28 40.30s linear infinite}@keyframes c22_28{0%,50.773%{opacity:0}50.893%,100%{opacity:1}}.c22_30{animation:c22_30 40.30s linear infinite}@keyframes c22_30{0%,51.087%{opacity:0}51.207%,100%{opacity:1}}.c22_32{animation:c22_32 40.30s linear infinite}@keyframes c22_32{0%,51.590%{opacity:0}51.710%,100%{opacity:1}}.c22_33{animation:c22_33 40.30s linear infinite}@keyframes c22_33{0%,51.707%{opacity:0}51.827%,100%{opacity:1}}.c22_34{animation:c22_34 40.30s linear infinite}@keyframes c22_34{0%,51.805%{opacity:0}51.925%,100%{opacity:1}}.c22_35{animation:c22_35 40.30s linear infinite}@keyframes c22_35{0%,51.918%{opacity:0}52.038%,100%{opacity:1}}.c22_37{animation:c22_37 40.30s linear infinite}@keyframes c22_37{0%,52.295%{opacity:0}52.415%,100%{opacity:1}}.c22_38{animation:c22_38 40.30s linear infinite}@keyframes c22_38{0%,52.473%{opacity:0}52.593%,100%{opacity:1}}.c22_39{animation:c22_39 40.30s linear infinite}@keyframes c22_39{0%,52.691%{opacity:0}52.811%,100%{opacity:1}}.l24{animation:l24 40.30s linear infinite}@keyframes l24{0%,58.845%{opacity:0}58.965%,100%{opacity:1}}.l26{animation:l26 40.30s linear infinite}@keyframes l26{0%,59.068%{opacity:0}59.188%,100%{opacity:1}}.l27{animation:l27 40.30s linear infinite}@keyframes l27{0%,59.068%{opacity:0}59.188%,100%{opacity:1}}.l28{animation:l28 40.30s linear infinite}@keyframes l28{0%,59.068%{opacity:0}59.188%,100%{opacity:1}}.l30{animation:l30 40.30s linear infinite}@keyframes l30{0%,59.292%{opacity:0}59.412%,100%{opacity:1}}.l31{animation:l31 40.30s linear infinite}@keyframes l31{0%,59.292%{opacity:0}59.412%,100%{opacity:1}}.l32{animation:l32 40.30s linear infinite}@keyframes l32{0%,59.515%{opacity:0}59.635%,100%{opacity:1}}.l33{animation:l33 40.30s linear infinite}@keyframes l33{0%,59.515%{opacity:0}59.635%,100%{opacity:1}}.l34{animation:l34 40.30s linear infinite}@keyframes l34{0%,59.515%{opacity:0}59.635%,100%{opacity:1}}.c35_0{animation:c35_0 40.30s linear infinite}@keyframes c35_0{0%,68.979%{opacity:0}69.099%,100%{opacity:1}}.c35_2{animation:c35_2 40.30s linear infinite}@keyframes c35_2{0%,69.094%{opacity:0}69.214%,100%{opacity:1}}.c35_3{animation:c35_3 40.30s linear infinite}@keyframes c35_3{0%,69.308%{opacity:0}69.428%,100%{opacity:1}}.c35_4{animation:c35_4 40.30s linear infinite}@keyframes c35_4{0%,69.529%{opacity:0}69.649%,100%{opacity:1}}.c35_5{animation:c35_5 40.30s linear infinite}@keyframes c35_5{0%,69.656%{opacity:0}69.776%,100%{opacity:1}}.c35_6{animation:c35_6 40.30s linear infinite}@keyframes c35_6{0%,69.859%{opacity:0}69.979%,100%{opacity:1}}.c35_7{animation:c35_7 40.30s linear infinite}@keyframes c35_7{0%,70.026%{opacity:0}70.146%,100%{opacity:1}}.c35_8{animation:c35_8 40.30s linear infinite}@keyframes c35_8{0%,70.226%{opacity:0}70.346%,100%{opacity:1}}.c35_9{animation:c35_9 40.30s linear infinite}@keyframes c35_9{0%,70.435%{opacity:0}70.555%,100%{opacity:1}}.c35_10{animation:c35_10 40.30s linear infinite}@keyframes c35_10{0%,70.629%{opacity:0}70.749%,100%{opacity:1}}.c35_12{animation:c35_12 40.30s linear infinite}@keyframes c35_12{0%,70.997%{opacity:0}71.117%,100%{opacity:1}}.c35_13{animation:c35_13 40.30s linear infinite}@keyframes c35_13{0%,71.132%{opacity:0}71.252%,100%{opacity:1}}.c35_14{animation:c35_14 40.30s linear infinite}@keyframes c35_14{0%,71.334%{opacity:0}71.454%,100%{opacity:1}}.c35_15{animation:c35_15 40.30s linear infinite}@keyframes c35_15{0%,71.458%{opacity:0}71.578%,100%{opacity:1}}.c35_16{animation:c35_16 40.30s linear infinite}@keyframes c35_16{0%,71.572%{opacity:0}71.692%,100%{opacity:1}}.c35_17{animation:c35_17 40.30s linear infinite}@keyframes c35_17{0%,71.754%{opacity:0}71.874%,100%{opacity:1}}.c35_18{animation:c35_18 40.30s linear infinite}@keyframes c35_18{0%,71.961%{opacity:0}72.081%,100%{opacity:1}}.c35_20{animation:c35_20 40.30s linear infinite}@keyframes c35_20{0%,72.564%{opacity:0}72.684%,100%{opacity:1}}.c35_21{animation:c35_21 40.30s linear infinite}@keyframes c35_21{0%,72.661%{opacity:0}72.781%,100%{opacity:1}}.c35_22{animation:c35_22 40.30s linear infinite}@keyframes c35_22{0%,72.760%{opacity:0}72.880%,100%{opacity:1}}.c35_23{animation:c35_23 40.30s linear infinite}@keyframes c35_23{0%,72.969%{opacity:0}73.089%,100%{opacity:1}}.c35_24{animation:c35_24 40.30s linear infinite}@keyframes c35_24{0%,73.073%{opacity:0}73.193%,100%{opacity:1}}.c35_25{animation:c35_25 40.30s linear infinite}@keyframes c35_25{0%,73.193%{opacity:0}73.313%,100%{opacity:1}}.c35_26{animation:c35_26 40.30s linear infinite}@keyframes c35_26{0%,73.345%{opacity:0}73.465%,100%{opacity:1}}.c35_27{animation:c35_27 40.30s linear infinite}@keyframes c35_27{0%,73.444%{opacity:0}73.564%,100%{opacity:1}}.c35_28{animation:c35_28 40.30s linear infinite}@keyframes c35_28{0%,73.637%{opacity:0}73.757%,100%{opacity:1}}.c35_30{animation:c35_30 40.30s linear infinite}@keyframes c35_30{0%,74.269%{opacity:0}74.389%,100%{opacity:1}}.c35_32{animation:c35_32 40.30s linear infinite}@keyframes c35_32{0%,74.594%{opacity:0}74.714%,100%{opacity:1}}.c35_33{animation:c35_33 40.30s linear infinite}@keyframes c35_33{0%,74.756%{opacity:0}74.876%,100%{opacity:1}}.c35_34{animation:c35_34 40.30s linear infinite}@keyframes c35_34{0%,74.919%{opacity:0}75.039%,100%{opacity:1}}.c35_35{animation:c35_35 40.30s linear infinite}@keyframes c35_35{0%,75.050%{opacity:0}75.170%,100%{opacity:1}}.c35_37{animation:c35_37 40.30s linear infinite}@keyframes c35_37{0%,75.419%{opacity:0}75.539%,100%{opacity:1}}.c35_38{animation:c35_38 40.30s linear infinite}@keyframes c35_38{0%,75.596%{opacity:0}75.716%,100%{opacity:1}}.c35_39{animation:c35_39 40.30s linear infinite}@keyframes c35_39{0%,75.777%{opacity:0}75.897%,100%{opacity:1}}.c35_41{animation:c35_41 40.30s linear infinite}@keyframes c35_41{0%,76.005%{opacity:0}76.125%,100%{opacity:1}}.c35_42{animation:c35_42 40.30s linear infinite}@keyframes c35_42{0%,76.153%{opacity:0}76.273%,100%{opacity:1}}.c35_43{animation:c35_43 40.30s linear infinite}@keyframes c35_43{0%,76.290%{opacity:0}76.410%,100%{opacity:1}}.c35_44{animation:c35_44 40.30s linear infinite}@keyframes c35_44{0%,76.393%{opacity:0}76.513%,100%{opacity:1}}.c35_45{animation:c35_45 40.30s linear infinite}@keyframes c35_45{0%,76.491%{opacity:0}76.611%,100%{opacity:1}}.c35_46{animation:c35_46 40.30s linear infinite}@keyframes c35_46{0%,76.684%{opacity:0}76.804%,100%{opacity:1}}.c35_47{animation:c35_47 40.30s linear infinite}@keyframes c35_47{0%,76.796%{opacity:0}76.916%,100%{opacity:1}}.c35_48{animation:c35_48 40.30s linear infinite}@keyframes c35_48{0%,76.899%{opacity:0}77.019%,100%{opacity:1}}.c35_49{animation:c35_49 40.30s linear infinite}@keyframes c35_49{0%,77.000%{opacity:0}77.120%,100%{opacity:1}}.c35_51{animation:c35_51 40.30s linear infinite}@keyframes c35_51{0%,77.352%{opacity:0}77.472%,100%{opacity:1}}.c35_52{animation:c35_52 40.30s linear infinite}@keyframes c35_52{0%,77.493%{opacity:0}77.613%,100%{opacity:1}}.c35_54{animation:c35_54 40.30s linear infinite}@keyframes c35_54{0%,77.840%{opacity:0}77.960%,100%{opacity:1}}.c35_55{animation:c35_55 40.30s linear infinite}@keyframes c35_55{0%,78.024%{opacity:0}78.144%,100%{opacity:1}}.c35_56{animation:c35_56 40.30s linear infinite}@keyframes c35_56{0%,78.237%{opacity:0}78.357%,100%{opacity:1}}.c35_57{animation:c35_57 40.30s linear infinite}@keyframes c35_57{0%,78.394%{opacity:0}78.514%,100%{opacity:1}}.c35_58{animation:c35_58 40.30s linear infinite}@keyframes c35_58{0%,78.544%{opacity:0}78.664%,100%{opacity:1}}.c35_59{animation:c35_59 40.30s linear infinite}@keyframes c35_59{0%,78.685%{opacity:0}78.805%,100%{opacity:1}}.c35_60{animation:c35_60 40.30s linear infinite}@keyframes c35_60{0%,78.874%{opacity:0}78.994%,100%{opacity:1}}.c35_61{animation:c35_61 40.30s linear infinite}@keyframes c35_61{0%,78.990%{opacity:0}79.110%,100%{opacity:1}}.c35_62{animation:c35_62 40.30s linear infinite}@keyframes c35_62{0%,79.135%{opacity:0}79.255%,100%{opacity:1}}.c35_63{animation:c35_63 40.30s linear infinite}@keyframes c35_63{0%,79.257%{opacity:0}79.377%,100%{opacity:1}}.c35_64{animation:c35_64 40.30s linear infinite}@keyframes c35_64{0%,79.418%{opacity:0}79.538%,100%{opacity:1}}.l36{animation:l36 40.30s linear infinite}@keyframes l36{0%,85.572%{opacity:0}85.692%,100%{opacity:1}}.l37{animation:l37 40.30s linear infinite}@keyframes l37{0%,85.572%{opacity:0}85.692%,100%{opacity:1}}.l38{animation:l38 40.30s linear infinite}@keyframes l38{0%,85.572%{opacity:0}85.692%,100%{opacity:1}}.l40{animation:l40 40.30s linear infinite}@keyframes l40{0%,85.796%{opacity:0}85.916%,100%{opacity:1}}.l41{animation:l41 40.30s linear infinite}@keyframes l41{0%,85.796%{opacity:0}85.916%,100%{opacity:1}}.l42{animation:l42 40.30s linear infinite}@keyframes l42{0%,86.019%{opacity:0}86.139%,100%{opacity:1}}.l43{animation:l43 40.30s linear infinite}@keyframes l43{0%,86.019%{opacity:0}86.139%,100%{opacity:1}}.l44{animation:l44 40.30s linear infinite}@keyframes l44{0%,86.019%{opacity:0}86.139%,100%{opacity:1}}.l45{animation:l45 40.30s linear infinite}@keyframes l45{0%,86.019%{opacity:0}86.139%,100%{opacity:1}}.h3_4119{transform-box:fill-box;transform-origin:left center;animation:h3_4119 40.30s linear infinite}@keyframes h3_4119{0%,17.088%{transform:scaleX(0)}17.296%,100%{transform:scaleX(1)}}.h5_8523{transform-box:fill-box;transform-origin:left center;animation:h5_8523 40.30s linear infinite}@keyframes h5_8523{0%,18.210%{transform:scaleX(0)}19.182%,100%{transform:scaleX(1)}}.h26_1229{transform-box:fill-box;transform-origin:left center;animation:h26_1229 40.30s linear infinite}@keyframes h26_1229{0%,61.475%{transform:scaleX(0)}61.614%,100%{transform:scaleX(1)}}.h36_9651{transform-box:fill-box;transform-origin:left center;animation:h36_9651 40.30s linear infinite}@keyframes h36_9651{0%,87.980%{transform:scaleX(0)}88.049%,100%{transform:scaleX(1)}}.h38_8103{transform-box:fill-box;transform-origin:left center;animation:h38_8103 40.30s linear infinite}@keyframes h38_8103{0%,88.962%{transform:scaleX(0)}90.074%,100%{transform:scaleX(1)}}.cur{animation:cur 40.30s linear infinite}@keyframes cur{0%,90.074%{opacity:0}90.174%,100%{opacity:1}}.blink{animation:blink 1.06s steps(1,end) infinite}@keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}</style>
+<rect width="714" height="932" rx="7" fill="#1B1917"/>
+<path d="M0 7a7 7 0 0 1 7-7h700a7 7 0 0 1 7 7v23H0z" fill="#2A2725"/>
+<circle cx="17" cy="15" r="5" fill="#E0798C" opacity="0.65"/>
+<circle cx="35" cy="15" r="5" fill="#D9A441" opacity="0.65"/>
+<circle cx="53" cy="15" r="5" fill="#7FB88A" opacity="0.65"/>
+<text x="357.0" y="19" fill="#9C948A" font-size="11" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">aicertify: 150 declared, 14 measured</text>
+<rect class="h3_4119" x="141.3" y="102" width="34.2" height="15" rx="2" fill="#D9A441" opacity="0.32"/>
+<rect class="h5_8523" x="32.1" y="140" width="120.0" height="15" rx="2" fill="#D9A441" opacity="0.32"/>
+<rect class="h26_1229" x="211.5" y="539" width="26.4" height="15" rx="2" fill="#D9A441" opacity="0.32"/>
+<rect class="h36_9651" x="258.3" y="729" width="18.6" height="15" rx="2" fill="#D9A441" opacity="0.32"/>
+<rect class="h38_8103" x="351.9" y="767" width="135.6" height="15" rx="2" fill="#D9A441" opacity="0.32"/>
+<g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" xml:space="preserve">
+<text class="c0_0" x="18.0" y="56" fill="#D9A441">$</text>
+<text class="c0_2" x="33.6" y="56" fill="#D9A441">a</text>
+<text class="c0_3" x="41.4" y="56" fill="#D9A441">i</text>
+<text class="c0_4" x="49.2" y="56" fill="#D9A441">c</text>
+<text class="c0_5" x="57.0" y="56" fill="#D9A441">e</text>
+<text class="c0_6" x="64.8" y="56" fill="#D9A441">r</text>
+<text class="c0_7" x="72.6" y="56" fill="#D9A441">t</text>
+<text class="c0_8" x="80.4" y="56" fill="#D9A441">i</text>
+<text class="c0_9" x="88.2" y="56" fill="#D9A441">f</text>
+<text class="c0_10" x="96.0" y="56" fill="#D9A441">y</text>
+<text class="c0_12" x="111.6" y="56" fill="#D9A441">s</text>
+<text class="c0_13" x="119.4" y="56" fill="#D9A441">c</text>
+<text class="c0_14" x="127.2" y="56" fill="#D9A441">o</text>
+<text class="c0_15" x="135.0" y="56" fill="#D9A441">r</text>
+<text class="c0_16" x="142.8" y="56" fill="#D9A441">e</text>
+<text class="c0_17" x="150.6" y="56" fill="#D9A441">-</text>
+<text class="c0_18" x="158.4" y="56" fill="#D9A441">c</text>
+<text class="c0_19" x="166.2" y="56" fill="#D9A441">a</text>
+<text class="c0_20" x="174.0" y="56" fill="#D9A441">r</text>
+<text class="c0_21" x="181.8" y="56" fill="#D9A441">d</text>
+<text class="c0_23" x="197.4" y="56" fill="#D9A441">b</text>
+<text class="c0_24" x="205.2" y="56" fill="#D9A441">e</text>
+<text class="c0_25" x="213.0" y="56" fill="#D9A441">r</text>
+<text class="c0_26" x="220.8" y="56" fill="#D9A441">t</text>
+<text class="c0_27" x="228.6" y="56" fill="#D9A441">-</text>
+<text class="c0_28" x="236.4" y="56" fill="#D9A441">b</text>
+<text class="c0_29" x="244.2" y="56" fill="#D9A441">a</text>
+<text class="c0_30" x="252.0" y="56" fill="#D9A441">s</text>
+<text class="c0_31" x="259.8" y="56" fill="#D9A441">e</text>
+<text class="c0_32" x="267.6" y="56" fill="#D9A441">-</text>
+<text class="c0_33" x="275.4" y="56" fill="#D9A441">u</text>
+<text class="c0_34" x="283.2" y="56" fill="#D9A441">n</text>
+<text class="c0_35" x="291.0" y="56" fill="#D9A441">c</text>
+<text class="c0_36" x="298.8" y="56" fill="#D9A441">a</text>
+<text class="c0_37" x="306.6" y="56" fill="#D9A441">s</text>
+<text class="c0_38" x="314.4" y="56" fill="#D9A441">e</text>
+<text class="c0_39" x="322.2" y="56" fill="#D9A441">d</text>
+<text class="l2" x="18" y="94" fill="#E7E2DA">bert-base-uncased</text>
+<text class="l3" x="33.6" y="113" fill="#E7E2DA">c</text>
+<text class="l3" x="41.4" y="113" fill="#E7E2DA">o</text>
+<text class="l3" x="49.2" y="113" fill="#E7E2DA">m</text>
+<text class="l3" x="57.0" y="113" fill="#E7E2DA">p</text>
+<text class="l3" x="64.8" y="113" fill="#E7E2DA">l</text>
+<text class="l3" x="72.6" y="113" fill="#E7E2DA">e</text>
+<text class="l3" x="80.4" y="113" fill="#E7E2DA">t</text>
+<text class="l3" x="88.2" y="113" fill="#E7E2DA">e</text>
+<text class="l3" x="96.0" y="113" fill="#E7E2DA">n</text>
+<text class="l3" x="103.8" y="113" fill="#E7E2DA">e</text>
+<text class="l3" x="111.6" y="113" fill="#E7E2DA">s</text>
+<text class="l3" x="119.4" y="113" fill="#E7E2DA">s</text>
+<text class="l3" x="142.8" y="113" fill="#E7E2DA">0</text>
+<text class="l3" x="150.6" y="113" fill="#E7E2DA">.</text>
+<text class="l3" x="158.4" y="113" fill="#E7E2DA">4</text>
+<text class="l3" x="166.2" y="113" fill="#E7E2DA">9</text>
+<text class="l3" x="197.4" y="113" fill="#E7E2DA">(</text>
+<text class="l3" x="205.2" y="113" fill="#E7E2DA">t</text>
+<text class="l3" x="213.0" y="113" fill="#E7E2DA">h</text>
+<text class="l3" x="220.8" y="113" fill="#E7E2DA">r</text>
+<text class="l3" x="228.6" y="113" fill="#E7E2DA">e</text>
+<text class="l3" x="236.4" y="113" fill="#E7E2DA">s</text>
+<text class="l3" x="244.2" y="113" fill="#E7E2DA">h</text>
+<text class="l3" x="252.0" y="113" fill="#E7E2DA">o</text>
+<text class="l3" x="259.8" y="113" fill="#E7E2DA">l</text>
+<text class="l3" x="267.6" y="113" fill="#E7E2DA">d</text>
+<text class="l3" x="283.2" y="113" fill="#E7E2DA">0</text>
+<text class="l3" x="291.0" y="113" fill="#E7E2DA">.</text>
+<text class="l3" x="298.8" y="113" fill="#E7E2DA">8</text>
+<text class="l3" x="306.6" y="113" fill="#E7E2DA">)</text>
+<text class="l4" x="18" y="132" fill="#E7E2DA">  quality       0.66</text>
+<text class="l5" x="33.6" y="151" fill="#E7E2DA">B</text>
+<text class="l5" x="41.4" y="151" fill="#E7E2DA">E</text>
+<text class="l5" x="49.2" y="151" fill="#E7E2DA">L</text>
+<text class="l5" x="57.0" y="151" fill="#E7E2DA">O</text>
+<text class="l5" x="64.8" y="151" fill="#E7E2DA">W</text>
+<text class="l5" x="80.4" y="151" fill="#E7E2DA">T</text>
+<text class="l5" x="88.2" y="151" fill="#E7E2DA">H</text>
+<text class="l5" x="96.0" y="151" fill="#E7E2DA">R</text>
+<text class="l5" x="103.8" y="151" fill="#E7E2DA">E</text>
+<text class="l5" x="111.6" y="151" fill="#E7E2DA">S</text>
+<text class="l5" x="119.4" y="151" fill="#E7E2DA">H</text>
+<text class="l5" x="127.2" y="151" fill="#E7E2DA">O</text>
+<text class="l5" x="135.0" y="151" fill="#E7E2DA">L</text>
+<text class="l5" x="142.8" y="151" fill="#E7E2DA">D</text>
+<text class="l7" x="18" y="189" fill="#E7E2DA">    intended_use             1.00  ####################</text>
+<text class="l8" x="18" y="208" fill="#E7E2DA">    training_data            0.67  #############</text>
+<text class="l9" x="18" y="227" fill="#E7E2DA">    caveats_recommendations  0.50  ##########</text>
+<text class="l10" x="18" y="246" fill="#E7E2DA">    factors                  0.50  ##########</text>
+<text class="l11" x="18" y="265" fill="#E7E2DA">    metrics                  0.50  ##########</text>
+<text class="l12" x="18" y="284" fill="#E7E2DA">    quantitative_analyses    0.50  ##########</text>
+<text class="l13" x="18" y="303" fill="#E7E2DA">    ethical_considerations   0.33  #######</text>
+<text class="l14" x="18" y="322" fill="#E7E2DA">    model_details            0.33  ######</text>
+<text class="l15" x="18" y="341" fill="#E7E2DA">    evaluation_data          0.00</text>
+<text class="l17" x="18" y="379" fill="#E7E2DA">A model card answers part of what Annex IV asks and then stops.</text>
+<text class="l18" x="18" y="398" fill="#E7E2DA">This is the documentation-completeness gap, not a compliance verdict.</text>
+<text class="l20" x="18" y="436" fill="#E7E2DA">scored by GOPAL 2.0.0 (global/v1/documentation/model_card_score), via aicertify 0.7.0</text>
+<text class="c21_0" x="18.0" y="455" fill="#D9A441">$</text>
+<text class="c21_2" x="33.6" y="455" fill="#D9A441">#</text>
+<text class="c21_4" x="49.2" y="455" fill="#D9A441">s</text>
+<text class="c21_5" x="57.0" y="455" fill="#D9A441">o</text>
+<text class="c21_7" x="72.6" y="455" fill="#D9A441">w</text>
+<text class="c21_8" x="80.4" y="455" fill="#D9A441">h</text>
+<text class="c21_9" x="88.2" y="455" fill="#D9A441">a</text>
+<text class="c21_10" x="96.0" y="455" fill="#D9A441">t</text>
+<text class="c21_12" x="111.6" y="455" fill="#D9A441">d</text>
+<text class="c21_13" x="119.4" y="455" fill="#D9A441">o</text>
+<text class="c21_14" x="127.2" y="455" fill="#D9A441">e</text>
+<text class="c21_15" x="135.0" y="455" fill="#D9A441">s</text>
+<text class="c21_17" x="150.6" y="455" fill="#D9A441">t</text>
+<text class="c21_18" x="158.4" y="455" fill="#D9A441">h</text>
+<text class="c21_19" x="166.2" y="455" fill="#D9A441">e</text>
+<text class="c21_21" x="181.8" y="455" fill="#D9A441">E</text>
+<text class="c21_22" x="189.6" y="455" fill="#D9A441">U</text>
+<text class="c21_24" x="205.2" y="455" fill="#D9A441">A</text>
+<text class="c21_25" x="213.0" y="455" fill="#D9A441">I</text>
+<text class="c21_27" x="228.6" y="455" fill="#D9A441">A</text>
+<text class="c21_28" x="236.4" y="455" fill="#D9A441">c</text>
+<text class="c21_29" x="244.2" y="455" fill="#D9A441">t</text>
+<text class="c21_31" x="259.8" y="455" fill="#D9A441">a</text>
+<text class="c21_32" x="267.6" y="455" fill="#D9A441">c</text>
+<text class="c21_33" x="275.4" y="455" fill="#D9A441">t</text>
+<text class="c21_34" x="283.2" y="455" fill="#D9A441">u</text>
+<text class="c21_35" x="291.0" y="455" fill="#D9A441">a</text>
+<text class="c21_36" x="298.8" y="455" fill="#D9A441">l</text>
+<text class="c21_37" x="306.6" y="455" fill="#D9A441">k</text>
+<text class="c21_39" x="306.6" y="455" fill="#D9A441">l</text>
+<text class="c21_40" x="314.4" y="455" fill="#D9A441">y</text>
+<text class="c21_42" x="330.0" y="455" fill="#D9A441">a</text>
+<text class="c21_43" x="337.8" y="455" fill="#D9A441">s</text>
+<text class="c21_44" x="345.6" y="455" fill="#D9A441">k</text>
+<text class="c21_46" x="361.2" y="455" fill="#D9A441">f</text>
+<text class="c21_47" x="369.0" y="455" fill="#D9A441">o</text>
+<text class="c21_48" x="376.8" y="455" fill="#D9A441">r</text>
+<text class="c21_49" x="384.6" y="455" fill="#D9A441">?</text>
+<text class="c22_0" x="18.0" y="474" fill="#D9A441">$</text>
+<text class="c22_2" x="33.6" y="474" fill="#D9A441">a</text>
+<text class="c22_3" x="41.4" y="474" fill="#D9A441">i</text>
+<text class="c22_4" x="49.2" y="474" fill="#D9A441">c</text>
+<text class="c22_5" x="57.0" y="474" fill="#D9A441">e</text>
+<text class="c22_6" x="64.8" y="474" fill="#D9A441">r</text>
+<text class="c22_7" x="72.6" y="474" fill="#D9A441">t</text>
+<text class="c22_8" x="80.4" y="474" fill="#D9A441">i</text>
+<text class="c22_9" x="88.2" y="474" fill="#D9A441">f</text>
+<text class="c22_10" x="96.0" y="474" fill="#D9A441">y</text>
+<text class="c22_12" x="111.6" y="474" fill="#D9A441">e</text>
+<text class="c22_13" x="119.4" y="474" fill="#D9A441">x</text>
+<text class="c22_14" x="127.2" y="474" fill="#D9A441">p</text>
+<text class="c22_15" x="135.0" y="474" fill="#D9A441">l</text>
+<text class="c22_16" x="142.8" y="474" fill="#D9A441">a</text>
+<text class="c22_17" x="150.6" y="474" fill="#D9A441">i</text>
+<text class="c22_18" x="158.4" y="474" fill="#D9A441">n</text>
+<text class="c22_20" x="174.0" y="474" fill="#D9A441">e</text>
+<text class="c22_21" x="181.8" y="474" fill="#D9A441">u</text>
+<text class="c22_22" x="189.6" y="474" fill="#D9A441">_</text>
+<text class="c22_23" x="197.4" y="474" fill="#D9A441">a</text>
+<text class="c22_24" x="205.2" y="474" fill="#D9A441">i</text>
+<text class="c22_25" x="213.0" y="474" fill="#D9A441">_</text>
+<text class="c22_26" x="220.8" y="474" fill="#D9A441">a</text>
+<text class="c22_27" x="228.6" y="474" fill="#D9A441">c</text>
+<text class="c22_28" x="236.4" y="474" fill="#D9A441">t</text>
+<text class="c22_30" x="252.0" y="474" fill="#D9A441">|</text>
+<text class="c22_32" x="267.6" y="474" fill="#D9A441">h</text>
+<text class="c22_33" x="275.4" y="474" fill="#D9A441">e</text>
+<text class="c22_34" x="283.2" y="474" fill="#D9A441">a</text>
+<text class="c22_35" x="291.0" y="474" fill="#D9A441">d</text>
+<text class="c22_37" x="306.6" y="474" fill="#D9A441">-</text>
+<text class="c22_38" x="314.4" y="474" fill="#D9A441">1</text>
+<text class="c22_39" x="322.2" y="474" fill="#D9A441">2</text>
+<text class="l24" x="18" y="512" fill="#E7E2DA">eu_ai_act  —  29 policies</text>
+<text class="l26" x="18.0" y="550" fill="#E7E2DA">F</text>
+<text class="l26" x="25.8" y="550" fill="#E7E2DA">i</text>
+<text class="l26" x="33.6" y="550" fill="#E7E2DA">e</text>
+<text class="l26" x="41.4" y="550" fill="#E7E2DA">l</text>
+<text class="l26" x="49.2" y="550" fill="#E7E2DA">d</text>
+<text class="l26" x="57.0" y="550" fill="#E7E2DA">s</text>
+<text class="l26" x="72.6" y="550" fill="#E7E2DA">y</text>
+<text class="l26" x="80.4" y="550" fill="#E7E2DA">o</text>
+<text class="l26" x="88.2" y="550" fill="#E7E2DA">u</text>
+<text class="l26" x="103.8" y="550" fill="#E7E2DA">m</text>
+<text class="l26" x="111.6" y="550" fill="#E7E2DA">u</text>
+<text class="l26" x="119.4" y="550" fill="#E7E2DA">s</text>
+<text class="l26" x="127.2" y="550" fill="#E7E2DA">t</text>
+<text class="l26" x="142.8" y="550" fill="#E7E2DA">d</text>
+<text class="l26" x="150.6" y="550" fill="#E7E2DA">e</text>
+<text class="l26" x="158.4" y="550" fill="#E7E2DA">c</text>
+<text class="l26" x="166.2" y="550" fill="#E7E2DA">l</text>
+<text class="l26" x="174.0" y="550" fill="#E7E2DA">a</text>
+<text class="l26" x="181.8" y="550" fill="#E7E2DA">r</text>
+<text class="l26" x="189.6" y="550" fill="#E7E2DA">e</text>
+<text class="l26" x="205.2" y="550" fill="#E7E2DA">(</text>
+<text class="l26" x="213.0" y="550" fill="#E7E2DA">1</text>
+<text class="l26" x="220.8" y="550" fill="#E7E2DA">5</text>
+<text class="l26" x="228.6" y="550" fill="#E7E2DA">0</text>
+<text class="l26" x="236.4" y="550" fill="#E7E2DA">)</text>
+<text class="l27" x="18" y="569" fill="#E7E2DA">  No evaluator can observe these. They are facts about your system,</text>
+<text class="l28" x="18" y="588" fill="#E7E2DA">  your process, or your paperwork, so you assert them in the contract.</text>
+<text class="l30" x="18" y="626" fill="#E7E2DA">  accuracy.declared_in_instructions              technical_robustness</text>
+<text class="l31" x="18" y="645" fill="#E7E2DA">  accuracy.metrics_declared                      technical_robustness</text>
+<text class="l32" x="18" y="664" fill="#E7E2DA">  assessment.completed                           conformity_assessment</text>
+<text class="l33" x="18" y="683" fill="#E7E2DA">  assessment.harmonised_standards_applied        conformity_assessment</text>
+<text class="l34" x="18" y="702" fill="#E7E2DA">  assessment.notified_body_involved              conformity_assessment</text>
+<text class="c35_0" x="18.0" y="721" fill="#D9A441">$</text>
+<text class="c35_2" x="33.6" y="721" fill="#D9A441">a</text>
+<text class="c35_3" x="41.4" y="721" fill="#D9A441">i</text>
+<text class="c35_4" x="49.2" y="721" fill="#D9A441">c</text>
+<text class="c35_5" x="57.0" y="721" fill="#D9A441">e</text>
+<text class="c35_6" x="64.8" y="721" fill="#D9A441">r</text>
+<text class="c35_7" x="72.6" y="721" fill="#D9A441">t</text>
+<text class="c35_8" x="80.4" y="721" fill="#D9A441">i</text>
+<text class="c35_9" x="88.2" y="721" fill="#D9A441">f</text>
+<text class="c35_10" x="96.0" y="721" fill="#D9A441">y</text>
+<text class="c35_12" x="111.6" y="721" fill="#D9A441">e</text>
+<text class="c35_13" x="119.4" y="721" fill="#D9A441">x</text>
+<text class="c35_14" x="127.2" y="721" fill="#D9A441">p</text>
+<text class="c35_15" x="135.0" y="721" fill="#D9A441">l</text>
+<text class="c35_16" x="142.8" y="721" fill="#D9A441">a</text>
+<text class="c35_17" x="150.6" y="721" fill="#D9A441">i</text>
+<text class="c35_18" x="158.4" y="721" fill="#D9A441">n</text>
+<text class="c35_20" x="174.0" y="721" fill="#D9A441">e</text>
+<text class="c35_21" x="181.8" y="721" fill="#D9A441">u</text>
+<text class="c35_22" x="189.6" y="721" fill="#D9A441">_</text>
+<text class="c35_23" x="197.4" y="721" fill="#D9A441">a</text>
+<text class="c35_24" x="205.2" y="721" fill="#D9A441">i</text>
+<text class="c35_25" x="213.0" y="721" fill="#D9A441">_</text>
+<text class="c35_26" x="220.8" y="721" fill="#D9A441">a</text>
+<text class="c35_27" x="228.6" y="721" fill="#D9A441">c</text>
+<text class="c35_28" x="236.4" y="721" fill="#D9A441">t</text>
+<text class="c35_30" x="252.0" y="721" fill="#D9A441">|</text>
+<text class="c35_32" x="267.6" y="721" fill="#D9A441">g</text>
+<text class="c35_33" x="275.4" y="721" fill="#D9A441">r</text>
+<text class="c35_34" x="283.2" y="721" fill="#D9A441">e</text>
+<text class="c35_35" x="291.0" y="721" fill="#D9A441">p</text>
+<text class="c35_37" x="306.6" y="721" fill="#D9A441">-</text>
+<text class="c35_38" x="314.4" y="721" fill="#D9A441">A</text>
+<text class="c35_39" x="322.2" y="721" fill="#D9A441">8</text>
+<text class="c35_41" x="337.8" y="721" fill="#D9A441">"</text>
+<text class="c35_42" x="345.6" y="721" fill="#D9A441">p</text>
+<text class="c35_43" x="353.4" y="721" fill="#D9A441">r</text>
+<text class="c35_44" x="361.2" y="721" fill="#D9A441">o</text>
+<text class="c35_45" x="369.0" y="721" fill="#D9A441">d</text>
+<text class="c35_46" x="376.8" y="721" fill="#D9A441">u</text>
+<text class="c35_47" x="384.6" y="721" fill="#D9A441">c</text>
+<text class="c35_48" x="392.4" y="721" fill="#D9A441">e</text>
+<text class="c35_49" x="400.2" y="721" fill="#D9A441">d</text>
+<text class="c35_51" x="415.8" y="721" fill="#D9A441">b</text>
+<text class="c35_52" x="423.6" y="721" fill="#D9A441">y</text>
+<text class="c35_54" x="439.2" y="721" fill="#D9A441">e</text>
+<text class="c35_55" x="447.0" y="721" fill="#D9A441">v</text>
+<text class="c35_56" x="454.8" y="721" fill="#D9A441">a</text>
+<text class="c35_57" x="462.6" y="721" fill="#D9A441">l</text>
+<text class="c35_58" x="470.4" y="721" fill="#D9A441">u</text>
+<text class="c35_59" x="478.2" y="721" fill="#D9A441">a</text>
+<text class="c35_60" x="486.0" y="721" fill="#D9A441">t</text>
+<text class="c35_61" x="493.8" y="721" fill="#D9A441">o</text>
+<text class="c35_62" x="501.6" y="721" fill="#D9A441">r</text>
+<text class="c35_63" x="509.4" y="721" fill="#D9A441">s</text>
+<text class="c35_64" x="517.2" y="721" fill="#D9A441">"</text>
+<text class="l36" x="18.0" y="740" fill="#E7E2DA">F</text>
+<text class="l36" x="25.8" y="740" fill="#E7E2DA">i</text>
+<text class="l36" x="33.6" y="740" fill="#E7E2DA">e</text>
+<text class="l36" x="41.4" y="740" fill="#E7E2DA">l</text>
+<text class="l36" x="49.2" y="740" fill="#E7E2DA">d</text>
+<text class="l36" x="57.0" y="740" fill="#E7E2DA">s</text>
+<text class="l36" x="72.6" y="740" fill="#E7E2DA">p</text>
+<text class="l36" x="80.4" y="740" fill="#E7E2DA">r</text>
+<text class="l36" x="88.2" y="740" fill="#E7E2DA">o</text>
+<text class="l36" x="96.0" y="740" fill="#E7E2DA">d</text>
+<text class="l36" x="103.8" y="740" fill="#E7E2DA">u</text>
+<text class="l36" x="111.6" y="740" fill="#E7E2DA">c</text>
+<text class="l36" x="119.4" y="740" fill="#E7E2DA">e</text>
+<text class="l36" x="127.2" y="740" fill="#E7E2DA">d</text>
+<text class="l36" x="142.8" y="740" fill="#E7E2DA">b</text>
+<text class="l36" x="150.6" y="740" fill="#E7E2DA">y</text>
+<text class="l36" x="166.2" y="740" fill="#E7E2DA">e</text>
+<text class="l36" x="174.0" y="740" fill="#E7E2DA">v</text>
+<text class="l36" x="181.8" y="740" fill="#E7E2DA">a</text>
+<text class="l36" x="189.6" y="740" fill="#E7E2DA">l</text>
+<text class="l36" x="197.4" y="740" fill="#E7E2DA">u</text>
+<text class="l36" x="205.2" y="740" fill="#E7E2DA">a</text>
+<text class="l36" x="213.0" y="740" fill="#E7E2DA">t</text>
+<text class="l36" x="220.8" y="740" fill="#E7E2DA">o</text>
+<text class="l36" x="228.6" y="740" fill="#E7E2DA">r</text>
+<text class="l36" x="236.4" y="740" fill="#E7E2DA">s</text>
+<text class="l36" x="252.0" y="740" fill="#E7E2DA">(</text>
+<text class="l36" x="259.8" y="740" fill="#E7E2DA">1</text>
+<text class="l36" x="267.6" y="740" fill="#E7E2DA">4</text>
+<text class="l36" x="275.4" y="740" fill="#E7E2DA">)</text>
+<text class="l37" x="18" y="759" fill="#E7E2DA">  Computed at evaluation time from your interactions. Do not hand-write</text>
+<text class="l38" x="33.6" y="778" fill="#E7E2DA">t</text>
+<text class="l38" x="41.4" y="778" fill="#E7E2DA">h</text>
+<text class="l38" x="49.2" y="778" fill="#E7E2DA">e</text>
+<text class="l38" x="57.0" y="778" fill="#E7E2DA">s</text>
+<text class="l38" x="64.8" y="778" fill="#E7E2DA">e</text>
+<text class="l38" x="72.6" y="778" fill="#E7E2DA">:</text>
+<text class="l38" x="88.2" y="778" fill="#E7E2DA">a</text>
+<text class="l38" x="96.0" y="778" fill="#E7E2DA">s</text>
+<text class="l38" x="103.8" y="778" fill="#E7E2DA">s</text>
+<text class="l38" x="111.6" y="778" fill="#E7E2DA">e</text>
+<text class="l38" x="119.4" y="778" fill="#E7E2DA">r</text>
+<text class="l38" x="127.2" y="778" fill="#E7E2DA">t</text>
+<text class="l38" x="135.0" y="778" fill="#E7E2DA">i</text>
+<text class="l38" x="142.8" y="778" fill="#E7E2DA">n</text>
+<text class="l38" x="150.6" y="778" fill="#E7E2DA">g</text>
+<text class="l38" x="166.2" y="778" fill="#E7E2DA">y</text>
+<text class="l38" x="174.0" y="778" fill="#E7E2DA">o</text>
+<text class="l38" x="181.8" y="778" fill="#E7E2DA">u</text>
+<text class="l38" x="189.6" y="778" fill="#E7E2DA">r</text>
+<text class="l38" x="205.2" y="778" fill="#E7E2DA">o</text>
+<text class="l38" x="213.0" y="778" fill="#E7E2DA">w</text>
+<text class="l38" x="220.8" y="778" fill="#E7E2DA">n</text>
+<text class="l38" x="236.4" y="778" fill="#E7E2DA">f</text>
+<text class="l38" x="244.2" y="778" fill="#E7E2DA">a</text>
+<text class="l38" x="252.0" y="778" fill="#E7E2DA">i</text>
+<text class="l38" x="259.8" y="778" fill="#E7E2DA">r</text>
+<text class="l38" x="267.6" y="778" fill="#E7E2DA">n</text>
+<text class="l38" x="275.4" y="778" fill="#E7E2DA">e</text>
+<text class="l38" x="283.2" y="778" fill="#E7E2DA">s</text>
+<text class="l38" x="291.0" y="778" fill="#E7E2DA">s</text>
+<text class="l38" x="306.6" y="778" fill="#E7E2DA">s</text>
+<text class="l38" x="314.4" y="778" fill="#E7E2DA">c</text>
+<text class="l38" x="322.2" y="778" fill="#E7E2DA">o</text>
+<text class="l38" x="330.0" y="778" fill="#E7E2DA">r</text>
+<text class="l38" x="337.8" y="778" fill="#E7E2DA">e</text>
+<text class="l38" x="353.4" y="778" fill="#E7E2DA">d</text>
+<text class="l38" x="361.2" y="778" fill="#E7E2DA">e</text>
+<text class="l38" x="369.0" y="778" fill="#E7E2DA">f</text>
+<text class="l38" x="376.8" y="778" fill="#E7E2DA">e</text>
+<text class="l38" x="384.6" y="778" fill="#E7E2DA">a</text>
+<text class="l38" x="392.4" y="778" fill="#E7E2DA">t</text>
+<text class="l38" x="400.2" y="778" fill="#E7E2DA">s</text>
+<text class="l38" x="415.8" y="778" fill="#E7E2DA">t</text>
+<text class="l38" x="423.6" y="778" fill="#E7E2DA">h</text>
+<text class="l38" x="431.4" y="778" fill="#E7E2DA">e</text>
+<text class="l38" x="447.0" y="778" fill="#E7E2DA">p</text>
+<text class="l38" x="454.8" y="778" fill="#E7E2DA">o</text>
+<text class="l38" x="462.6" y="778" fill="#E7E2DA">i</text>
+<text class="l38" x="470.4" y="778" fill="#E7E2DA">n</text>
+<text class="l38" x="478.2" y="778" fill="#E7E2DA">t</text>
+<text class="l38" x="486.0" y="778" fill="#E7E2DA">.</text>
+<text class="l40" x="18" y="816" fill="#E7E2DA">  metrics.content_safety.score                   eu_fairness [content_safety evaluator]</text>
+<text class="l41" x="18" y="835" fill="#E7E2DA">  metrics.emotion_recognition.combined_score     emotion_recognition</text>
+<text class="l42" x="18" y="854" fill="#E7E2DA">  metrics.emotion_recognition.educational_context emotion_recognition</text>
+<text class="l43" x="18" y="873" fill="#E7E2DA">  metrics.emotion_recognition.workplace_context  emotion_recognition</text>
+<text class="l44" x="18" y="892" fill="#E7E2DA">  metrics.fairness.gender_bias                   eu_fairness [fairness evaluator]</text>
+<text class="l45" x="18" y="911" fill="#D9A441">$</text>
+<text class="cur" x="18" y="911" fill="#D9A441">$ <tspan class="blink" fill="#E7E2DA">█</tspan></text>
+</g></svg>
