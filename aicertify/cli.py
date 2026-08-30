@@ -32,7 +32,6 @@ async def _run_evaluate(
     policy_folder: str,
     output_dir: Optional[str] = None,
     report_format: str = "pdf",
-    evaluators: Optional[list] = None,
     custom_params: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Run a contract evaluation using the existing API."""
@@ -80,7 +79,6 @@ def _cmd_evaluate(args: argparse.Namespace) -> int:
                 policy_folder=args.policy,
                 output_dir=args.output_dir,
                 report_format=args.report_format,
-                evaluators=args.evaluators,
                 custom_params=custom_params,
             )
         )
@@ -347,11 +345,6 @@ def _build_parser() -> argparse.ArgumentParser:
         choices=["json", "markdown", "pdf", "html"],
         default="pdf",
         help="Report format (default: pdf)",
-    )
-    ev.add_argument(
-        "--evaluators",
-        nargs="+",
-        help="Specific evaluators to use (space-separated list)",
     )
     ev.add_argument(
         "--params",
