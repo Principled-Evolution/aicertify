@@ -128,11 +128,26 @@ class OpaEvaluator:
         )
 
         self.policy_loader = PolicyLoader()
-        self.opa_path = (
-            None
-            if (use_external_server or skip_opa_check)
-            else self._verify_opa_installation()
-        )
+
+        # Skipping the installation check must not mean discarding the path.
+        #
+        # GitHub Actions sets CI=true, which set skip_opa_check and left
+        # opa_path as None. None then went into argv[0], so every call through
+        # evaluate_policy raised "sequence item 0: expected str instance,
+        # NoneType found" and the folder evaluation reported "No valid results
+        # from any policy evaluation". The path through
+        # _evaluate_with_local_opa is worse: it checks for None and returns a
+        # mock result, so a run in CI reported fabricated verdicts as real ones.
+        #
+        # The flag exists so a missing binary does not abort startup, not so a
+        # present one goes unused. Resolve it either way and let the call site
+        # fail on a real missing executable.
+        if use_external_server:
+            self.opa_path = None
+        elif skip_opa_check:
+            self.opa_path = shutil.which("opa") or os.environ.get("OPA_PATH") or "opa"
+        else:
+            self.opa_path = self._verify_opa_installation()
         self.use_external_server = use_external_server
         self.server_url = server_url
         self.policies_loaded = False

@@ -149,3 +149,54 @@ class TestAgainstTheBundledPolicyLibrary:
         assert (
             '"result"' in with_flags.stdout
         ), f"expected a verdict for {query}, got: {with_flags.stdout[:400]}"
+
+
+class TestOpaPathSurvivesCI:
+    """
+    GitHub Actions sets CI=true, which set skip_opa_check, which left
+    OpaEvaluator.opa_path as None even with the binary installed.
+
+    None then went into argv[0]. Every call through evaluate_policy raised
+    "sequence item 0: expected str instance, NoneType found", and the folder
+    evaluation reported "No valid results from any policy evaluation". The other
+    path, _evaluate_with_local_opa, checks for None and returns a mock result,
+    so a run under CI reported fabricated verdicts as real ones.
+
+    Nothing caught it because the tests that exercise OPA resolve the binary
+    themselves with shutil.which and invoke it directly, so they never went
+    through the evaluator's own path.
+    """
+
+    def test_opa_path_resolves_when_ci_is_set(self, monkeypatch):
+        import shutil
+
+        from aicertify.opa_core.evaluator import OpaEvaluator
+
+        if shutil.which("opa") is None:
+            pytest.skip("opa binary not on PATH")
+
+        monkeypatch.setenv("CI", "true")
+        assert OpaEvaluator().opa_path is not None, (
+            "opa_path is None with CI set, so argv[0] is None and every "
+            "evaluation fails or returns a mock result"
+        )
+
+    def test_skipping_the_check_still_finds_the_binary(self, monkeypatch):
+        """The flag exists so a missing binary does not abort startup, not so a
+        present one goes unused."""
+        import shutil
+
+        from aicertify.opa_core.evaluator import OpaEvaluator
+
+        if shutil.which("opa") is None:
+            pytest.skip("opa binary not on PATH")
+
+        monkeypatch.delenv("CI", raising=False)
+        assert OpaEvaluator(skip_opa_check=True).opa_path == shutil.which("opa")
+
+    def test_external_server_still_needs_no_local_binary(self, monkeypatch):
+        """An external server is the one case where no local path is correct."""
+        from aicertify.opa_core.evaluator import OpaEvaluator
+
+        monkeypatch.delenv("CI", raising=False)
+        assert OpaEvaluator(use_external_server=True).opa_path is None
