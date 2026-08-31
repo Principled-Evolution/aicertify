@@ -22,7 +22,7 @@ authors:
     affiliation: "Principled Evolution"
   - name: "Principled Evolution"
     website: "https://principledevolution.ai"
-version: "0.8.0"
+version: "0.8.1"
 date-released: "2026-08-28"
 license: Apache-2.0
 repository-code: "https://github.com/Principled-Evolution/AICertify"

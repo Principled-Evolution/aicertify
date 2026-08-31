@@ -309,7 +309,7 @@ You don't have to install anything to see what AICertify produces. Pre-generated
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram5_report_anatomy_dark.svg">
-    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="Anatomy of an audit-ready report: header with framework name, application, model and date; executive summary; policy results table; risk assessment bar chart; remediation guidance; footer attributing AICertify v0.8.0" width="85%" />
+    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="Anatomy of an audit-ready report: header with framework name, application, model and date; executive summary; policy results table; risk assessment bar chart; remediation guidance; footer attributing AICertify v0.8.1" width="85%" />
   </picture>
 </p>
 
@@ -319,7 +319,7 @@ Open the PDFs to inspect the actual deliverable before installing AICertify.
 
 ## Status
 
-AICertify is in **beta (v0.8.0)**. The API may evolve before the 1.0 release. All bundled GOPAL policies are executable; the important distinction is **the depth of evidence behind each check**:
+AICertify is in **beta (v0.8.1)**. The API may evolve before the 1.0 release. All bundled GOPAL policies are executable; the important distinction is **the depth of evidence behind each check**:
 
 - ✅ **Threshold checks against measured values.** Global fairness/content-safety/toxicity checks, EU AI Act fairness, healthcare diagnostic safety, and BFS fair lending/model risk compare evaluator-produced measurements against explicit thresholds.
 - ✅ **Structural checks against supplied artifacts.** EU AI Act, aviation, automotive, education, and legal policies validate fields extracted or declared from the documentation and evidence supplied to the contract.

@@ -1,6 +1,6 @@
 [project]
 name = "aicertify"
-version = "0.8.0"
+version = "0.8.1"
 description = "Open-source compliance-as-code for AI systems: evaluate declared facts and measured evidence with versioned OPA/Rego policies and generate portable PDF, Markdown, JSON, or HTML reports."
 authors = [
     {name = "Kapil Madan", email = "kapil.madan@gmail.com"},
