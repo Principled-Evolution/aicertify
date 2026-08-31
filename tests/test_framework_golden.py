@@ -106,18 +106,17 @@ MINIMUM_EXPECTED: dict[str, int] = {
 }
 
 #: Frameworks known to deliver fewer verdicts than they declare, with the cause.
-#: Strict, so the exemption cannot outlive the defect: once the gap closes the
-#: test passes, and pytest reports an unexpected pass as a failure, which forces
-#: the entry to be removed rather than left behind as a permanent exception.
-KNOWN_DELIVERY_GAPS: dict[str, str] = {
-    "education": (
-        "gopal's industry_specific.education.v1.fairness_and_equity raises "
-        "eval_conflict_error because two policies in it define a complete rule "
-        "named `thresholds` with different values, so all three policies in "
-        "that package deliver nothing. Fixed in gopal; remove this entry when "
-        "the submodule is bumped past that commit."
-    ),
-}
+#: Empty, and the mechanism is kept for the next one.
+#:
+#: Strict, so an exemption cannot outlive the defect: once the gap closes the
+#: test passes, and pytest reports an unexpected pass as a failure, forcing the
+#: entry out rather than leaving it as a permanent exception. That is how the
+#: education entry was removed. It covered
+#: industry_specific.education.v1.fairness_and_equity, which raised
+#: eval_conflict_error and delivered nothing for three policies; when the gopal
+#: submodule was bumped past the fix, this failed with XPASS(strict) and printed
+#: the instruction to delete it.
+KNOWN_DELIVERY_GAPS: dict[str, str] = {}
 
 
 def _delivery_params():
