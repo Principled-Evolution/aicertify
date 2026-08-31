@@ -208,7 +208,6 @@ python -m aicertify.cli \
 | `--contract` | AI 애플리케이션 계약 JSON 파일 경로 |
 | `--policy` | 평가에 사용할 OPA 정책 폴더 경로 |
 | `--report-format` | `pdf`, `markdown`, `json`, `html` (기본값: `pdf`) |
-| `--evaluators` | 특정 평가기로 제한 (예: `Fairness ContentSafety`) |
 | `--output-dir` | 리포트 출력 위치 (기본값: `./reports`) |
 | `--verbose` | 상세 로깅 |
 

@@ -211,7 +211,6 @@ python -m aicertify.cli \
 | `--contract` | AI 应用合约 JSON 的路径 |
 | `--policy` | 用于评估的 OPA 策略目录路径 |
 | `--report-format` | `pdf`、`markdown`、`json`、`html`(默认:`pdf`) |
-| `--evaluators` | 限定使用特定评估器(例如 `Fairness ContentSafety`) |
 | `--output-dir` | 报告输出目录(默认:`./reports`) |
 | `--verbose` | 输出详细日志 |
 

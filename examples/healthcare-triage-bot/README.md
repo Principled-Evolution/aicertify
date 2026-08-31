@@ -60,3 +60,17 @@ A green report does **not** clear the application for clinical deployment. It de
 | `policy_config.yaml` | EU AI Act + healthcare/v1 policy bundle |
 | `run.py` | Runnable AICertify Python API script |
 | `expected_report.md` | What a successful run looks like |
+
+### LLM-judged metrics are off by default
+
+This example computes what it can locally and skips the toxicity and fairness
+metrics that DeepEval judges with an LLM, so it costs nothing and behaves the
+same on every machine. `OPENAI_API_KEY` is ignored even if your shell has one.
+
+To opt in:
+
+```bash
+AICERTIFY_WITH_LLM_METRICS=1 python examples/healthcare-triage-bot/run.py
+```
+
+That makes billable API calls and takes noticeably longer.

@@ -288,6 +288,7 @@ Useful flags:
 | `--policy` | Framework name or path to an OPA policy folder |
 | `--report-format` | `pdf`, `markdown`, `json`, `html` (default: `pdf`) |
 | `--output-dir` | Where reports land (default: `./reports`) |
+| `--params` | JSON string or file overriding a policy's documented thresholds |
 | `--verbose` | Verbose logging |
 
 See [`examples/quickstart.py`](examples/quickstart.py) for the full Python API.

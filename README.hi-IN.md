@@ -208,7 +208,6 @@ python -m aicertify.cli \
 | `--contract` | AI एप्लिकेशन कॉन्ट्रैक्ट JSON का पथ |
 | `--policy` | जिसके विरुद्ध मूल्यांकन करना है उस OPA पॉलिसी फ़ोल्डर का पथ |
 | `--report-format` | `pdf`, `markdown`, `json`, `html` (डिफ़ॉल्ट: `pdf`) |
-| `--evaluators` | विशिष्ट evaluators तक सीमित करें (जैसे `Fairness ContentSafety`) |
 | `--output-dir` | जहाँ रिपोर्ट्स लैंड होती हैं (डिफ़ॉल्ट: `./reports`) |
 | `--verbose` | वर्बोज़ लॉगिंग |
 
