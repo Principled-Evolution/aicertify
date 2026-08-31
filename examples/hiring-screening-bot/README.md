@@ -59,3 +59,17 @@ See [docs/why-aicertify.md](../../docs/why-aicertify.md) for what AICertify *doe
 | `policy_config.yaml` | EU AI Act + fair-lending proxy + global bundle |
 | `run.py` | Runnable AICertify Python API script |
 | `expected_report.md` | What a successful run looks like |
+
+### LLM-judged metrics are off by default
+
+This example computes what it can locally and skips the toxicity and fairness
+metrics that DeepEval judges with an LLM, so it costs nothing and behaves the
+same on every machine. `OPENAI_API_KEY` is ignored even if your shell has one.
+
+To opt in:
+
+```bash
+AICERTIFY_WITH_LLM_METRICS=1 python examples/hiring-screening-bot/run.py
+```
+
+That makes billable API calls and takes noticeably longer.

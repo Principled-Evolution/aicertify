@@ -59,3 +59,17 @@ For more elaborate setups, see the sibling examples:
 
 - [`healthcare-triage-bot/`](../healthcare-triage-bot/) — medical AI evaluated for patient safety
 - [`hiring-screening-bot/`](../hiring-screening-bot/) — recruiting AI evaluated for fair-employment compliance
+
+### LLM-judged metrics are off by default
+
+This example computes what it can locally and skips the toxicity and fairness
+metrics that DeepEval judges with an LLM, so it costs nothing and behaves the
+same on every machine. `OPENAI_API_KEY` is ignored even if your shell has one.
+
+To opt in:
+
+```bash
+AICERTIFY_WITH_LLM_METRICS=1 python examples/customer-support-bot/run.py
+```
+
+That makes billable API calls and takes noticeably longer.

@@ -12,10 +12,31 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import sys
 from pathlib import Path
 
-from aicertify import application, regulations
+# The LLM-judged evaluators activate off the presence of OPENAI_API_KEY, and
+# this example is something a first-time reader copies and runs. Hide the key
+# unless they ask for those metrics, so the example behaves the same on every
+# machine and never spends somebody's money without being asked. Same treatment
+# the bundled demo gets in aicertify/_demo/runner.py.
+#
+# Without it, a reader with an exhausted quota watches nine retries per
+# interaction scroll past and reasonably concludes the example is broken.
+WITH_LLM_METRICS = os.environ.get("AICERTIFY_WITH_LLM_METRICS") == "1"
+if not WITH_LLM_METRICS:
+    os.environ.pop("OPENAI_API_KEY", None)
+
+# Not exposed, to match examples/quickstart.py and keep the run reproducible
+# across machines with and without GPUs.
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+
+
+# Imported after the environment guard above, not before: the evaluator
+# stack reads OPENAI_API_KEY at import time, so popping it afterwards
+# would be too late. Same ordering as aicertify/_demo/runner.py.
+from aicertify import application, regulations  # noqa: E402
 
 EXAMPLE_DIR = Path(__file__).resolve().parent
 CONTRACT_PATH = EXAMPLE_DIR / "input_contract.json"

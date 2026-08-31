@@ -208,7 +208,6 @@ python -m aicertify.cli \
 | `--contract` | AI アプリケーション契約 JSON のパス |
 | `--policy` | 評価対象とする OPA ポリシーフォルダのパス |
 | `--report-format` | `pdf`、`markdown`、`json`、`html` (デフォルト: `pdf`) |
-| `--evaluators` | 特定の評価器に限定 (例: `Fairness ContentSafety`) |
 | `--output-dir` | レポート出力先 (デフォルト: `./reports`) |
 | `--verbose` | 詳細ログ出力 |
 
