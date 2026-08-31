@@ -228,7 +228,7 @@ python -m aicertify.cli \
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="diagrams/diagram5_report_anatomy_dark.svg">
-    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="एक ऑडिट-तैयार रिपोर्ट की संरचना: फ्रेमवर्क नाम, एप्लिकेशन, मॉडल और दिनांक के साथ हेडर; executive summary; policy results table; risk assessment bar chart; remediation guidance; AICertify v0.8.0 का श्रेय देने वाला फुटर" width="85%" />
+    <img src="diagrams/diagram5_report_anatomy_light.svg" alt="एक ऑडिट-तैयार रिपोर्ट की संरचना: फ्रेमवर्क नाम, एप्लिकेशन, मॉडल और दिनांक के साथ हेडर; executive summary; policy results table; risk assessment bar chart; remediation guidance; AICertify v0.8.1 का श्रेय देने वाला फुटर" width="85%" />
   </picture>
 </p>
 
@@ -238,7 +238,7 @@ PDFs खोलिए। यही आपका ऑडिटर चाहता �
 
 ## स्थिति
 
-AICertify **beta (v0.8.0)** में है। 1.0 रिलीज़ से पहले API विकसित हो सकता है। आज प्रोडक्शन-तैयार फ्रेमवर्क्स:
+AICertify **beta (v0.8.1)** में है। 1.0 रिलीज़ से पहले API विकसित हो सकता है। आज प्रोडक्शन-तैयार फ्रेमवर्क्स:
 
 - ✅ Global evaluators (fairness, content safety, transparency): सभी 9 पॉलिसीज़ लागू
 - ✅ Aviation पॉलिसी सेट (ICAO, FAA, EASA, RTCA, ISO): सभी 19 पॉलिसीज़ लागू, अंतर्राष्ट्रीय रेगुलेटर्स और इंडस्ट्री वर्टिकल दोनों में
