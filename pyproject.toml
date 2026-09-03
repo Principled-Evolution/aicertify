@@ -83,7 +83,7 @@ dependencies = [
     "aiohttp>=3.14.1",             # 15 advisories (incl. zip bomb, SSRF, header smuggling)
     "urllib3>=2.7.0",              # 4 advisories (decompression bombs, cross-origin header leak)
     "pillow>=12.3.0",              # 13 advisories (PSD/FITS/font OOB writes, heap corruption)
-    "pypdf>=6.15.0",               # 15 advisories (RAM-exhaust, infinite-loop, /ToUnicode and CID-width DoS)
+    "pypdf>=6.16.1",               # 15 advisories (RAM-exhaust, infinite-loop, /ToUnicode and CID-width DoS)
     "nltk>=3.10.3",                # 1 critical zip slip + 4 high (downloader path traversal, AFO, XSS)
     # LangChain ecosystem on 1.x — unlocked by langfair-mantric@python-3.12-support
     # which now allows langchain >=0.3.7,<2.0 (only imports langchain_core, which is
@@ -98,7 +98,7 @@ dependencies = [
     "pydantic-settings>=2.14.2",    # 1 medium symlink-follow past secrets_dir in NestedSecretsSettingsSource
     "pyasn1>=0.6.4",                # 2 high DoS (unbounded recursion)
     "protobuf>=5.29.6,<6",          # 1 high JSON recursion depth bypass; pin to 5.x to avoid major bump
-    "banks>=2.4.2",                # 1 critical RCE via Jinja2 SSTI
+    "banks>=2.4.5",                # 1 critical RCE via Jinja2 SSTI
     "starlette>=1.3.1",             # 1 high O(n^2) range-header DoS + 1 medium multipart DoS
     "sentencepiece>=0.2.1",        # 1 high heap overflow
     "orjson>=3.11.6",              # 1 high unbounded recursion
